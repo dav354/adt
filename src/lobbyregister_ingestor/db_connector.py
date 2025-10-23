@@ -24,10 +24,10 @@ class DatabaseSession:
     def __init__(
         self,
         config: DatabaseConfig,
-        scheme_resource: str = DEFAULT_SCHEME_RESOURCE,
+        scheme_resource: str | None = None,
     ) -> None:
         self._config = config
-        self._scheme_resource = scheme_resource
+        self._scheme_resource = scheme_resource or config.schema_resource
         self._engine: Optional[AsyncEngine] = None
         self._schema: Optional[SchemaSpec] = None
 

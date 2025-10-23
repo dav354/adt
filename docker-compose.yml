@@ -15,7 +15,9 @@ services:
       - pg_data:/var/lib/postgresql
 
   ingest:
-    image: ghcr.io/dav354/lobbyregister-ingestor:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: lobbyregister_ingestor
     env_file:
       - .env

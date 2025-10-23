@@ -15,8 +15,9 @@ from .ingest import run_ingestion
 from .models import (DEFAULT_API_BACKOFF_FACTOR, DEFAULT_API_BACKOFF_MAX,
                      DEFAULT_API_KEY, DEFAULT_API_MAX_CONCURRENCY,
                      DEFAULT_API_MAX_RETRIES, DEFAULT_API_TIMEOUT,
-                     DEFAULT_API_URL, DEFAULT_DB_CONNECT_TIMEOUT, ApiConfig,
-                     DatabaseConfig, IngestionConfig)
+                     DEFAULT_API_URL, DEFAULT_DB_CONNECT_TIMEOUT,
+                     DEFAULT_SCHEMA_RESOURCE, ApiConfig, DatabaseConfig,
+                     IngestionConfig)
 
 console = Console()
 LOGGER = logging.getLogger("lobbyregister.ingestor")
@@ -82,6 +83,7 @@ def load_config() -> IngestionConfig:
         "yes",
         "on",
     }
+    schema_resource = os.getenv("DATABASE_SCHEMA_RESOURCE", DEFAULT_SCHEMA_RESOURCE)
 
     return IngestionConfig(
         api=ApiConfig(
@@ -97,6 +99,7 @@ def load_config() -> IngestionConfig:
             url=database_url,
             connect_timeout=connect_timeout,
             apply_schema=apply_schema,
+            schema_resource=schema_resource,
         ),
     )
 

@@ -78,6 +78,42 @@ TYPE_ORDER: List[ScalarType] = [
     "text",
 ]
 
+JSON_SCHEMA_KEYS = {
+    "$schema",
+    "$id",
+    "$comment",
+    "title",
+    "description",
+    "comment",
+    "type",
+    "format",
+    "default",
+    "examples",
+    "enum",
+    "const",
+    "required",
+    "allOf",
+    "anyOf",
+    "oneOf",
+    "not",
+    "items",
+    "properties",
+    "patternProperties",
+    "additionalProperties",
+    "minItems",
+    "maxItems",
+    "minLength",
+    "maxLength",
+    "minimum",
+    "maximum",
+    "exclusiveMinimum",
+    "exclusiveMaximum",
+    "multipleOf",
+    "uniqueItems",
+    "nullable",
+    "translations",
+}
+
 
 def _is_iso_datetime(value: str) -> bool:
     try:
@@ -105,6 +141,99 @@ def _merge_scalar_type(a: ScalarType, b: ScalarType) -> ScalarType:
     return TYPE_ORDER[max(TYPE_ORDER.index(a), TYPE_ORDER.index(b))]
 
 
+def _schema_type(schema: Dict[str, Any]) -> Optional[str]:
+    type_value = schema.get("type")
+    if isinstance(type_value, list):
+        candidates = [t for t in type_value if t != "null"]
+        if not candidates:
+            return None
+        return candidates[0]
+    if isinstance(type_value, str):
+        return type_value
+    if "enum" in schema:
+        return "string"
+    if "properties" in schema or "additionalProperties" in schema:
+        return "object"
+    if "items" in schema:
+        return "array"
+    return None
+
+
+def _schema_scalar_type(schema: Dict[str, Any]) -> ScalarType:
+    schema_type = _schema_type(schema)
+    if schema_type == "integer":
+        return "integer"
+    if schema_type == "number":
+        return "number"
+    if schema_type == "boolean":
+        return "boolean"
+    if schema_type == "string" and schema.get("format") == "date-time":
+        return "datetime"
+    return "text"
+
+
+def _collect_required(schema: Dict[str, Any]) -> set[str]:
+    required = set(schema.get("required", []))
+    for key in ("allOf", "anyOf", "oneOf"):
+        subschemas = schema.get(key)
+        if isinstance(subschemas, list):
+            for subschema in subschemas:
+                if isinstance(subschema, dict):
+                    required |= _collect_required(subschema)
+    return required
+
+
+def _collect_properties(schema: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+    properties: Dict[str, Dict[str, Any]] = {}
+    schema_props = schema.get("properties")
+    if isinstance(schema_props, dict):
+        properties.update(schema_props)
+    for key in ("allOf", "anyOf", "oneOf"):
+        subschemas = schema.get(key)
+        if isinstance(subschemas, list):
+            for subschema in subschemas:
+                if isinstance(subschema, dict):
+                    properties.update(_collect_properties(subschema))
+    return properties
+
+
+def _infer_schema_object(schema: Dict[str, Any], path: Tuple[str, ...]) -> NodeObject:
+    node = NodeObject(path=path)
+    properties = _collect_properties(schema)
+    required = _collect_required(schema)
+
+    for prop_name, prop_schema in properties.items():
+        if not isinstance(prop_schema, dict):
+            continue
+
+        schema_type = _schema_type(prop_schema)
+        if schema_type == "object":
+            node.objects[prop_name] = _infer_schema_object(
+                prop_schema, path + (prop_name,)
+            )
+        elif schema_type == "array":
+            node.arrays[prop_name] = _infer_schema_array(prop_schema, path + (prop_name,))
+        else:
+            node.scalars[prop_name] = NodeScalar(
+                scalar_type=_schema_scalar_type(prop_schema),
+                nullable=prop_name not in required,
+            )
+
+    return node
+
+
+def _infer_schema_array(schema: Dict[str, Any], path: Tuple[str, ...]) -> NodeArray:
+    items = schema.get("items")
+    if isinstance(items, dict):
+        item_type = _schema_type(items)
+        if item_type == "object":
+            return NodeArray(kind="object", object_node=_infer_schema_object(items, path))
+        if item_type == "array":
+            return _infer_schema_array(items, path)
+        return NodeArray(kind="scalar", scalar_type=_schema_scalar_type(items))
+    return NodeArray(kind="scalar", scalar_type="text")
+
+
 def _to_snake_case(value: str) -> str:
     result: List[str] = []
     prev_lower = False
@@ -124,6 +253,8 @@ def _to_snake_case(value: str) -> str:
 
 def make_identifier(parts: Iterable[str]) -> str:
     cleaned = [_to_snake_case(p) for p in parts if p]
+    if len(cleaned) > 4:
+        cleaned = cleaned[-4:]
     base = "_".join(p for p in cleaned if p)
     if len(base) <= 63:
         return base or "unnamed"
@@ -229,6 +360,12 @@ def _infer_array(values: List[Any], path: Tuple[str, ...]) -> NodeArray:
 
 
 def _infer_schema(sample: Dict[str, Any], root_name: str) -> NodeObject:
+    if (
+        isinstance(sample, dict)
+        and "properties" in sample
+        and (sample.get("type") == "object" or _schema_type(sample) in {"object", None})
+    ):
+        return _infer_schema_object(sample, (root_name,))
     return _infer_object(sample, (root_name,))
 
 
@@ -247,11 +384,19 @@ def _scalar_type_to_sa(scalar_type: ScalarType):
 def _build_table(
     metadata: MetaData,
     current: NodeObject,
-    tables: Dict[str, TableSpec],
+    tables_by_name: Dict[str, TableSpec],
+    tables_by_path: Dict[Tuple[str, ...], TableSpec],
     parent: Optional[TableSpec],
     relation_to_parent: Optional[str],
 ) -> TableSpec:
+    if current.path in tables_by_path:
+        return tables_by_path[current.path]
+
     table_name = make_identifier(current.path)
+    counter = 1
+    while table_name in tables_by_name:
+        table_name = make_identifier(list(current.path) + [str(counter)])
+        counter += 1
     columns: List[Column] = [Column("id", Integer, primary_key=True)]
     parent_fk_name: Optional[str] = None
 
@@ -270,13 +415,16 @@ def _build_table(
     scalar_fields: Dict[str, ScalarField] = {}
     for prop, info in current.scalars.items():
         column_name = make_identifier((prop,))
+        existing_names = {col.name for col in columns}
+        if column_name in existing_names:
+            column_name = make_identifier((prop, "value"))
         col_type = _scalar_type_to_sa(info.scalar_type)
-        columns.append(Column(column_name, col_type, nullable=True))
+        columns.append(Column(column_name, col_type, nullable=info.nullable))
         scalar_fields[prop] = ScalarField(
             name=prop,
             column_name=column_name,
             scalar_type=info.scalar_type,
-            nullable=True,
+            nullable=info.nullable,
         )
 
     table = Table(table_name, metadata, *columns)
@@ -288,17 +436,27 @@ def _build_table(
         parent_fk=parent_fk_name,
         relation_to_parent=relation_to_parent,
     )
-    tables[table_name] = spec
+    tables_by_name[table_name] = spec
+    tables_by_path[current.path] = spec
 
     for prop, obj in current.objects.items():
-        child_spec = _build_table(metadata, obj, tables, spec, "one")
+        child_spec = _build_table(
+            metadata, obj, tables_by_name, tables_by_path, spec, "one"
+        )
         spec.relations.append(
             RelationSpec(name=prop, target=child_spec, relation="one", ordered=False)
         )
 
     for prop, arr in current.arrays.items():
         if arr.kind == "object" and arr.object_node is not None:
-            child_spec = _build_table(metadata, arr.object_node, tables, spec, "many")
+            child_spec = _build_table(
+                metadata,
+                arr.object_node,
+                tables_by_name,
+                tables_by_path,
+                spec,
+                "many",
+            )
             if "position" not in child_spec.table.c:
                 child_spec.table.append_column(
                     Column("position", Integer, nullable=False)
@@ -329,6 +487,11 @@ def _build_table(
             arr_columns.append(
                 Column("value", _scalar_type_to_sa(scalar_type), nullable=True)
             )
+            counter = 1
+            while array_table_name in tables_by_name:
+                array_table_name = make_identifier(current.path + (prop, str(counter)))
+                counter += 1
+
             arr_table = Table(array_table_name, metadata, *arr_columns)
             arr_spec = TableSpec(
                 name=array_table_name,
@@ -347,7 +510,8 @@ def _build_table(
                 position_column=True,
                 scalar_array_type=scalar_type,
             )
-            tables[array_table_name] = arr_spec
+            tables_by_name[array_table_name] = arr_spec
+            tables_by_path[arr_spec.path] = arr_spec
             spec.relations.append(
                 RelationSpec(
                     name=prop,
@@ -366,10 +530,16 @@ def build_schema_from_sample(
     sample = json.loads(sample_path.read_text(encoding="utf-8"))
     node = _infer_schema(sample, root_name)
     metadata = MetaData()
-    tables: Dict[str, TableSpec] = {}
+    tables_by_name: Dict[str, TableSpec] = {}
+    tables_by_path: Dict[Tuple[str, ...], TableSpec] = {}
 
     root_spec = _build_table(
-        metadata, node, tables, parent=None, relation_to_parent=None
+        metadata,
+        node,
+        tables_by_name,
+        tables_by_path,
+        parent=None,
+        relation_to_parent=None,
     )
 
     register_column = root_spec.scalars.get("registerNumber")

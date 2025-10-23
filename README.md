@@ -76,5 +76,5 @@ Alle Einstellungen beziehen der Ingestor und Docker-Container über Umgebungsvar
 ## Weiterführende Arbeiten
 
 - Tuning (Indizes, Materialized Views, Partitionierung)
-- Analyse/Reporting (z. B. Grafana-Dashboards, Metabase)
+- Analyse/Reporting (Grafana-Dashboards zur viaualisierung mit autoprovisioning der datenquelle und auch dashboards)
 - Weitere Datenquellen oder alternative Schemata auf Basis der JSON-Definition

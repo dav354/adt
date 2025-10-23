@@ -10,6 +10,7 @@ DEFAULT_API_BACKOFF_MAX = 30.0
 DEFAULT_DB_CONNECT_TIMEOUT = 60.0
 DEFAULT_API_KEY = "5bHB2zrUuHR6YdPoZygQhWfg2CBrjUOi"
 DEFAULT_API_MAX_CONCURRENCY = 5
+DEFAULT_SCHEMA_RESOURCE = "scheme-complete.json"
 
 
 @dataclass(frozen=True)
@@ -28,6 +29,7 @@ class DatabaseConfig:
     url: str
     connect_timeout: float
     apply_schema: bool = False
+    schema_resource: str = DEFAULT_SCHEMA_RESOURCE
 
 
 @dataclass(frozen=True)

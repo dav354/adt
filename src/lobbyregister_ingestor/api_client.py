@@ -66,6 +66,8 @@ class LobbyRegisterApiClient:
                 "sourceUrl": payload.get("sourceUrl"),
                 "sourceDate": payload.get("sourceDate"),
                 "jsonDocumentationUrl": payload.get("jsonDocumentationUrl"),
+                "resultCount": payload.get("resultCount"),
+                "totalResultCount": payload.get("totalResultCount"),
             }
             entries = self._extract_entries(payload)
             for entry in entries:
