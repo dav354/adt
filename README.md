@@ -1,5 +1,9 @@
 # ADT
 
+Auswertung und visualisierung der deutschen Lobbyregister Daten.
+
+https://api.lobbyregister.bundestag.de/rest/v2/swagger-ui/#/Statistiken/getStatisticsRegisterEntries
+
 ## Architektur
 
 - docker postgres container
