@@ -1,0 +1,370 @@
+{
+  "$schema": "https://api.lobbyregister.bundestag.de/rest/v2/json-schemas/R2.22/API-Registereintrag-schema-R2.22.json",
+  "source": "Deutscher Bundestag, Lobbyregister für die Interessenvertretung gegenüber dem Deutschen Bundestag und der Bundesregierung",
+  "sourceUrl": "https://api.lobbyregister.bundestag.de",
+  "sourceDate": "2025-10-23T14:45:16.796+02:00",
+  "jsonDocumentationUrl": "https://www.lobbyregister.bundestag.de/informationen-und-hilfe/open-data-1049716",
+  "registerNumber": "R000001",
+  "registerEntryDetails": {
+    "registerEntryId": 65205,
+    "legislation": "GL2024",
+    "version": 17,
+    "detailsPageUrl": "https://www.lobbyregister.bundestag.de/suche/R000001/65205",
+    "pdfUrl": "https://www.lobbyregister.bundestag.de/media/f8/00/614319/Lobbyregister-Registereintraege-Detailansicht-R000001-2025-09-14_07-52-22.pdf",
+    "validFromDate": "2025-09-14T07:52:22.000+02:00",
+    "fiscalYearUpdate": {
+      "updateMissing": false,
+      "lastFiscalYearUpdate": "2025-06-04T10:35:01.000+02:00"
+    }
+  },
+  "accountDetails": {
+    "activeLobbyist": true,
+    "activeDateRanges": [
+      {
+        "fromDate": "2023-06-08T10:56:02.000+02:00"
+      }
+    ],
+    "firstPublicationDate": "2022-01-04T10:49:19.000+01:00",
+    "lastUpdateDate": "2025-09-14T07:52:22.000+02:00",
+    "registerEntryVersions": [
+      {
+        "registerEntryId": 65205,
+        "jsonDetailUrl": "https://www.lobbyregister.bundestag.de/sucheJson/R000001/65205",
+        "version": 17,
+        "legislation": "GL2024",
+        "validFromDate": "2025-09-14T07:52:22.000+02:00",
+        "versionActiveLobbyist": true
+      },
+      {
+        "registerEntryId": 64661,
+        "jsonDetailUrl": "https://www.lobbyregister.bundestag.de/sucheJson/R000001/64661",
+        "version": 16,
+        "legislation": "GL2024",
+        "validFromDate": "2025-09-13T18:28:57.000+02:00",
+        "validUntilDate": "2025-09-14T07:52:22.000+02:00",
+        "versionActiveLobbyist": true
+      },
+      {
+        "registerEntryId": 61885,
+        "jsonDetailUrl": "https://www.lobbyregister.bundestag.de/sucheJson/R000001/61885",
+        "version": 15,
+        "legislation": "GL2024",
+        "validFromDate": "2025-07-12T08:21:39.000+02:00",
+        "validUntilDate": "2025-09-13T18:28:57.000+02:00",
+        "versionActiveLobbyist": true
+      },
+      {
+        "registerEntryId": 50977,
+        "jsonDetailUrl": "https://www.lobbyregister.bundestag.de/sucheJson/R000001/50977",
+        "version": 14,
+        "legislation": "GL2024",
+        "validFromDate": "2025-06-04T10:35:01.000+02:00",
+        "validUntilDate": "2025-07-12T08:21:39.000+02:00",
+        "versionActiveLobbyist": true
+      },
+      {
+        "registerEntryId": 50930,
+        "jsonDetailUrl": "https://www.lobbyregister.bundestag.de/sucheJson/R000001/50930",
+        "version": 13,
+        "legislation": "GL2024",
+        "validFromDate": "2025-02-25T10:37:05.000+01:00",
+        "validUntilDate": "2025-06-04T10:35:01.000+02:00",
+        "versionActiveLobbyist": true
+      },
+      {
+        "registerEntryId": 50925,
+        "jsonDetailUrl": "https://www.lobbyregister.bundestag.de/sucheJson/R000001/50925",
+        "version": 12,
+        "legislation": "GL2024",
+        "validFromDate": "2025-02-25T10:04:58.000+01:00",
+        "validUntilDate": "2025-02-25T10:37:05.000+01:00",
+        "versionActiveLobbyist": true
+      },
+      {
+        "registerEntryId": 49805,
+        "jsonDetailUrl": "https://www.lobbyregister.bundestag.de/sucheJson/R000001/49805",
+        "version": 11,
+        "legislation": "GL2024",
+        "validFromDate": "2025-02-25T09:58:36.000+01:00",
+        "validUntilDate": "2025-02-25T10:04:58.000+01:00",
+        "versionActiveLobbyist": true
+      },
+      {
+        "registerEntryId": 42215,
+        "jsonDetailUrl": "https://www.lobbyregister.bundestag.de/sucheJson/R000001/42215",
+        "version": 10,
+        "legislation": "GL2024",
+        "validFromDate": "2024-07-29T18:38:36.000+02:00",
+        "validUntilDate": "2025-02-25T09:58:36.000+01:00",
+        "versionActiveLobbyist": true
+      },
+      {
+        "registerEntryId": 34297,
+        "jsonDetailUrl": "https://www.lobbyregister.bundestag.de/sucheJson/R000001/34297",
+        "version": 9,
+        "legislation": "GL2024",
+        "validFromDate": "2024-06-05T09:46:56.000+02:00",
+        "validUntilDate": "2024-07-29T18:38:36.000+02:00",
+        "versionActiveLobbyist": true
+      },
+      {
+        "registerEntryId": 21249,
+        "jsonDetailUrl": "https://www.lobbyregister.bundestag.de/sucheJson/R000001/21249",
+        "version": 8,
+        "legislation": "GL2022",
+        "validFromDate": "2023-06-08T10:56:02.000+02:00",
+        "validUntilDate": "2024-06-05T09:46:56.000+02:00",
+        "versionActiveLobbyist": true
+      }
+    ],
+    "accountHasCodexViolations": false
+  },
+  "lobbyistIdentity": {
+    "identity": "ORGANIZATION",
+    "name": "House of Queer Sisters e.V. Erzabtei Bundesverband",
+    "legalFormType": {
+      "code": "JURISTIC_PERSON",
+      "de": "Juristische Person",
+      "en": "Legal person"
+    },
+    "legalForm": {
+      "code": "LF_EV",
+      "de": "Eingetragener Verein (e. V.)",
+      "en": "Registered association"
+    },
+    "contactDetails": {
+      "phoneNumber": "+493053061913",
+      "emails": [
+        {
+          "email": "info@house-of-queer-sisters.org"
+        }
+      ],
+      "websites": [
+        {
+          "website": "https://house-of-queer-sisters.org"
+        }
+      ]
+    },
+    "address": {
+      "type": "POSTBOX",
+      "zipCode": "10632",
+      "city": "Berlin",
+      "postBox": "310224",
+      "country": {
+        "code": "DE",
+        "de": "Deutschland",
+        "en": "Germany"
+      }
+    },
+    "capitalCityRepresentationPresent": false,
+    "legalRepresentatives": [
+      {
+        "artistName": "Sister Mary Clarence",
+        "function": "Vorstandsvorsitender",
+        "recentGovernmentFunctionPresent": false,
+        "entrustedPerson": true,
+        "contactDetails": {}
+      },
+      {
+        "lastName": "Schmidt",
+        "firstName": "Jörg",
+        "function": "Schriftführer",
+        "recentGovernmentFunctionPresent": false,
+        "entrustedPerson": false,
+        "contactDetails": {}
+      }
+    ],
+    "entrustedPersonsPresent": false,
+    "entrustedPersons": [
+      {
+        "artistName": "Sister Mary Clarence",
+        "recentGovernmentFunctionPresent": false
+      }
+    ],
+    "membersPresent": true,
+    "membersCount": {
+      "naturalPersons": 10,
+      "organizations": 0,
+      "totalCount": 10,
+      "dateCount": "2024-05-27"
+    },
+    "membershipsPresent": true,
+    "memberships": [
+      {
+        "membership": "Aidshilfe Köln"
+      },
+      {
+        "membership": "Colognepride"
+      },
+      {
+        "membership": "Hamburgpride"
+      },
+      {
+        "membership": "Charta der Vielfalt"
+      },
+      {
+        "membership": "rubicon Köln"
+      }
+    ]
+  },
+  "activitiesAndInterests": {
+    "activity": {
+      "code": "ACT_PRIVATE_ORGA_V2",
+      "de": "Privatrechtliche Organisation mit Anerkennung der Gemeinnützigkeit nach Abgabenordnung",
+      "en": "Private-law organization with recognition of non-profit status in accordance with the German Fiscal Code (Abgabenordnung)"
+    },
+    "typesOfExercisingLobbyWork": [
+      {
+        "code": "SELF_OPERATED_OWN_INTEREST",
+        "de": "Die Interessenvertretung wird in eigenem Interesse selbst wahrgenommen",
+        "en": "Interest representation is self-performed in its own interest"
+      }
+    ],
+    "fieldsOfInterest": [
+      {
+        "code": "FOI_SP_GENDER",
+        "de": "Geschlechterpolitik",
+        "en": "Gender politics"
+      },
+      {
+        "code": "FOI_RPI_REFUGEE",
+        "de": "Asyl und Flüchtlingsschutz",
+        "en": "Asylum and refugee protection"
+      },
+      {
+        "code": "FOI_IS_VICTIM_PROTECTION",
+        "de": "Opferschutz",
+        "en": "Victim protection"
+      },
+      {
+        "code": "FOI_CULTURE",
+        "de": "Kultur",
+        "en": "Culture"
+      },
+      {
+        "code": "FOI_RPI_MIGRATION",
+        "de": "Migration",
+        "en": "Migration and residence"
+      },
+      {
+        "code": "FOI_EP_OTHER",
+        "de": "Sonstiges im Bereich \"Bildung und Erziehung\"",
+        "en": "Other in the field of \"Education and parenting\""
+      },
+      {
+        "code": "FOI_SP_OTHER",
+        "de": "Sonstiges im Bereich \"Gesellschaftspolitik und soziale Gruppen\"",
+        "en": "Other in the field of \"Social politics and social groups\""
+      },
+      {
+        "code": "FOI_RPI_INTEGRATION",
+        "de": "Integration",
+        "en": "Integration"
+      },
+      {
+        "code": "FOI_SP_DIVERSITY",
+        "de": "Diversitätspolitik",
+        "en": "Diversity policy"
+      },
+      {
+        "code": "FOI_SP_DISABILITY",
+        "de": "Rechte von Menschen mit Behinderung",
+        "en": "Rights of people with disabilities"
+      },
+      {
+        "code": "FOI_HEALTH_OTHER",
+        "de": "Sonstiges im Bereich \"Gesundheit\"",
+        "en": "Other in the field of \"Health\""
+      },
+      {
+        "code": "FOI_HEALTH_PROMOTION",
+        "de": "Gesundheitsförderung",
+        "en": "Health promotion"
+      }
+    ],
+    "activityDescription": "Wir gehen auf Abgeortnete des Deutschen Bundestags SPD, Bündnis 90/Grüne, Die Linke, CDU/CSU zu um sie zu gewissen Themen der LGBTTIQ* Community aufzuklären, damit ggf. im Bundestag Änderungen stattfinden.\r\n\r\nWir nehmen auch an Parlamentarischen Veranstaltungen der oben genannten Parteien teil wie zum Beispiel der CSD Empfang von Bündniss 90/Grünen.\r\n\r\nDas House of Queer Sisters e.V. Erzabtei Bundesverband wurde 2013 als gemeinnütziger Verein gegründet. Wir informieren zu Übertragungswegen von HIV/AIDS, STI und Hepatitiden. Wir sind in der Behindertenhilfe, der Flüchtlingshilfe, Menschenrechte, der Beratung, der Bildung und des Völkerverständigungsgedankens tätig.  Als Selbsthilfeorganisation unterstützen wir Menschen mit HIV/Aids, ihre An- und Zugehörigen in allen Lebensfragen, die sich im Rahmen der HIV-Erkrankung ergeben. Wir beraten und informieren zu sozial- und arbeitsrechtlichen, wie auch zu medizinischen Fragen.  Wir geben Hilfe zur Selbsthilfe und unterstützen die Selbstvertretung von Menschen mit HIV/Aids.Vor dem Hintergrund der veränderten Lebenserwartung ermutigen wir Menschen mit HIV/AIDS, sich mit den Aspekten des langfristigen Erhalts ihrer Gesundheit zu beschäftigen. Unser Ziel ist es, eine informierte Haltung im Umgang mit HIV/AIDS und STI Erkrankungen und dem Leben mit HIV zu ermöglichen. Der Stigmatisierung und Diskriminierung HIV/AIDS positiver Menschen tritt das House of Queer Sisters e.V. Erzabtei Bundesverband parteiisch und solidarisch entgegen. Im House of Queer Sisters e.V. Erzabtei Bundesverband sind alle Mitglieder ehrenamtlich tätig.\r\n"
+  },
+  "employeesInvolvedInLobbying": {
+    "relatedFiscalYearFinished": true,
+    "relatedFiscalYearStart": "2024-01-01",
+    "relatedFiscalYearEnd": "2024-12-31",
+    "employeeFTE": 0
+  },
+  "financialExpenses": {
+    "relatedFiscalYearFinished": true,
+    "relatedFiscalYearStart": "2024-01-01",
+    "relatedFiscalYearEnd": "2024-12-31",
+    "financialExpensesEuro": {
+      "from": 0,
+      "to": 0
+    }
+  },
+  "mainFundingSources": {
+    "relatedFiscalYearFinished": true,
+    "relatedFiscalYearStart": "2024-01-01",
+    "relatedFiscalYearEnd": "2024-12-31",
+    "mainFundingSources": [
+      {
+        "code": "MFS_GIFTS_AND_DONATIONS",
+        "de": "Schenkungen und sonstige lebzeitige Zuwendungen",
+        "en": "Gifts and other lifetime donations"
+      },
+      {
+        "code": "MFS_OTHERS",
+        "de": "Sonstiges",
+        "en": "Others"
+      },
+      {
+        "code": "MFS_MEMBERSHIP_FEES",
+        "de": "Mitgliedsbeiträge",
+        "en": "Membership fees"
+      }
+    ]
+  },
+  "publicAllowances": {
+    "publicAllowancesPresent": false,
+    "relatedFiscalYearFinished": true,
+    "relatedFiscalYearStart": "2024-01-01",
+    "relatedFiscalYearEnd": "2024-12-31"
+  },
+  "donators": {
+    "relatedFiscalYearFinished": true,
+    "relatedFiscalYearStart": "2024-01-01",
+    "relatedFiscalYearEnd": "2024-12-31",
+    "totalDonationsEuro": {
+      "from": 1,
+      "to": 10000
+    }
+  },
+  "membershipFees": {
+    "relatedFiscalYearFinished": true,
+    "relatedFiscalYearStart": "2024-01-01",
+    "relatedFiscalYearEnd": "2024-12-31",
+    "totalMembershipFees": {
+      "from": 1,
+      "to": 10000
+    },
+    "individualContributorsPresent": false,
+    "individualContributors": []
+  },
+  "annualReports": {
+    "annualReportPreviousLastFiscalYearExists": true,
+    "previousLastFiscalYearStart": "2023-01-01",
+    "previousLastFiscalYearEnd": "2023-12-31",
+    "annualReportPdfUrl": "https://www.lobbyregister.bundestag.de/media/c5/83/614318/2023-Jahesabrechnung.pdf"
+  },
+  "regulatoryProjects": {
+    "regulatoryProjectsPresent": false,
+    "regulatoryProjectsCount": 0,
+    "regulatoryProjects": []
+  },
+  "statements": {},
+  "contracts": {
+    "contractsPresent": false,
+    "contractsCount": 0,
+    "contracts": []
+  },
+  "codeOfConduct": {
+    "ownCodeOfConduct": false
+  }
+}

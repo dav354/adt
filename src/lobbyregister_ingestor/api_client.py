@@ -94,6 +94,14 @@ class LobbyRegisterApiClient:
             )
         return payload
 
+    async def get_register_entry(self, register_number: str) -> Mapping[str, Any]:
+        payload = await self._request_json(f"registerentries/{register_number}")
+        if not isinstance(payload, Mapping):
+            raise ApiClientError(
+                f"Register entry {register_number} returned unexpected payload"
+            )
+        return payload
+
     async def _request_json(
         self, path: str, params: Optional[Mapping[str, Any]] = None
     ) -> Any:
@@ -128,11 +136,21 @@ class LobbyRegisterApiClient:
             except httpx.HTTPStatusError as exc:
                 status_code = exc.response.status_code
                 if status_code == 404:
-                    LOGGER.warning("Resource not found at %s", url)
+                    payload_preview = exc.response.text[:500]
+                    LOGGER.warning(
+                        "Resource not found at %s (preview: %s)", url, payload_preview
+                    )
                     raise ResourceNotFoundError(str(exc)) from exc
 
                 retryable_status = status_code >= 500 or status_code in {408, 429}
                 if not self._should_retry(attempt, max_attempts, retryable_status):
+                    payload_preview = exc.response.text[:500]
+                    LOGGER.error(
+                        "HTTP %s for %s; response preview: %s",
+                        status_code,
+                        url,
+                        payload_preview,
+                    )
                     raise
                 wait_time = min(sleep_time, backoff_ceiling)
                 LOGGER.warning(
@@ -180,7 +198,7 @@ class LobbyRegisterApiClient:
     @staticmethod
     def _extract_entries(payload: Any) -> list[Mapping[str, Any]]:
         if isinstance(payload, Mapping):
-            entries_obj = payload.get("results")
+            entries_obj = payload.get("results") or payload.get("registerEntries")
             if isinstance(entries_obj, list):
                 return [entry for entry in entries_obj if isinstance(entry, Mapping)]
             if "registerNumber" in payload:
@@ -188,4 +206,9 @@ class LobbyRegisterApiClient:
         elif isinstance(payload, list):
             return [entry for entry in payload if isinstance(entry, Mapping)]
 
-        raise ApiClientError("Register entries endpoint returned unexpected payload")
+        preview = str(payload)
+        if len(preview) > 500:
+            preview = preview[:500] + "…"
+        raise ApiClientError(
+            f"Register entries endpoint returned unexpected payload: {preview}"
+        )
