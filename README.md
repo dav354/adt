@@ -1,97 +1,80 @@
 # Lobbyregister Ingestor
 
-Auswertung und Visualisierung der deutschen Lobbyregister Daten.
+Auswertung und Visualisierung der Daten des deutschen Lobbyregisters.
 
-<https://api.lobbyregister.bundestag.de/rest/v2/swagger-ui/#/Statistiken/getStatisticsRegisterEntries>
+API-Dokumentation: <https://api.lobbyregister.bundestag.de/rest/v2/swagger-ui/>
 
-## Architektur
+## Architekturüberblick
 
-- `Postgres` Datenbank (Docker)
-- `Python` Ingestion-Skript (`lobbyregister_ingestor`, uv + httpx + SQLAlchemy + psycopg)
-- Visualisierung / Reporting (z. B. Grafana – Portfolio 4)
+- **PostgreSQL 18** (Docker) als Ziel-Datenbank
+- **Python/uv**-basierter Ingestor (`lobbyregister_ingestor`) mit `httpx`, `SQLAlchemy` und `asyncpg`
+- optionale Visualisierung/Analysen (z. B. Grafana) auf dem erzeugten Schema
 
 ## Voraussetzungen
 
 - Docker & Docker Compose
-- Nix (>= 2.18) zum Bereitstellen der Entwicklungsumgebung mit `uv`
 
-## Setup & Nutzung
+## Setup
 
-1. **Environment-Datei anlegen:**
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   Passe bei Bedarf `POSTGRES_PASSWORD`, `DATABASE_URL` und weitere Variablen an.
-
-1. **Dev-Shell starten (installiert automatisch alle Python-Abhängigkeiten über uv):**
-
-   ```bash
-   nix develop
-   ```
-
-   Beim ersten Start erzeugt der `shellHook` eine `.venv/` via `uv sync` und aktiviert sie automatisch.
-
-1. **Stack starten und Daten laden:**
+1. **Stack starten und Daten laden**
 
    ```bash
    docker compose up --build
    ```
 
-   - Service `db`: Postgres 18 (Port 5432)
-   - Service `ingest`: Läuft einmalig, ruft sämtliche relevanten Lobbyregister-Endpunkte auf und schreibt sie in ein relational normalisiertes Schema.
+   - Service `db`: Postgres (Port 5432)
+   - Service `ingest`: ruft das Lobbyregister ab und importiert die Daten in das normalisierte Schema
+   - Service `adminer`: Web-Oberfläche unter <http://localhost:8080>
 
-1. **Verbindung zur Datenbank (optional):**
+2. **(Optional) Datenbank inspizieren**
 
    ```bash
-   psql postgresql://lobby:changeme@localhost:5432/lobbyregister
+   psql postgresql://lobby:changeme@localhost:5432/lobby
    ```
 
-   Tabelle prüfen:
+   Beispielabfrage:
 
    ```sql
-   SELECT source_date, source FROM statistics_register_entries;
+   SELECT COUNT(*) FROM register_entries;
    ```
 
-## Lokales Ausführen des Ingestion-Skripts
+## Ingestor lokal ausführen
 
-Innerhalb der `nix develop` Shell steht die virtuelle Umgebung bereit:
+Die Dev-Shell enthält bereits die aktivierte virtuelle Umgebung:
 
 ```bash
 uv run ingest-register
 ```
 
-Stelle sicher, dass in deiner `.env` die `DATABASE_URL` für die Ziel-DB gesetzt ist (siehe `.env.example`). Alternativ kannst du die Variable auch nur für den Aufruf setzen:
+Die `POSTGRES_*`-Variablen können entweder in `.env` gesetzt sein oder ad-hoc beim Aufruf:
 
-   ```bash
-   POSTGRES_USER=lobby \
-   POSTGRES_PASSWORD=changeme \
-   POSTGRES_DB=lobbyregister \
-   POSTGRES_HOST=localhost \
-   uv run ingest-register
-   ```
+```bash
+POSTGRES_USER=lobby \
+POSTGRES_PASSWORD=changeme \
+POSTGRES_DB=lobby \
+POSTGRES_HOST=localhost \
+DATABASE_APPLY_SCHEMA=true \
+uv run ingest-register
+```
 
-Optionale Variablen:
+Weitere Parameter:
 
-- `POSTGRES_HOST` – Hostname des Datenbankservers (`db` im Docker-Compose-Setup, `localhost` für lokale Runs)
-- `POSTGRES_PORT` – Port der Datenbankverbindung (Standard 5432)
-- `LOBBY_API_URL` – überschreibt das Standard-Endpoint
+- `LOBBY_API_URL` – Basis-URL der API (Standard: `https://api.lobbyregister.bundestag.de/rest/v2`)
 - `LOBBY_API_TIMEOUT` – Timeout in Sekunden (Standard 30)
-- `LOBBY_API_MAX_CONCURRENCY` – Maximale Anzahl paralleler API-Anfragen (Standard 5)
-- `DATABASE_CONNECT_TIMEOUT` – Verbindungs-Wartezeit (Standard 60)
+- `LOBBY_API_MAX_CONCURRENCY` – gleichzeitige API-Requests (Standard 5)
+- `DATABASE_CONNECT_TIMEOUT` – Wartezeit beim DB-Verbindungsaufbau (Standard 60)
 
-## Datenmodell
+Alle Einstellungen beziehen der Ingestor und Docker-Container über Umgebungsvariablen.
 
-- Das relationale Schema wird zur Laufzeit aus `api-docs-lobbyregister.yaml` abgeleitet (`schema_builder.py`) und anschließend per SQLAlchemy (`metadata.create_all()`) erstellt.
-- Die wichtigsten Tabellen: `register_entries`, `register_entries__account_details`, `register_entries__lobbyist_identity`, `register_entry_versions`, `statistics_register_entries`. Verschachtelte Objekte und Arrays hängen über `parent_id`/`position` am übergeordneten Datensatz.
-- Die Ingestion läuft vollständig asynchron (`httpx.AsyncClient`, SQLAlchemy Async Engine mit `asyncpg`) und validiert alle eingehenden Payloads über Pydantic-Modelle, bevor sie in die Datenbank geschrieben werden. Datenbankzugangsdaten werden ausschließlich über die `POSTGRES_*` Umgebungsvariablen bezogen.
+## Interna & Datenmodell
 
-Beim erneuten Ingest werden Datensätze anhand natürlicher Schlüssel (z. B. `register_number`, `version`, `source_date`) idempotent aktualisiert.
+- Das relationale Schema wird zur Laufzeit aus dem Beispiel-Datensatz `scheme.json` generiert (`src/lobbyregister_ingestor/schema.py`). Verschachtelte Objekte werden zu separaten Tabellen (1:n), Arrays zu Positionslisten oder Werttabellen.
+- Die Persistenz-Schicht (`persistence.py`) übernimmt Typkonvertierung, setzt Fremdschlüssel sowie `ON CONFLICT DO UPDATE` für natürliche Schlüssel wie `register_number`.
+- Der Ingestor (`ingest.py`) ruft ausschließlich die Detail-Endpoints `/registerentries/{registerNumber}` ab, nutzt dabei asynchrone HTTP-Requests und schreibt die Ergebnisse transaktional in die Datenbank.
+- Fehlerhafte API-Antworten werden mit gekürzter Payload-Vorschau (max. 500 Zeichen) geloggt, um Debugging zu erleichtern.
 
-## Weiteres Vorgehen (Portfolios)
+## Weiterführende Arbeiten
 
-- **Portfolio 1:** Auswahl Zielsystem / Szenario
-- **Portfolio 2:** Daten befüllen (durch dieses Setup abgedeckt)
-- **Portfolio 3:** Tuning (z. B. Indizes, Materialized Views)
-- **Portfolio 4:** Freie Ideen (Visualisierung, Dashboards, zusätzliche Analysen)
+- Tuning (Indizes, Materialized Views, Partitionierung)
+- Analyse/Reporting (z. B. Grafana-Dashboards, Metabase)
+- Weitere Datenquellen oder alternative Schemata auf Basis der JSON-Definition

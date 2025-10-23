@@ -21,10 +21,6 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 
-# ---------------------------------------------------------------------------
-# Dataclasses representing the inferred relational schema
-# ---------------------------------------------------------------------------
-
 
 ScalarType = str  # "boolean" | "integer" | "number" | "datetime" | "text"
 
@@ -72,10 +68,6 @@ class SchemaSpec:
     metadata: MetaData
     root: TableSpec
 
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 
 TYPE_ORDER: List[ScalarType] = [
@@ -139,11 +131,6 @@ def make_identifier(parts: Iterable[str]) -> str:
     prefix = base[: 63 - len(digest) - 1]
     prefix = prefix.rstrip("_") or base[: 63 - len(digest) - 1]
     return f"{prefix}_{digest}"
-
-
-# ---------------------------------------------------------------------------
-# Node structures used during inference
-# ---------------------------------------------------------------------------
 
 
 @dataclass
@@ -225,12 +212,14 @@ def _infer_array(values: List[Any], path: Tuple[str, ...]) -> NodeArray:
         if isinstance(item, dict):
             array_kind = "object"
             obj = _infer_object(item, path)
-            object_node = obj if object_node is None else _merge_objects(object_node, obj)
+            object_node = (
+                obj if object_node is None else _merge_objects(object_node, obj)
+            )
         else:
             array_kind = "scalar"
             typed = _infer_scalar_type(item)
-            scalar_type = typed if scalar_type is None else _merge_scalar_type(
-                scalar_type, typed
+            scalar_type = (
+                typed if scalar_type is None else _merge_scalar_type(scalar_type, typed)
             )
 
     if array_kind == "object" and object_node is not None:
@@ -241,11 +230,6 @@ def _infer_array(values: List[Any], path: Tuple[str, ...]) -> NodeArray:
 
 def _infer_schema(sample: Dict[str, Any], root_name: str) -> NodeObject:
     return _infer_object(sample, (root_name,))
-
-
-# ---------------------------------------------------------------------------
-# SQLAlchemy metadata generation
-# ---------------------------------------------------------------------------
 
 
 def _scalar_type_to_sa(scalar_type: ScalarType):
@@ -316,10 +300,14 @@ def _build_table(
         if arr.kind == "object" and arr.object_node is not None:
             child_spec = _build_table(metadata, arr.object_node, tables, spec, "many")
             if "position" not in child_spec.table.c:
-                child_spec.table.append_column(Column("position", Integer, nullable=False))
+                child_spec.table.append_column(
+                    Column("position", Integer, nullable=False)
+                )
                 child_spec.position_column = True
             spec.relations.append(
-                RelationSpec(name=prop, target=child_spec, relation="many", ordered=True)
+                RelationSpec(
+                    name=prop, target=child_spec, relation="many", ordered=True
+                )
             )
         elif arr.kind == "scalar":
             scalar_type = arr.scalar_type or "text"
@@ -380,7 +368,9 @@ def build_schema_from_sample(
     metadata = MetaData()
     tables: Dict[str, TableSpec] = {}
 
-    root_spec = _build_table(metadata, node, tables, parent=None, relation_to_parent=None)
+    root_spec = _build_table(
+        metadata, node, tables, parent=None, relation_to_parent=None
+    )
 
     register_column = root_spec.scalars.get("registerNumber")
     if register_column and register_column.column_name in root_spec.table.c:
