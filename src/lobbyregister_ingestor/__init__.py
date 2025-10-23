@@ -1,0 +1,1 @@
+"""Lobbyregister ingestion package."""

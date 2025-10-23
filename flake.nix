@@ -1,8 +1,8 @@
 {
-  description = "Development environment for the ADT lobbyregister ingestion stack";
+  description = "Development environment for the Lobbyregister ingestion stack";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -22,11 +22,15 @@
         packages = with pkgs; [
           uv
           python
-          postgresql
           docker-compose
+          gcc.cc
+          black 
+          isort
+          docker-buildx
         ];
 
         shellHook = ''
+          export LD_LIBRARY_PATH="${pkgs.gcc.cc.lib}/lib:''${LD_LIBRARY_PATH:-}"
           export UV_PROJECT_ROOT="$PWD"
           export UV_PYTHON="${python}/bin/python3"
           export UV_NO_SYNC_PROGRESS=1
