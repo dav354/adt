@@ -5,10 +5,10 @@ datasources:
     type: postgres
     access: proxy
     url: db:5432
-    database: $__env{POSTGRES_DB}
     user: $__env{POSTGRES_USER}
     secureJsonData:
       password: $__env{POSTGRES_PASSWORD}
     jsonData:
       postgresVersion: 1500
       sslmode: disable
+      database: $__env{POSTGRES_DB}
