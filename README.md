@@ -1,7 +1,11 @@
 # Lobbyregister Ingestor
 
 Werkzeuge, um das deutsche Lobbyregister automatisiert in ein relationales
-PostgreSQL‑Schema zu überführen und optional zu visualisieren.
+PostgreSQL‑Schema zu überführen und zu visualisieren.
+
+## Datenbankschema
+
+![schema](docs/ERD.png)
 
 ## Voraussetzungen
 
@@ -20,8 +24,11 @@ PostgreSQL‑Schema zu überführen und optional zu visualisieren.
 2. **Environment vorbereiten**
 
    Leg eine `.env` im Projekt an (siehe `.env` für ein Beispiel – Standardwerte
-   sind bereits eingecheckt). Für lokale Tests kann `POSTGRES_HOST=localhost`
-   gesetzt werden, wenn eine eigene DB läuft.
+   sind bereits eingecheckt). Für lokale tests, nur die datenbank starten
+
+   ```bash
+   docker compose up -d db adminer
+   ```
 
 3. **Ingestor ausführen**
 
@@ -38,20 +45,23 @@ PostgreSQL‑Schema zu überführen und optional zu visualisieren.
 
 ## Betrieb über Docker Compose
 
+>![IMPORTANT]
+>
+> Wenn docker compose up ausgeführt wird, started der Ingestor automatisch!
+
 ```bash
 docker compose up --build
 ```
 
 Komponenten:
 
-- `db`: PostgreSQL 18 mit Persistenz (`pg_data` Volume)
+- `db`: PostgreSQL 15 mit Persistenz (`pg_data` Volume)
 - `ingest`: Python-Ingestor, wird beim Start einmal ausgeführt
 - `adminer`: UI unter <http://localhost:8080>
 - `grafana`: Visualisierung unter <http://localhost:3003>
   (Default: `admin` / `admin`, konfigurierbar via `.env`)
 
-**Grafana** provisioniert automatisch eine Datenquelle auf die Postgres-DB. Eigene
-Dashboards können im Volume `grafana_data` persistiert werden.
+**Grafana** provisioniert automatisch eine Datenquelle auf die Postgres-DB sowie das Dashboard.
 
 ## Weiterführende Ideen
 
