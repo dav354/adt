@@ -4,8 +4,13 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-from .common import (d, insert_address, insert_contact, insert_returning,
-                     scalar, upsert_code_label)
+from .common import (
+    insert_address,
+    insert_contact,
+    insert_returning,
+    scalar,
+    upsert_code_label,
+)
 
 
 def load_client_identity(cur, entry_id: int, data: Dict[str, Any]) -> None:
