@@ -1,80 +1,60 @@
 # Lobbyregister Ingestor
 
-Auswertung und Visualisierung der Daten des deutschen Lobbyregisters.
-
-API-Dokumentation: <https://api.lobbyregister.bundestag.de/rest/v2/swagger-ui/>
-
-## Architekturüberblick
-
-- **PostgreSQL 18** (Docker) als Ziel-Datenbank
-- **Python/uv**-basierter Ingestor (`lobbyregister_ingestor`) mit `httpx`, `SQLAlchemy` und `asyncpg`
-- optionale Visualisierung/Analysen (z. B. Grafana) auf dem erzeugten Schema
+Werkzeuge, um das deutsche Lobbyregister automatisiert in ein relationales
+PostgreSQL‑Schema zu überführen und optional zu visualisieren.
 
 ## Voraussetzungen
 
-- Docker & Docker Compose
+- Python 3.12+
+- [uv](https://github.com/astral-sh/uv) (für lokale Entwicklung)
+- Docker / Docker Compose (für die Container-Stacks)
 
-## Setup
+## Entwicklung mit uv
 
-1. **Stack starten und Daten laden**
-
-   ```bash
-   docker compose up --build
-   ```
-
-   - Service `db`: Postgres (Port 5432)
-   - Service `ingest`: ruft das Lobbyregister ab und importiert die Daten in das normalisierte Schema
-   - Service `adminer`: Web-Oberfläche unter <http://localhost:8080>
-
-2. **(Optional) Datenbank inspizieren**
+1. **Abhängigkeiten installieren und Virtualenv erzeugen**
 
    ```bash
-   psql postgresql://lobby:changeme@localhost:5432/lobby
+   uv sync
    ```
 
-   Beispielabfrage:
+2. **Environment vorbereiten**
 
-   ```sql
-   SELECT COUNT(*) FROM register_entries;
+   Leg eine `.env` im Projekt an (siehe `.env` für ein Beispiel – Standardwerte
+   sind bereits eingecheckt). Für lokale Tests kann `POSTGRES_HOST=localhost`
+   gesetzt werden, wenn eine eigene DB läuft.
+
+3. **Ingestor ausführen**
+
+   ```bash
+   uv run python -m lobbyregister_ingestor
    ```
 
-## Ingestor lokal ausführen
+   Wichtige Umgebungsvariablen:
 
-Die Dev-Shell enthält bereits die aktivierte virtuelle Umgebung:
+   - `LOBBY_API_URL`, `LOBBY_API_KEY`
+   - `ENDPOINT_SEARCH`, `ENDPOINT_DETAIL` für alternative API-Routen
+   - `HTTP_CONCURRENCY`, `DB_WORKERS`, `INGEST_QUEUE_SIZE` zur Steuerung der Pipeline
+   - `HTTP_MAX_RETRIES`, `HTTP_BACKOFF_FACTOR`, `HTTP_BACKOFF_MAX` für das Retry-Verhalten
+
+## Betrieb über Docker Compose
 
 ```bash
-uv run ingest-register
+docker compose up --build
 ```
 
-Die `POSTGRES_*`-Variablen können entweder in `.env` gesetzt sein oder ad-hoc beim Aufruf:
+Komponenten:
 
-```bash
-POSTGRES_USER=lobby \
-POSTGRES_PASSWORD=changeme \
-POSTGRES_DB=lobby \
-POSTGRES_HOST=localhost \
-DATABASE_APPLY_SCHEMA=true \
-uv run ingest-register
-```
+- `db`: PostgreSQL 18 mit Persistenz (`pg_data` Volume)
+- `ingest`: Python-Ingestor, wird beim Start einmal ausgeführt
+- `adminer`: UI unter <http://localhost:8080>
+- `grafana`: Visualisierung unter <http://localhost:3003>
+  (Default: `admin` / `admin`, konfigurierbar via `.env`)
 
-Weitere Parameter:
+**Grafana** provisioniert automatisch eine Datenquelle auf die Postgres-DB. Eigene
+Dashboards können im Volume `grafana_data` persistiert werden.
 
-- `LOBBY_API_URL` – Basis-URL der API (Standard: `https://api.lobbyregister.bundestag.de/rest/v2`)
-- `LOBBY_API_TIMEOUT` – Timeout in Sekunden (Standard 30)
-- `LOBBY_API_MAX_CONCURRENCY` – gleichzeitige API-Requests (Standard 5)
-- `DATABASE_CONNECT_TIMEOUT` – Wartezeit beim DB-Verbindungsaufbau (Standard 60)
+## Weiterführende Ideen
 
-Alle Einstellungen beziehen der Ingestor und Docker-Container über Umgebungsvariablen.
-
-## Interna & Datenmodell
-
-- Das relationale Schema wird zur Laufzeit aus dem Beispiel-Datensatz `scheme.json` generiert (`src/lobbyregister_ingestor/schema.py`). Verschachtelte Objekte werden zu separaten Tabellen (1:n), Arrays zu Positionslisten oder Werttabellen.
-- Die Persistenz-Schicht (`persistence.py`) übernimmt Typkonvertierung, setzt Fremdschlüssel sowie `ON CONFLICT DO UPDATE` für natürliche Schlüssel wie `register_number`.
-- Der Ingestor (`ingest.py`) ruft ausschließlich die Detail-Endpoints `/registerentries/{registerNumber}` ab, nutzt dabei asynchrone HTTP-Requests und schreibt die Ergebnisse transaktional in die Datenbank.
-- Fehlerhafte API-Antworten werden mit gekürzter Payload-Vorschau (max. 500 Zeichen) geloggt, um Debugging zu erleichtern.
-
-## Weiterführende Arbeiten
-
-- Tuning (Indizes, Materialized Views, Partitionierung)
-- Analyse/Reporting (Grafana-Dashboards zur viaualisierung mit autoprovisioning der datenquelle und auch dashboards)
-- Weitere Datenquellen oder alternative Schemata auf Basis der JSON-Definition
+- Indizes/Materialized Views für häufige Reports
+- Automatisierte Dashboards in `grafana/provisioning/dashboards`
+- Deduplizierung & Historisierung weiterer Entitäten

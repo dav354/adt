@@ -1,132 +1,244 @@
+"""CLI entry point for the lobbyregister ingestion pipeline."""
+
 from __future__ import annotations
 
 import asyncio
+import itertools
 import logging
-import os
-import sys
+from contextlib import suppress
+from typing import Any, Dict, Optional
 
-import httpx
 from dotenv import load_dotenv
-from rich.console import Console
-from rich.logging import RichHandler
+from psycopg import errors as pg_errors
+from psycopg.rows import dict_row
+from psycopg_pool import ConnectionPool
+from psycopg_pool.errors import PoolClosed
 
-from .api_client import ApiClientError
-from .ingest import run_ingestion
-from .models import (DEFAULT_API_BACKOFF_FACTOR, DEFAULT_API_BACKOFF_MAX,
-                     DEFAULT_API_KEY, DEFAULT_API_MAX_CONCURRENCY,
-                     DEFAULT_API_MAX_RETRIES, DEFAULT_API_TIMEOUT,
-                     DEFAULT_API_URL, DEFAULT_DB_CONNECT_TIMEOUT,
-                     DEFAULT_SCHEMA_RESOURCE, ApiConfig, DatabaseConfig,
-                     IngestionConfig)
-
-console = Console()
-LOGGER = logging.getLogger("lobbyregister.ingestor")
+from .api import ApiError, LobbyregisterClient, ResourceNotFoundError
+from .config import Settings
+from .logging_utils import get_logger, setup_logging
+from .schema_init import apply_schema
+from .writer import ingest_entry
 
 
-def configure_logging() -> None:
-    """Configure root logging to use Rich's styled output."""
-    log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-    handler = RichHandler(
-        console=console, rich_tracebacks=False, show_path=False, markup=False
-    )
-    logging.basicConfig(
-        level=log_level,
-        format="%(message)s",
-        datefmt="[%X]",
-        handlers=[handler],
-        force=True,
-    )
+def register_number_from(
+    detail: Dict[str, Any], fallback: Optional[str] = None
+) -> Optional[str]:
+    return detail.get("registerNumber") or fallback or detail.get("register_number")
 
 
-def load_config() -> IngestionConfig:
-    """Load ingestion configuration from environment variables."""
-    load_dotenv()
+TRANSIENT_DB_ERRORS: tuple[type[BaseException], ...] = (
+    pg_errors.DeadlockDetected,
+    pg_errors.LockNotAvailable,
+    pg_errors.SerializationFailure,
+    pg_errors.TransactionRollback,
+    pg_errors.ConnectionException,
+    pg_errors.AdminShutdown,
+    pg_errors.CrashShutdown,
+    pg_errors.CannotConnectNow,
+    pg_errors.OperatorIntervention,
+    pg_errors.QueryCanceled,
+)
 
-    pg_user = os.getenv("POSTGRES_USER")
-    pg_password = os.getenv("POSTGRES_PASSWORD")
-    pg_db = os.getenv("POSTGRES_DB")
-    pg_host = os.getenv("POSTGRES_HOST", os.getenv("PGHOST", "localhost"))
-    pg_port = os.getenv("POSTGRES_PORT", os.getenv("PGPORT", "5432"))
-    if not (pg_user and pg_password and pg_db):
-        raise RuntimeError(
-            "POSTGRES_USER, POSTGRES_PASSWORD, and POSTGRES_DB environment variables are required"
+
+def _is_transient_db_error(exc: BaseException) -> bool:
+    return isinstance(exc, TRANSIENT_DB_ERRORS)
+
+
+MAX_DB_WRITE_RETRIES = 3
+
+
+async def run_ingestion(settings: Settings, pool: Optional[ConnectionPool]) -> int:
+    logger = get_logger(__name__)
+    counter_lock = asyncio.Lock()
+    queue: asyncio.Queue = asyncio.Queue(maxsize=settings.ingest_queue_size)
+    stop_token = object()
+
+    processed = 0
+    total_hint: Optional[int] = None
+    sequence_counter = itertools.count(1)
+
+    def write_document(document: Dict[str, Any]) -> None:
+        if pool is None:
+            return
+        with pool.connection() as conn:
+            try:
+                with conn.cursor(row_factory=dict_row) as cur:
+                    ingest_entry(cur, document)
+                conn.commit()
+            except Exception:
+                conn.rollback()
+                raise
+
+    async def consumer_worker(worker_id: int) -> None:
+        nonlocal processed, total_hint
+        logger.debug("Consumer %s started.", worker_id)
+        while True:
+            item = await queue.get()
+            if item is stop_token:
+                queue.task_done()
+                logger.debug("Consumer %s stopping.", worker_id)
+                break
+
+            seq, detail = item
+            register_number = register_number_from(detail)
+
+            success = False
+
+            for attempt in range(1, MAX_DB_WRITE_RETRIES + 2):
+                try:
+                    await asyncio.to_thread(write_document, detail)
+                except Exception as exc:
+                    transient = _is_transient_db_error(exc)
+                    if transient and attempt <= MAX_DB_WRITE_RETRIES:
+                        logger.warning(
+                            "Transient DB error for registerNumber=%s (attempt %s/%s): %s",
+                            register_number,
+                            attempt,
+                            MAX_DB_WRITE_RETRIES + 1,
+                            exc.__class__.__name__,
+                        )
+                        continue
+
+                    logger.error(
+                        "Database write failed #%s for registerNumber=%s after %s attempts: %s",
+                        seq,
+                        register_number,
+                        attempt,
+                        exc,
+                        exc_info=True,
+                    )
+                    break
+                else:
+                    success = True
+                    break
+
+            if not success:
+                queue.task_done()
+                continue
+
+            async with counter_lock:
+                potential_total = detail.get("totalResultCount") or detail.get(
+                    "total_count"
+                )
+                if potential_total and not total_hint:
+                    try:
+                        total_hint = int(potential_total)
+                    except (TypeError, ValueError):
+                        pass
+                processed += 1
+                if settings.progress_every and (processed % settings.progress_every == 0):
+                    logger.info(
+                        "Processed %s/%s",
+                        processed,
+                        total_hint if total_hint is not None else "unknown",
+                    )
+            queue.task_done()
+
+    async with LobbyregisterClient(settings) as client:
+        try:
+            stats = await client.get_statistics()
+        except ResourceNotFoundError:
+            logger.warning(
+                "Statistics endpoint not available; proceeding without totals."
+            )
+            stats = {}
+        except ApiError as exc:
+            logger.warning("Failed to read statistics: %s", exc)
+            stats = {}
+
+        total_hint_candidate = (
+            stats.get("totalResultCount")
+            or stats.get("totalCount")
+            or stats.get("registerEntriesTotalCount")
         )
-    database_url = (
-        f"postgresql+asyncpg://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_db}"
-    )
+        try:
+            total_hint = (
+                int(total_hint_candidate)
+                if total_hint_candidate is not None
+                else None
+            )
+        except (TypeError, ValueError):
+            total_hint = None
+        if total_hint:
+            logger.info("Statistics report %s total entries.", total_hint)
 
-    api_url = os.getenv("LOBBY_API_URL", DEFAULT_API_URL)
-    api_timeout = float(os.getenv("LOBBY_API_TIMEOUT", str(DEFAULT_API_TIMEOUT)))
-    api_key = os.getenv("LOBBY_API_KEY", DEFAULT_API_KEY).strip()
-    if not api_key:
-        raise RuntimeError("LOBBY_API_KEY environment variable must not be empty")
+        seen_registers: set[str] = set()
 
-    api_max_retries = int(
-        os.getenv("LOBBY_API_MAX_RETRIES", str(DEFAULT_API_MAX_RETRIES))
-    )
-    api_backoff_factor = float(
-        os.getenv("LOBBY_API_BACKOFF_FACTOR", str(DEFAULT_API_BACKOFF_FACTOR))
-    )
-    api_backoff_max = float(
-        os.getenv("LOBBY_API_BACKOFF_MAX", str(DEFAULT_API_BACKOFF_MAX))
-    )
-    api_max_concurrency = int(
-        os.getenv("LOBBY_API_MAX_CONCURRENCY", str(DEFAULT_API_MAX_CONCURRENCY))
-    )
+        async def producer() -> None:
+            try:
+                async for entry in client.iter_register_entries(settings.query):
+                    register_number = entry.get("registerNumber")
+                    if register_number and register_number in seen_registers:
+                        continue
+                    if register_number:
+                        seen_registers.add(register_number)
+                    seq = next(sequence_counter)
+                    await queue.put((seq, entry))
+            except ResourceNotFoundError:
+                logger.warning(
+                    "Register entries endpoint returned 404; nothing to ingest."
+                )
+            except ApiError as exc:
+                logger.error("Ingestion aborted due to API error: %s", exc)
+                raise
+            finally:
+                for _ in range(settings.ingest_concurrency):
+                    await queue.put(stop_token)
 
-    connect_timeout = float(
-        os.getenv("DATABASE_CONNECT_TIMEOUT", str(DEFAULT_DB_CONNECT_TIMEOUT))
-    )
-    apply_schema = os.getenv("DATABASE_APPLY_SCHEMA", "false").strip().lower() in {
-        "1",
-        "true",
-        "yes",
-        "on",
-    }
-    schema_resource = os.getenv("DATABASE_SCHEMA_RESOURCE", DEFAULT_SCHEMA_RESOURCE)
+        consumers = [
+            asyncio.create_task(consumer_worker(i))
+            for i in range(settings.ingest_concurrency)
+        ]
 
-    return IngestionConfig(
-        api=ApiConfig(
-            url=api_url,
-            timeout=api_timeout,
-            api_key=api_key,
-            max_retries=api_max_retries,
-            backoff_factor=api_backoff_factor,
-            backoff_max=api_backoff_max,
-            max_concurrency=api_max_concurrency,
-        ),
-        database=DatabaseConfig(
-            url=database_url,
-            connect_timeout=connect_timeout,
-            apply_schema=apply_schema,
-            schema_resource=schema_resource,
-        ),
+        producer_task = asyncio.create_task(producer())
+        try:
+            await producer_task
+        except BaseException:
+            await asyncio.gather(*consumers, return_exceptions=True)
+            raise
+        else:
+            await asyncio.gather(*consumers)
+
+    return processed
+
+
+async def async_main() -> int:
+    load_dotenv()
+    settings = Settings.from_env()
+    setup_logging(settings.log_level)
+
+    logger = get_logger(__name__)
+    logger.debug("Using settings: %s", settings)
+
+    if apply_schema(settings.db_dsn):
+        logger.info("Initialized database schema from scheme.sql.")
+
+    pool = ConnectionPool(
+        conninfo=settings.db_dsn,
+        min_size=1,
+        max_size=settings.db_pool_size,
     )
+    pool.wait()
+    try:
+        processed = await run_ingestion(settings, pool)
+    except ApiError as exc:
+        logger.error("Ingestion aborted due to API error: %s", exc)
+        return 1
+    finally:
+        pool.close()
+        with suppress(PoolClosed):
+            pool.wait()
+
+    logger.info("Ingestion complete. Processed %s entries.", processed)
+    return 0
 
 
 def main() -> None:
-    configure_logging()
     try:
-        config = load_config()
-    except Exception as exc:  # pragma: no cover - guard for CLI usage
-        LOGGER.error("Configuration error: %s", exc)
-        print(f"Configuration error: {exc}", file=sys.stderr)
-        sys.exit(1)
-
-    try:
-        asyncio.run(run_ingestion(config, console=console))
-    except ApiClientError as exc:
-        LOGGER.exception("Lobbyregister API error")
-        print(f"API error: {exc}", file=sys.stderr)
-        sys.exit(2)
-    except httpx.RequestError as exc:
-        LOGGER.exception("HTTP error while accessing the Lobbyregister API")
-        print(f"HTTP error: {exc}", file=sys.stderr)
-        sys.exit(2)
-    except Exception as exc:  # pragma: no cover - guard for CLI usage
-        LOGGER.exception("Ingestion failed")
-        print(f"Ingestion failed: {exc}", file=sys.stderr)
-        sys.exit(3)
+        asyncio.run(async_main())
+    except KeyboardInterrupt:
+        logging.getLogger(__name__).warning("Interrupted by user.")
 
 
 if __name__ == "__main__":

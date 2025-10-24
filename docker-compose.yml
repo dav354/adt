@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:18
+    image: postgres:15
     container_name: lobbyregister_db
     env_file:
       - .env
@@ -37,5 +37,20 @@ services:
     ports:
       - "8080:8080"
 
+  grafana:
+    image: grafana/grafana:12.2
+    container_name: lobbyregister_grafana
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "3003:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+
 volumes:
   pg_data:
+  grafana_data:

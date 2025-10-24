@@ -23,14 +23,12 @@
           uv
           python
           docker-compose
-          gcc.cc
-          black 
+          black
           isort
           docker-buildx
         ];
 
         shellHook = ''
-          export LD_LIBRARY_PATH="${pkgs.gcc.cc.lib}/lib:''${LD_LIBRARY_PATH:-}"
           export UV_PROJECT_ROOT="$PWD"
           export UV_PYTHON="${python}/bin/python3"
           export UV_NO_SYNC_PROGRESS=1

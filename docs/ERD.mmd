@@ -1,0 +1,849 @@
+erDiagram
+    account_active_range {
+        BIGINT id PK
+        BIGINT account_id
+        INT ordinal
+        TIMESTAMPTZ from_date
+        TIMESTAMPTZ until_date
+    }
+    account_details {
+        BIGINT id PK
+        BIGINT entry_id
+        BOOLEAN active_lobbyist
+        TIMESTAMPTZ inactive_lobbyist_start
+        TIMESTAMPTZ first_publication_date
+        TIMESTAMPTZ last_update_date
+        BOOLEAN account_has_codex_violations
+    }
+    account_inactive_range {
+        BIGINT id PK
+        BIGINT account_id
+        INT ordinal
+        TIMESTAMPTZ from_date
+        TIMESTAMPTZ until_date
+    }
+    account_register_entry_version {
+        BIGINT id PK
+        BIGINT account_id
+        INT ordinal
+        BIGINT register_entry_id_num
+        TEXT json_detail_url
+        INTEGER version
+        TEXT legislation
+        TIMESTAMPTZ valid_from_date
+        TIMESTAMPTZ valid_until_date
+        TIMESTAMPTZ active_until_date
+        BOOLEAN version_active_lobbyist
+    }
+    activities_interests {
+        BIGINT id PK
+        BIGINT entry_id
+        BIGINT activity_label_id
+        TEXT activity_text
+        TEXT activity_legal_basis
+        TEXT activity_operation_type
+        TEXT activity_description
+    }
+    activity_exercising_type {
+        BIGINT id PK
+        BIGINT activities_id
+        INT ordinal
+        BIGINT label_id
+    }
+    activity_operation_type {
+        TEXT code PK
+    }
+    address {
+        BIGINT id PK
+        TEXT kind
+        TEXT national_additional1
+        TEXT national_additional2
+        TEXT international_additional1
+        TEXT international_additional2
+        TEXT street
+        TEXT street_number
+        TEXT zip_code
+        TEXT city
+        TEXT post_box
+        BIGINT country_id
+    }
+    address_type {
+        TEXT code PK
+    }
+    annual_reports {
+        BIGINT id PK
+        BIGINT entry_id
+        BOOLEAN disclosure_requirements_exist
+        BOOLEAN refuse_annual_fin_stmt
+        TEXT refuse_annual_fin_stmt_reason
+        BOOLEAN annual_report_exists
+        BOOLEAN annual_report_last_fy_exists
+        BOOLEAN annual_report_prev_last_fy_exists
+        BOOLEAN finished_fy_exists
+        DATE last_fy_start
+        DATE last_fy_end
+        DATE prev_last_fy_start
+        DATE prev_last_fy_end
+        TEXT annual_report_pdf_url
+        TEXT missing_annual_report_reason
+        BOOLEAN report_was_published_elsewhere
+        TEXT location_of_report_publication
+    }
+    assigned_person {
+        BIGINT id PK
+        BIGINT contractors_id
+        INT ordinal
+        TEXT academic_degree_before
+        TEXT academic_degree_after
+        TEXT first_name
+        TEXT last_name
+        TEXT artist_name
+        BOOLEAN recent_gov_function_present
+        BIGINT recent_gov_function_id
+    }
+    capital_city_representation {
+        BIGINT id PK
+        BIGINT address_id
+        BIGINT contact_id
+    }
+    client_identity {
+        BIGINT id PK
+        BIGINT entry_id
+        BOOLEAN clients_present
+        INTEGER clients_count
+    }
+    client_org {
+        BIGINT id PK
+        BIGINT client_identity_id
+        INT ordinal
+        TEXT reference_name
+        TEXT reference_details_url
+        TEXT name
+        BIGINT legal_form_type_label_id
+        BIGINT legal_form_label_id
+        TEXT legal_form_text
+        BIGINT address_id
+        BIGINT contact_id
+    }
+    client_org_legal_rep {
+        BIGINT id PK
+        BIGINT client_org_id
+        INT ordinal
+        TEXT academic_degree_before
+        TEXT academic_degree_after
+        TEXT common_first_name
+        TEXT last_name
+        TEXT function_text
+        BIGINT contact_id
+    }
+    client_person {
+        BIGINT id PK
+        BIGINT client_identity_id
+        INT ordinal
+        TEXT reference_name
+        TEXT reference_details_url
+        TEXT academic_degree_before
+        TEXT academic_degree_after
+        TEXT last_name
+        TEXT common_first_name
+    }
+    code_label {
+        BIGINT id PK
+        TEXT domain
+        TEXT code
+        TEXT de
+        TEXT en
+    }
+    code_of_conduct {
+        BIGINT id PK
+        BIGINT entry_id
+        BOOLEAN own_code_of_conduct
+        TEXT code_of_conduct_pdf_url
+    }
+    codex_violation {
+        BIGINT id PK
+        BIGINT account_id
+        INT ordinal
+        TEXT name
+    }
+    contact {
+        BIGINT id PK
+        TEXT phone_number
+    }
+    contact_email {
+        BIGINT id PK
+        BIGINT contact_id
+        INT ordinal
+        TEXT email
+    }
+    contact_website {
+        BIGINT id PK
+        BIGINT contact_id
+        INT ordinal
+        TEXT website
+    }
+    contract_client_org {
+        BIGINT id PK
+        BIGINT clients_id
+        INT ordinal
+        TEXT reference_name
+        TEXT reference_details_url
+        TEXT name
+        BIGINT legal_form_type_label_id
+        BIGINT legal_form_label_id
+        TEXT legal_form_text
+        BIGINT address_id
+        BIGINT contact_id
+    }
+    contract_client_org_financial_resources {
+        BIGINT id PK
+        BIGINT client_org_id
+        BOOLEAN last_fiscal_year_finished
+        DATE last_fiscal_year_start
+        DATE last_fiscal_year_end
+        BIGINT amount_from_eur
+        BIGINT amount_to_eur
+    }
+    contract_client_org_legal_rep {
+        BIGINT id PK
+        BIGINT client_org_id
+        INT ordinal
+        TEXT academic_degree_before
+        TEXT academic_degree_after
+        TEXT first_name
+        TEXT last_name
+        TEXT artist_name
+        TEXT function_text
+    }
+    contract_client_person {
+        BIGINT id PK
+        BIGINT clients_id
+        INT ordinal
+        TEXT reference_name
+        TEXT reference_details_url
+        TEXT academic_degree_before
+        TEXT academic_degree_after
+        TEXT last_name
+        TEXT first_name
+        TEXT artist_name
+        TEXT company_name
+    }
+    contract_client_person_financial_resources {
+        BIGINT id PK
+        BIGINT client_person_id
+        BOOLEAN last_fiscal_year_finished
+        DATE last_fiscal_year_start
+        DATE last_fiscal_year_end
+        BIGINT amount_from_eur
+        BIGINT amount_to_eur
+    }
+    contract_clients {
+        BIGINT id PK
+        BIGINT contract_item_id
+    }
+    contract_contractors {
+        BIGINT id PK
+        BIGINT contract_item_id
+        BOOLEAN lobbying_is_carried_out_by_lobbyist
+    }
+    contract_field_of_interest {
+        BIGINT id PK
+        BIGINT contract_item_id
+        INT ordinal
+        BIGINT label_id
+        TEXT field_of_interest_text
+    }
+    contract_item {
+        BIGINT id PK
+        BIGINT parent_id
+        INT ordinal
+        TEXT description
+    }
+    contract_reg_project_ref {
+        BIGINT id PK
+        BIGINT contract_item_id
+        INT ordinal
+        TEXT regulatory_project_number
+        TEXT regulatory_project_title
+    }
+    contractor_entrusted_person {
+        BIGINT id PK
+        BIGINT contractors_id
+        INT ordinal
+        TEXT academic_degree_before
+        TEXT academic_degree_after
+        TEXT first_name
+        TEXT last_name
+        TEXT artist_name
+        TEXT function_text
+        BOOLEAN recent_gov_function_present
+        BIGINT recent_gov_function_id
+    }
+    contractor_org {
+        BIGINT id PK
+        BIGINT contractors_id
+        INT ordinal
+        TEXT reference_name
+        TEXT reference_details_url
+        TEXT name
+        BIGINT legal_form_type_label_id
+        BIGINT legal_form_label_id
+        TEXT legal_form_text
+        BIGINT address_id
+        BIGINT contact_id
+        BIGINT capital_city_repr_address_id
+        BIGINT capital_city_repr_contact_id
+    }
+    contractor_org_legal_rep {
+        BIGINT id PK
+        BIGINT contractor_org_id
+        INT ordinal
+        TEXT academic_degree_before
+        TEXT academic_degree_after
+        TEXT first_name
+        TEXT last_name
+        TEXT artist_name
+        TEXT function_text
+        BOOLEAN recent_gov_function_present
+        BIGINT recent_gov_function_id
+    }
+    contractor_person {
+        BIGINT id PK
+        BIGINT contractors_id
+        INT ordinal
+        TEXT reference_name
+        TEXT reference_details_url
+        TEXT academic_degree_before
+        TEXT academic_degree_after
+        TEXT last_name
+        TEXT first_name
+        TEXT artist_name
+        TEXT company_name
+        BOOLEAN recent_gov_function_present
+        BIGINT recent_gov_function_id
+    }
+    contracts {
+        BIGINT id PK
+        BIGINT entry_id
+        BOOLEAN contracts_present
+        INTEGER contracts_count
+    }
+    country_label {
+        BIGINT id PK
+        TEXT code
+        TEXT de
+        TEXT en
+    }
+    department {
+        BIGINT id PK
+        TEXT title
+        TEXT short_title
+        TEXT url
+        INTEGER election_period
+    }
+    donator_item {
+        BIGINT id PK
+        BIGINT parent_id
+        INT ordinal
+        TEXT name
+        BIGINT amount_from_eur
+        BIGINT amount_to_eur
+        TEXT description
+    }
+    donators {
+        BIGINT id PK
+        BIGINT entry_id
+        BOOLEAN refuse_info
+        TEXT refuse_reason
+        BOOLEAN info_present
+        BOOLEAN related_year_finished
+        DATE related_year_start
+        DATE related_year_end
+        BOOLEAN fiscal_year_completed
+        TEXT fiscal_year_start_ym
+        TEXT fiscal_year_end_ym
+        BIGINT total_from_eur
+        BIGINT total_to_eur
+    }
+    draft_bill {
+        BIGINT id PK
+        BIGINT project_item_id
+        TEXT title
+        DATE publication_date
+        TEXT custom_title
+        DATE custom_date
+    }
+    draft_bill_ministry {
+        BIGINT id PK
+        BIGINT draft_bill_id
+        INT ordinal
+        BIGINT ministry_id
+        TEXT draft_bill_document_url
+        TEXT draft_bill_project_url
+    }
+    employees_involved {
+        BIGINT id PK
+        BIGINT entry_id
+        BOOLEAN related_year_finished
+        DATE related_year_start
+        DATE related_year_end
+        INTEGER employees_from
+        INTEGER employees_to
+        NUMERIC employee_fte
+    }
+    entrusted_person {
+        BIGINT id PK
+        BIGINT identity_id
+        INT ordinal
+        TEXT academic_degree_before
+        TEXT academic_degree_after
+        TEXT last_name
+        TEXT first_name
+        TEXT artist_name
+        BOOLEAN recent_gov_function_present
+        BIGINT recent_gov_function_id
+    }
+    field_of_interest {
+        BIGINT id PK
+        BIGINT activities_id
+        INT ordinal
+        BIGINT label_id
+        TEXT field_of_interest_text
+    }
+    financial_expenses {
+        BIGINT id PK
+        BIGINT entry_id
+        BOOLEAN refuse_info
+        TEXT refuse_reason
+        BOOLEAN related_year_finished
+        DATE related_year_start
+        DATE related_year_end
+        BOOLEAN fiscal_year_completed
+        TEXT fiscal_year_start_ym
+        TEXT fiscal_year_end_ym
+        BIGINT expenses_from_eur
+        BIGINT expenses_to_eur
+    }
+    gov_function_type {
+        BIGINT id PK
+        BIGINT label_id
+    }
+    individual_contributor {
+        BIGINT id PK
+        BIGINT fees_id
+        INT ordinal
+        TEXT name
+    }
+    leading_ministry {
+        BIGINT id PK
+        TEXT title
+        TEXT short_title
+        TEXT url
+        INTEGER election_period
+    }
+    legal_representative {
+        BIGINT id PK
+        BIGINT identity_id
+        INT ordinal
+        TEXT academic_degree_before
+        TEXT academic_degree_after
+        TEXT last_name
+        TEXT first_name
+        TEXT common_first_name
+        TEXT artist_name
+        TEXT function_text
+        BIGINT recent_gov_function_id
+        BIGINT contact_id
+    }
+    legislation_type {
+        TEXT code PK
+    }
+    legislative_project {
+        BIGINT id PK
+        BIGINT activities_id
+        INT ordinal
+        TEXT name
+        TEXT printing_number
+        TEXT document_title
+        TEXT document_url
+    }
+    lobbyist_identity {
+        BIGINT id PK
+        BIGINT entry_id
+        TEXT identity
+        BIGINT natural_person_type_label_id
+        TEXT academic_degree_before
+        TEXT academic_degree_after
+        TEXT last_name
+        TEXT first_name
+        TEXT common_first_name
+        TEXT artist_name
+        TEXT company_name
+        BOOLEAN recent_gov_function_present
+        BIGINT recent_gov_function_id
+        BIGINT address_id
+        BIGINT contact_id
+        BIGINT legal_form_type_label_id
+        BIGINT legal_form_label_id
+        TEXT legal_form_text
+        BIGINT capital_city_repr_id
+        BOOLEAN entrusted_persons_present
+        TEXT name_text
+        BOOLEAN members_present
+        BOOLEAN memberships_present
+    }
+    lobbyist_identity_type {
+        TEXT code PK
+    }
+    main_funding_source_item {
+        BIGINT id PK
+        BIGINT parent_id
+        INT ordinal
+        BIGINT label_id
+    }
+    main_funding_sources {
+        BIGINT id PK
+        BIGINT entry_id
+        BOOLEAN related_year_finished
+        DATE related_year_start
+        DATE related_year_end
+    }
+    members_count {
+        BIGINT id PK
+        BIGINT identity_id
+        INTEGER natural_persons
+        INTEGER organizations
+        INTEGER total_count
+        DATE date_count
+    }
+    membership {
+        BIGINT id PK
+        BIGINT identity_id
+        INT ordinal
+        TEXT membership
+    }
+    membership_fees {
+        BIGINT id PK
+        BIGINT entry_id
+        BOOLEAN related_year_finished
+        DATE related_year_start
+        DATE related_year_end
+        BIGINT total_from_eur
+        BIGINT total_to_eur
+        BOOLEAN individual_contributors_present
+    }
+    migrated_draft_bill {
+        BIGINT id PK
+        BIGINT printed_matter_id
+        TEXT title
+        DATE publication_date
+    }
+    migrated_draft_bill_ministry {
+        BIGINT id PK
+        BIGINT migrated_db_id
+        INT ordinal
+        BIGINT ministry_id
+        TEXT draft_bill_document_url
+        TEXT draft_bill_project_url
+    }
+    named_employee {
+        BIGINT id PK
+        BIGINT identity_id
+        INT ordinal
+        TEXT academic_degree_before
+        TEXT academic_degree_after
+        TEXT last_name
+        TEXT common_first_name
+    }
+    public_allowance_item {
+        BIGINT id PK
+        BIGINT parent_id
+        INT ordinal
+        TEXT name
+        BIGINT type_label_id
+        BIGINT country_id
+        TEXT location
+        BIGINT amount_from_eur
+        BIGINT amount_to_eur
+        TEXT description
+    }
+    public_allowances {
+        BIGINT id PK
+        BIGINT entry_id
+        BOOLEAN refuse_info
+        TEXT refuse_reason
+        BOOLEAN allowances_present
+        BOOLEAN related_year_finished
+        DATE related_year_start
+        DATE related_year_end
+        BOOLEAN fiscal_year_completed
+        TEXT fiscal_year_start_ym
+        TEXT fiscal_year_end_ym
+    }
+    recent_gov_federal_admin {
+        BIGINT id PK
+        BIGINT recent_gov_fn_id
+        TEXT supreme_federal_authority
+        TEXT supreme_federal_authority_short
+        INTEGER supreme_federal_authority_elect_prd
+        TEXT function_text
+    }
+    recent_gov_federal_gov {
+        BIGINT id PK
+        BIGINT recent_gov_fn_id
+        BIGINT function_label_id
+        BIGINT department_id
+    }
+    recent_gov_house_reps {
+        BIGINT id PK
+        BIGINT recent_gov_fn_id
+        BIGINT function_label_id
+        TEXT function_position
+    }
+    recent_government_function {
+        BIGINT id PK
+        BOOLEAN ended
+        TEXT end_year_month
+        BIGINT type_label_id
+    }
+    reg_project_affected_law {
+        BIGINT id PK
+        BIGINT project_item_id
+        INT ordinal
+        TEXT title
+        TEXT short_title
+        TEXT url
+    }
+    reg_project_field_of_interest {
+        BIGINT id PK
+        BIGINT project_item_id
+        INT ordinal
+        BIGINT label_id
+        TEXT field_of_interest_text
+    }
+    reg_project_printed_matter {
+        BIGINT id PK
+        BIGINT project_item_id
+        INT ordinal
+        TEXT title
+        TEXT printing_number
+        TEXT issuer
+        TEXT document_url
+        TEXT project_url
+    }
+    reg_project_printed_matter_ministry {
+        BIGINT id PK
+        BIGINT printed_matter_id
+        INT ordinal
+        BIGINT ministry_id
+    }
+    register_entry {
+        BIGINT id PK
+        TEXT schema_uri
+        TEXT source
+        TEXT source_url
+        TIMESTAMPTZ source_date
+        TEXT json_doc_url
+        TEXT register_number
+    }
+    register_entry_annual_update {
+        BIGINT id PK
+        BIGINT details_id
+        BOOLEAN update_missing
+        TIMESTAMPTZ last_annual_update
+    }
+    register_entry_details {
+        BIGINT id PK
+        BIGINT entry_id
+        BIGINT register_entry_id_num
+        TEXT legislation
+        INTEGER version
+        TEXT details_page_url
+        TEXT pdf_url
+        TIMESTAMPTZ valid_from_date
+        TIMESTAMPTZ valid_until_date
+        BOOLEAN refused_anything
+    }
+    register_entry_fiscal_year_update {
+        BIGINT id PK
+        BIGINT details_id
+        BOOLEAN update_missing
+        TIMESTAMPTZ last_fiscal_year_update
+    }
+    regulatory_project_item {
+        BIGINT id PK
+        BIGINT parent_id
+        INT ordinal
+        TEXT regulatory_project_number
+        TEXT title
+        BOOLEAN printed_matters_present
+        BOOLEAN draft_bill_present
+        TEXT description
+    }
+    regulatory_projects {
+        BIGINT id PK
+        BIGINT entry_id
+        BOOLEAN projects_present
+        INTEGER projects_count
+    }
+    statement_item {
+        BIGINT id PK
+        BIGINT parent_id
+        INT ordinal
+        TEXT statement_number
+        TEXT regulatory_project_number
+        TEXT regulatory_project_title
+        TEXT pdf_url
+        INTEGER pdf_page_count
+        TEXT copyright_acknowledgement
+        TEXT text_body
+        DATE sending_date
+    }
+    statement_recipient_federal_gov {
+        BIGINT id PK
+        BIGINT group_id
+        INT ordinal
+        BIGINT department_id
+    }
+    statement_recipient_group {
+        BIGINT id PK
+        BIGINT statement_item_id
+        INT ordinal
+    }
+    statement_recipient_parliament {
+        BIGINT id PK
+        BIGINT group_id
+        INT ordinal
+        BIGINT label_id
+    }
+    statements {
+        BIGINT id PK
+        BIGINT entry_id
+        BOOLEAN statements_present
+        INTEGER statements_count
+    }
+    address_type ||--o{ address : "kind"
+    country_label ||--o{ address : "country_id"
+    contact ||--|{ contact_email : "contact_id"
+    contact ||--|{ contact_website : "contact_id"
+    code_label ||--|{ gov_function_type : "label_id"
+    code_label ||--|{ recent_government_function : "type_label_id"
+    recent_government_function ||--|{ recent_gov_house_reps : "recent_gov_fn_id"
+    code_label ||--|{ recent_gov_house_reps : "function_label_id"
+    recent_government_function ||--|{ recent_gov_federal_gov : "recent_gov_fn_id"
+    code_label ||--|{ recent_gov_federal_gov : "function_label_id"
+    department ||--o{ recent_gov_federal_gov : "department_id"
+    recent_government_function ||--|{ recent_gov_federal_admin : "recent_gov_fn_id"
+    register_entry ||--|{ account_details : "entry_id"
+    account_details ||--|{ account_active_range : "account_id"
+    account_details ||--|{ account_inactive_range : "account_id"
+    account_details ||--|{ account_register_entry_version : "account_id"
+    legislation_type ||--|{ account_register_entry_version : "legislation"
+    account_details ||--|{ codex_violation : "account_id"
+    register_entry ||--|{ register_entry_details : "entry_id"
+    legislation_type ||--|{ register_entry_details : "legislation"
+    register_entry_details ||--|{ register_entry_annual_update : "details_id"
+    register_entry_details ||--|{ register_entry_fiscal_year_update : "details_id"
+    register_entry ||--|{ lobbyist_identity : "entry_id"
+    lobbyist_identity_type ||--o{ lobbyist_identity : "identity"
+    code_label ||--o{ lobbyist_identity : "natural_person_type_label_id"
+    recent_government_function ||--o{ lobbyist_identity : "recent_gov_function_id"
+    address ||--o{ lobbyist_identity : "address_id"
+    contact ||--o{ lobbyist_identity : "contact_id"
+    code_label ||--o{ lobbyist_identity : "legal_form_type_label_id"
+    code_label ||--o{ lobbyist_identity : "legal_form_label_id"
+    address ||--o{ capital_city_representation : "address_id"
+    contact ||--o{ capital_city_representation : "contact_id"
+    lobbyist_identity ||--|{ entrusted_person : "identity_id"
+    recent_government_function ||--o{ entrusted_person : "recent_gov_function_id"
+    lobbyist_identity ||--|{ legal_representative : "identity_id"
+    recent_government_function ||--o{ legal_representative : "recent_gov_function_id"
+    contact ||--o{ legal_representative : "contact_id"
+    lobbyist_identity ||--|{ named_employee : "identity_id"
+    lobbyist_identity ||--|{ members_count : "identity_id"
+    lobbyist_identity ||--|{ membership : "identity_id"
+    register_entry ||--|{ activities_interests : "entry_id"
+    code_label ||--o{ activities_interests : "activity_label_id"
+    activity_operation_type ||--o{ activities_interests : "activity_operation_type"
+    activities_interests ||--|{ activity_exercising_type : "activities_id"
+    code_label ||--|{ activity_exercising_type : "label_id"
+    activities_interests ||--|{ field_of_interest : "activities_id"
+    code_label ||--o{ field_of_interest : "label_id"
+    activities_interests ||--|{ legislative_project : "activities_id"
+    register_entry ||--|{ client_identity : "entry_id"
+    client_identity ||--|{ client_org : "client_identity_id"
+    code_label ||--o{ client_org : "legal_form_type_label_id"
+    code_label ||--o{ client_org : "legal_form_label_id"
+    address ||--o{ client_org : "address_id"
+    contact ||--o{ client_org : "contact_id"
+    client_org ||--|{ client_org_legal_rep : "client_org_id"
+    contact ||--o{ client_org_legal_rep : "contact_id"
+    client_identity ||--|{ client_person : "client_identity_id"
+    register_entry ||--|{ employees_involved : "entry_id"
+    register_entry ||--|{ financial_expenses : "entry_id"
+    register_entry ||--|{ main_funding_sources : "entry_id"
+    main_funding_sources ||--|{ main_funding_source_item : "parent_id"
+    code_label ||--o{ main_funding_source_item : "label_id"
+    register_entry ||--|{ public_allowances : "entry_id"
+    public_allowances ||--|{ public_allowance_item : "parent_id"
+    code_label ||--o{ public_allowance_item : "type_label_id"
+    country_label ||--o{ public_allowance_item : "country_id"
+    register_entry ||--|{ donators : "entry_id"
+    donators ||--|{ donator_item : "parent_id"
+    register_entry ||--|{ membership_fees : "entry_id"
+    membership_fees ||--|{ individual_contributor : "fees_id"
+    register_entry ||--|{ annual_reports : "entry_id"
+    register_entry ||--|{ regulatory_projects : "entry_id"
+    regulatory_projects ||--|{ regulatory_project_item : "parent_id"
+    regulatory_project_item ||--|{ reg_project_printed_matter : "project_item_id"
+    reg_project_printed_matter ||--|{ reg_project_printed_matter_ministry : "printed_matter_id"
+    leading_ministry ||--|{ reg_project_printed_matter_ministry : "ministry_id"
+    reg_project_printed_matter ||--|{ migrated_draft_bill : "printed_matter_id"
+    migrated_draft_bill ||--|{ migrated_draft_bill_ministry : "migrated_db_id"
+    leading_ministry ||--|{ migrated_draft_bill_ministry : "ministry_id"
+    regulatory_project_item ||--|{ draft_bill : "project_item_id"
+    draft_bill ||--|{ draft_bill_ministry : "draft_bill_id"
+    leading_ministry ||--|{ draft_bill_ministry : "ministry_id"
+    regulatory_project_item ||--|{ reg_project_affected_law : "project_item_id"
+    regulatory_project_item ||--|{ reg_project_field_of_interest : "project_item_id"
+    code_label ||--o{ reg_project_field_of_interest : "label_id"
+    register_entry ||--|{ statements : "entry_id"
+    statements ||--|{ statement_item : "parent_id"
+    statement_item ||--|{ statement_recipient_group : "statement_item_id"
+    statement_recipient_group ||--|{ statement_recipient_parliament : "group_id"
+    code_label ||--|{ statement_recipient_parliament : "label_id"
+    statement_recipient_group ||--|{ statement_recipient_federal_gov : "group_id"
+    department ||--|{ statement_recipient_federal_gov : "department_id"
+    register_entry ||--|{ contracts : "entry_id"
+    contracts ||--|{ contract_item : "parent_id"
+    contract_item ||--|{ contract_field_of_interest : "contract_item_id"
+    code_label ||--o{ contract_field_of_interest : "label_id"
+    contract_item ||--|{ contract_reg_project_ref : "contract_item_id"
+    contract_item ||--|{ contract_clients : "contract_item_id"
+    contract_clients ||--|{ contract_client_org : "clients_id"
+    code_label ||--o{ contract_client_org : "legal_form_type_label_id"
+    code_label ||--o{ contract_client_org : "legal_form_label_id"
+    address ||--o{ contract_client_org : "address_id"
+    contact ||--o{ contract_client_org : "contact_id"
+    contract_client_org ||--|{ contract_client_org_legal_rep : "client_org_id"
+    contract_client_org ||--|{ contract_client_org_financial_resources : "client_org_id"
+    contract_clients ||--|{ contract_client_person : "clients_id"
+    contract_client_person ||--|{ contract_client_person_financial_resources : "client_person_id"
+    contract_item ||--|{ contract_contractors : "contract_item_id"
+    contract_contractors ||--|{ contractor_entrusted_person : "contractors_id"
+    recent_government_function ||--o{ contractor_entrusted_person : "recent_gov_function_id"
+    contract_contractors ||--|{ contractor_org : "contractors_id"
+    code_label ||--o{ contractor_org : "legal_form_type_label_id"
+    code_label ||--o{ contractor_org : "legal_form_label_id"
+    address ||--o{ contractor_org : "address_id"
+    contact ||--o{ contractor_org : "contact_id"
+    address ||--o{ contractor_org : "capital_city_repr_address_id"
+    contact ||--o{ contractor_org : "capital_city_repr_contact_id"
+    contractor_org ||--|{ contractor_org_legal_rep : "contractor_org_id"
+    recent_government_function ||--o{ contractor_org_legal_rep : "recent_gov_function_id"
+    contract_contractors ||--|{ assigned_person : "contractors_id"
+    recent_government_function ||--o{ assigned_person : "recent_gov_function_id"
+    contract_contractors ||--|{ contractor_person : "contractors_id"
+    recent_government_function ||--o{ contractor_person : "recent_gov_function_id"
+    register_entry ||--|{ code_of_conduct : "entry_id"
+    capital_city_representation ||--o{ lobbyist_identity : "capital_city_repr_id"
