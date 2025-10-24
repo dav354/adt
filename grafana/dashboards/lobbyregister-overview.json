@@ -1,0 +1,617 @@
+{
+  "id": null,
+  "uid": "lobbyregister-overview",
+  "title": "Lobbyregister Overview",
+  "editable": true,
+  "refresh": "30m",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "",
+  "time": {
+    "from": "now-5y",
+    "to": "now"
+  },
+  "timepicker": {},
+  "annotations": {
+    "list": []
+  },
+  "templating": {
+    "list": []
+  },
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Total Register Entries",
+      "description": "Count of register entries ingested from the Bundestag lobby register.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "lobbyregister"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "lobbyregister"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*)::double precision AS value FROM register_entry;",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "",
+          "timeColumn": "",
+          "where": []
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Active Lobbying Accounts",
+      "description": "Number of accounts currently marked as active lobbyists.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "lobbyregister"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "lobbyregister"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*)::double precision AS value FROM account_details WHERE active_lobbyist;",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "",
+          "timeColumn": "",
+          "where": []
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Codex Violations Flagged",
+      "description": "Accounts that report violations of the lobby register's code of conduct.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "lobbyregister"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "lobbyregister"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*)::double precision AS value FROM account_details WHERE account_has_codex_violations;",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "",
+          "timeColumn": "",
+          "where": []
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "piechart",
+      "title": "Lobbyist Identity Type",
+      "description": "Distribution of lobbyist identities (natural persons vs organisations).",
+      "datasource": {
+        "type": "postgres",
+        "uid": "lobbyregister"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayLabels": [
+          "name",
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "lobbyregister"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "identity_type",
+          "rawQuery": true,
+          "rawSql": "SELECT COALESCE(li.identity, 'UNKNOWN') AS identity_type,\n       count(*)::double precision AS lobbyists\nFROM lobbyist_identity li\nGROUP BY identity_type\nORDER BY lobbyists DESC;",
+          "select": [
+            [
+              {
+                "params": [
+                  "lobbyists"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "",
+          "timeColumn": "",
+          "where": []
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "New Accounts by Month",
+      "description": "First publication dates for lobbyist accounts grouped by month.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "lobbyregister"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "custom": {
+            "lineInterpolation": "smooth",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "showPoints": "never"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "lobbyregister"
+          },
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__timeGroupAlias(first_publication_date, '1M'),\n  count(*)::double precision AS accounts\nFROM account_details\nGROUP BY 1\nORDER BY 1;",
+          "select": [
+            [
+              {
+                "params": [
+                  "accounts"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": []
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "barchart",
+      "title": "Top Fields of Interest",
+      "description": "Most frequently referenced policy fields across registered activities.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "lobbyregister"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "custom": {
+            "axisPlacement": "auto",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        },
+        "xField": "mentions",
+        "yField": "field_label"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "lobbyregister"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "field_label",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  COALESCE(cl.de, cl.en, foi.field_of_interest_text, 'Unspecified') AS field_label,\n  count(DISTINCT ai.entry_id)::double precision AS registrations,\n  count(*)::double precision AS mentions\nFROM field_of_interest foi\nJOIN activities_interests ai ON ai.id = foi.activities_id\nLEFT JOIN code_label cl ON cl.id = foi.label_id\nGROUP BY field_label\nORDER BY mentions DESC\nLIMIT 10;",
+          "select": [
+            [
+              {
+                "params": [
+                  "mentions"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "",
+          "timeColumn": "",
+          "where": []
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Client Landscape",
+      "description": "Quick view of client coverage in the register.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "lobbyregister"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "enablePagination": true,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "lobbyregister"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT metric,\n       value\nFROM (\n  SELECT 'Entries with listed clients' AS metric,\n         count(*)::double precision AS value\n  FROM client_identity\n  WHERE clients_present\n  UNION ALL\n  SELECT 'Total client organisations' AS metric,\n         count(*)::double precision AS value\n  FROM client_org\n  UNION ALL\n  SELECT 'Total client persons' AS metric,\n         count(*)::double precision AS value\n  FROM client_person\n  UNION ALL\n  SELECT 'Average clients per entry' AS metric,\n         AVG(COALESCE(clients_count, 0))::double precision AS value\n  FROM client_identity\n) metrics\nORDER BY metric;",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "",
+          "timeColumn": "",
+          "where": []
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "barchart",
+      "title": "Statements Submitted per Year",
+      "description": "Number of formal statements submitted by registered lobbyists, grouped by calendar year.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "lobbyregister"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 23
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "vertical",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        },
+        "xField": "year",
+        "yField": "statements"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "lobbyregister"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "year",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  EXTRACT(YEAR FROM sending_date)::int AS year,\n  count(*)::double precision AS statements\nFROM statement_item\nWHERE sending_date IS NOT NULL\nGROUP BY year\nORDER BY year;",
+          "select": [
+            [
+              {
+                "params": [
+                  "statements"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "",
+          "timeColumn": "",
+          "where": []
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Largest Declared Lobbying Expenses",
+      "description": "Top entries by declared annual lobbying spend (upper range).",
+      "datasource": {
+        "type": "postgres",
+        "uid": "lobbyregister"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 23
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "custom": {
+            "align": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "enablePagination": true,
+          "fields": "",
+          "reducer": []
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "lobbyregister"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  re.register_number,\n  fe.related_year_start,\n  fe.related_year_end,\n  COALESCE(fe.expenses_from_eur, 0) AS expenses_from_eur,\n  COALESCE(fe.expenses_to_eur, fe.expenses_from_eur, 0) AS expenses_to_eur,\n  ((COALESCE(fe.expenses_from_eur, fe.expenses_to_eur, 0) + COALESCE(fe.expenses_to_eur, fe.expenses_from_eur, 0)) / 2.0)::double precision AS midpoint_estimate_eur\nFROM financial_expenses fe\nJOIN register_entry re ON re.id = fe.entry_id\nWHERE fe.expenses_from_eur IS NOT NULL OR fe.expenses_to_eur IS NOT NULL\nORDER BY COALESCE(fe.expenses_to_eur, fe.expenses_from_eur, 0) DESC\nLIMIT 20;",
+          "select": [
+            [
+              {
+                "params": [
+                  "expenses_to_eur"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "",
+          "timeColumn": "",
+          "where": []
+        }
+      ]
+    }
+  ]
+}
