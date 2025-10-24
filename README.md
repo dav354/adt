@@ -45,7 +45,7 @@ PostgreSQL‑Schema zu überführen und zu visualisieren.
 
 ## Betrieb über Docker Compose
 
->![IMPORTANT]
+> [!CAUTION]
 >
 > Wenn docker compose up ausgeführt wird, started der Ingestor automatisch!
 
