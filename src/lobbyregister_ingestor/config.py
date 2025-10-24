@@ -26,10 +26,7 @@ class Settings:
     db_dsn: str
     api_base: str
     api_key: Optional[str]
-    search_path: str
-    detail_path: str
     query: Optional[str]
-    page_size: int
     http_concurrency: int
     ingest_concurrency: int
     db_pool_size: int
@@ -62,12 +59,7 @@ class Settings:
             db_dsn=pg_dsn,
             api_base=api_base,
             api_key=os.getenv("LOBBY_API_KEY") or None,
-            # Search + detail path are intentionally lstrip-ed so callers can pass either
-            # "search/detail" or "/search/detail" without breaking URL composition.
-            search_path=os.getenv("ENDPOINT_SEARCH", "search/detail").lstrip("/"),
-            detail_path=os.getenv("ENDPOINT_DETAIL", "register-entry/{id}").lstrip("/"),
             query=os.getenv("LOBBY_QUERY") or None,
-            page_size=_int(os.getenv("PAGE_SIZE"), 100),
             http_concurrency=max(1, _int(os.getenv("HTTP_CONCURRENCY"), 8)),
             ingest_concurrency=max(1, _int(os.getenv("DB_WORKERS"), 4)),
             db_pool_size=max(1, _int(os.getenv("DB_POOL_SIZE"), 4)),

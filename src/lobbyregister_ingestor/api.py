@@ -36,7 +36,14 @@ class LobbyregisterClient:
             self._headers["Authorization"] = f"ApiKey {settings.api_key}"
 
     async def __aenter__(self) -> "LobbyregisterClient":
-        self._client = httpx.AsyncClient(timeout=self._settings.http_timeout)
+        limits = httpx.Limits(
+            max_connections=self._settings.http_concurrency,
+            max_keepalive_connections=self._settings.http_concurrency,
+        )
+        self._client = httpx.AsyncClient(
+            timeout=self._settings.http_timeout,
+            limits=limits,
+        )
         return self
 
     async def __aexit__(self, exc_type, exc, tb) -> None:
