@@ -2,3 +2,13 @@
 .venv
 .direnv
 .uv-cache
+
+# Latex stuff
+**.aux
+**.bcf
+**.fdb*
+**.fls
+**.log
+**.run.xml
+**.synctex*
+**.toc
