@@ -1,0 +1,14 @@
+\begin{tikzpicture}[
+  node distance=1.6cm,
+  box/.style={rectangle, rounded corners, draw, thick, minimum width=3.2cm, minimum height=1.1cm, align=center},
+  arrow/.style={-Latex, thick}
+]
+  \node[box, fill=gray!10] (fetch) {Producer\\\texttt{iter\_register\_entries}};
+  \node[box, fill=blue!8, right=3.2cm of fetch] (queue) {\texttt{asyncio.Queue}\\(\texttt{INGEST\_QUEUE\_SIZE})};
+  \node[box, fill=orange!15, right=3.2cm of queue] (cons) {\texttt{consumer\_worker}\\(\texttt{DB\_WORKERS} parallel)};
+  \node[box, fill=yellow!15, below=1.6cm of cons] (db) {PostgreSQL\\\texttt{psycopg\_pool}};
+
+  \draw[arrow] (fetch) -- node[above]{Detail-JSON} (queue);
+  \draw[arrow] (queue) -- node[above]{(seq, payload)} (cons);
+  \draw[arrow] (cons) -- node[right]{SQL Inserts/Upserts} (db);
+\end{tikzpicture}

@@ -1,0 +1,16 @@
+\begin{tikzpicture}[
+  node distance=1.8cm,
+  box/.style={rectangle, rounded corners, draw, thick, minimum width=3.2cm, minimum height=1.2cm, align=center},
+  arrow/.style={-Latex, thick}
+]
+  \node[box, fill=gray!10] (api) {Bundestag\\Lobbyregister API};
+  \node[box, fill=blue!10, right=3.6cm of api] (ingest) {Ingestor\\(Python, \texttt{httpx} \&\\\texttt{psycopg})};
+  \node[box, fill=orange!15, below=1.6cm of ingest] (db) {PostgreSQL 15\\Schema \& Daten};
+  \node[box, fill=green!10, right=3.6cm of db] (grafana) {Grafana\\Dashboard};
+  \node[box, fill=yellow!15, above=1.6cm of grafana] (adminer) {Adminer\\SQL UI};
+
+  \draw[arrow] (api) -- node[above]{HTTPS, JSON} (ingest);
+  \draw[arrow] (ingest) -- node[right]{psycopg} (db);
+  \draw[arrow] (db) -- (grafana);
+  \draw[arrow] (db) -- (adminer);
+\end{tikzpicture}

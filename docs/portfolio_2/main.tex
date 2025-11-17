@@ -1,0 +1,445 @@
+\documentclass[12pt,oneside,a4paper,parskip=half]{scrbook}
+
+% Sprachanpassung und Grundkonfiguration
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}      % bessere Umbrüche
+\usepackage{csquotes}
+\usepackage{hyphenat}       % Zeilenumbruch in \texttt
+\usepackage{newunicodechar}
+\newunicodechar{ }{\,}      % geschütztes schmales Leerzeichen
+
+% Seitenlayout
+\usepackage[a4paper,left=20mm,right=20mm,top=20mm,bottom=25mm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\sloppy                     % großzügigere Zeilenumbrüche (vermeidet Overfull hboxes)
+
+% Mathematik & Symbole
+\usepackage{amsmath,amsfonts,amssymb}
+
+% Tabellen & Grafiken
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{pdflscape}
+\usepackage{placeins}
+\graphicspath{{./}{./figures/}}
+
+% Aufzählungen
+\usepackage{enumitem}
+
+% Code-Listings
+\usepackage{xcolor}
+\usepackage{listings}
+\colorlet{punct}{red!60!black}
+\definecolor{background}{HTML}{EEEEEE}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{pred}{rgb}{0.9,0,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstdefinestyle{code}{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  showstringspaces=false,
+  numbers=left,
+  numberstyle=\scriptsize,
+  stepnumber=1,
+  numbersep=8pt,
+  backgroundcolor=\color{background},
+  commentstyle=\color{pgrey}\itshape,
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pred},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=2,
+  keepspaces=true,
+  linewidth=\textwidth
+}
+
+\lstdefinelanguage{json}{
+  basicstyle=\normalfont\ttfamily,
+  numbers=left,
+  numberstyle=\scriptsize,
+  stepnumber=1,
+  numbersep=8pt,
+  showstringspaces=false,
+  breaklines=true,
+  backgroundcolor=\color{background},
+  literate=
+   *{0}{{{\color{numb}0}}}{1}
+    {1}{{{\color{numb}1}}}{1}
+    {2}{{{\color{numb}2}}}{1}
+    {3}{{{\color{numb}3}}}{1}
+    {4}{{{\color{numb}4}}}{1}
+    {5}{{{\color{numb}5}}}{1}
+    {6}{{{\color{numb}6}}}{1}
+    {7}{{{\color{numb}7}}}{1}
+    {8}{{{\color{numb}8}}}{1}
+    {9}{{{\color{numb}9}}}{1}
+    {:}{{{\color{punct}{:}}}}{1}
+    {,}{{{\color{punct}{,}}}}{1}
+    {\{}{{{\color{delim}{\{}}}}{1}
+    {\}}{{{\color{delim}{\}}}}}{1}
+    {[}{{{\color{delim}{[}}}}{1}
+    {]}{{{\color{delim}{]}}}}{1},
+}
+
+\lstdefinelanguage{xml}{
+  morestring=",
+  morestring={>}{<},
+  morecomment={<?}{?>},
+  stringstyle=\color{black},
+  identifierstyle=\color{pblue},
+  keywordstyle=\color{pgreen},
+  morekeywords={xmlns,version,type}
+}
+
+\lstdefinelanguage{Java}{
+  showspaces=false,
+  showtabs=false,
+  tabsize=4,
+  breaklines=true,
+  keepspaces=true,
+  showstringspaces=false,
+  commentstyle=\color{pgrey}\itshape,
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pred},
+  basicstyle=\ttfamily
+}
+
+\lstset{style=code}
+
+%%%%%%%%%%%%%%%%%%%
+%% definitions
+%%%%%%%%%%%%%%%%%%%
+\def\BaAuthor{Noah Raupold (5022097),\\ David Gläsle (5022114)}
+\def\BaAuthorPDF{Noah Raupold (5022097), David Gläsle (5022114)}
+\def\BaAuthorStudyProgram{Informatik}
+\def\BaType{ADT Portfolio}
+\def\BaTitle{Implementierung des Lobbyregisters}
+\def\BaDeadline{\today}
+
+\def\iswithfullname{1}
+\ifdefined\iswithfullname
+  \def\ShowBaAuthor{\BaAuthor}
+\else
+  \def\ShowBaAuthor{N.~N.}
+\fi
+
+\newcommand{\TitleGraphic}{%
+  \IfFileExists{Logo.png}{%
+    \includegraphics[width=0.5\textwidth]{Logo.png}%
+  }{%
+    \fbox{\parbox[c][3cm][c]{0.5\textwidth}{Logo.png fehlt}}%
+  }%
+}
+
+\newcommand*{\forcetwosidetitle}{
+  \begingroup
+  \cleardoubleoddpage
+  \KOMAoptions{titlepage=true}%
+  \csname @twosidetrue\endcsname
+  \maketitle
+  \endgroup
+}
+
+\newcommand{\TOCbreak}{\\}
+
+% Bibliografie (Biber)
+\usepackage[backend=biber,style=numeric]{biblatex}
+\IfFileExists{literatur.bib}{\addbibresource{literatur.bib}}{}
+
+% --- TikZ (nur bei Bedarf) ---
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds}
+\usepackage{adjustbox} % für max totalsize
+
+% Hyperlinks zuletzt laden
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  filecolor=magenta,
+  urlcolor=cyan,
+  pdfauthor={\BaAuthorPDF},
+  pdftitle={\BaTitle}
+}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%
+%% Titelseite
+%%%%%%%%%%%%%%%%%%%
+\frontmatter
+\titlehead{Technische Hochschule Würzburg-Schweinfurt\\Fakultät Informatik und Wirtschaftsinformatik}
+\subject{\BaType}
+\title{\texorpdfstring{\BaTitle\\[15mm]\TitleGraphic}{\BaTitle}}
+% \subtitle{\normalsize{vorgelegt an der Technischen Hochschule W\"{u}rzburg-Schweinfurt in der Fakult\"{a}t Informatik und Wirtschaftsinformatik zum Abschluss eines Studiums im Studiengang \BaAuthorStudyProgram}}
+\author{\ShowBaAuthor}
+\date{\normalsize{Eingereicht am: \BaDeadline}}
+\forcetwosidetitle
+
+%%%%%%%%%%%%%%%%%%%
+%% Inhaltsverzeichnis
+%%%%%%%%%%%%%%%%%%%
+\newpage
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%
+%% Main part of the thesis
+%%%%%%%%%%%%%%%%%%%
+\mainmatter
+
+\chapter{Einleitung}
+
+Dieser Portfolioteil dokumentiert die vollständige Implementierung der Datenpipeline, die das Lobbyregister des Deutschen Bundestags automatisiert abruft, verarbeitet und in ein relationales PostgreSQL-Schema überführt. Während das erste Portfolio die konzeptionelle Modellierung, die Strukturierung der Entitäten und die theoretischen Überlegungen zur Datenorganisation behandelt, liegt der Fokus dieses Teils auf der technischen Realisierung der Pipeline und den dabei getroffenen Architekturentscheidungen.
+
+Im Zentrum steht der gesamte Verarbeitungsprozess: das asynchrone Einsammeln der Registerdaten über die öffentliche API, die Normalisierung und strukturelle Transformation der JSON-Dokumente, die robuste und nachvollziehbare Persistierung im Datenbankschema sowie erste Mechanismen zur Beobachtbarkeit, etwa Fortschrittsberichte oder Metriken zur Lastverteilung. Die Pipeline soll nicht nur funktional korrekt sein, sondern auch skalierbar, fehlertolerant und reproduzierbar ausgeführt werden können. Dadurch entsteht eine technische Grundlage, auf der spätere Analysen, Erweiterungen und Optimierungen aufbauen können.
+
+Die Projektstruktur ist klar abgegrenzt: Der gesamte Anwendungscode befindet sich unter \texttt{src/lobbyregister\_ingestor}, einschließlich der Module zur API-Kommunikation, Transformation und Datenbankschnittstelle. Das relationale Schema liegt in \texttt{src/lobbyregister\_ingestor/scheme.sql} und definiert die Tabellen, Constraints und Normalisierungsstufen. Infrastruktur, Containerisierung und Laufzeitumgebung sind im Repository-Root dokumentiert und ermöglichen eine reproduzierbare Ausführung sowohl lokal als auch in isolierten Umgebungen wie Docker oder Hochschul-VMs.
+
+Durch diese Trennung von Konzept, Implementierung und Infrastruktur entsteht eine modular aufgebaute Pipeline, die sowohl experimentell als auch produktionsnah weiterentwickelt werden kann \cite{lobbyregister_repo}.
+
+\chapter{Technologie Stack}
+
+Die Implementierung basiert auf Python. Die Sprache stellt eine breite Auswahl an ausgereiften Bibliotheken für Netzwerkkommunikation, Datenverarbeitung und Asynchronität bereit, was die Entwicklungszeit reduziert und die Wartbarkeit erhöht. Besonders relevant ist die Unterstützung für asynchrone Programmierung: IO-lastige Anwendungen profitieren stark davon, Wartezeiten nicht blockierend zu behandeln. Durch den Einsatz von \texttt{httpx.AsyncClient} und \texttt{asyncio} können viele HTTP-Requests parallel abgearbeitet werden, ohne für jede Anfrage einen eigenen Thread zu erzeugen. Der Event-Loop überlappt dabei Wartezeiten auf Netzwerk- oder API-Antworten und erzielt so einen deutlich höheren Durchsatz bei geringerer Latenz. Im Vergleich zu klassischen Thread-Pools sinkt der Ressourcenverbrauch, da weniger Kontextwechsel und kein Thread-Overhead entstehen. Gleichzeitig bleibt der Code durch \texttt{async/await} gut lesbar und deterministisch testbar; Werkzeuge wie \texttt{pytest-asyncio} ermöglichen realistische Tests, ohne komplexe Thread-Synchronisation.
+
+Für die Datenhaltung wurde PostgreSQL gewählt. PostgreSQL gilt als stabiler Industriestandard und bietet ein vollständiges relationales Modell mit starker Typisierung, Transaktionen, Foreign Keys und mächtigen Debug-Werkzeugen. Die bewusste Entscheidung für ein relational normalisiertes Schema (3NF) und gegen JSONB dient mehreren Zielen: Der Query-Planner erhält verlässliche Statistiken, was zu vorhersehbaren und reproduzierbaren Ausführungsplänen führt. Optimierungsmaßnahmen wie Indexdesign, Materialized Views oder Partitionierung lassen sich dadurch gezielt und messbar einsetzen. JSONB wäre zwar flexibel, erschwert aber die Kostenabschätzung für komplexe Abfragen und führt häufiger zu sequentiellen Scans oder unvorhersehbaren Plänen.
+
+PostgreSQL bietet zudem eingebaute Analysewerkzeuge wie \texttt{EXPLAIN} und \texttt{auto\_analyze}, die Lastverteilung, Kardinalitäten und Planentscheidungen sichtbar machen. Mit Extensions wie \texttt{pg\_stat\_statements} können „Hot Queries“ identifiziert werden, ohne dass strukturelle Änderungen am Schema nötig sind. Diese Kombination aus Stabilität, Transparenz und Erweiterbarkeit macht PostgreSQL besonders geeignet für Systeme, die langfristig wartbar bleiben und auf wachsende Datenmengen vorbereitet sein müssen.
+
+\begin{figure}[H]
+  \centering
+  \input{figures/stack_diagram.tex}
+  \caption{Container-Stack und Datenfluss (docker-compose.yml).}
+  \label{fig:stack}
+\end{figure}
+
+\section{Konfigurierbarkeit}
+
+Die Konfiguration des Ingestors erfolgt entweder über eine \texttt{.env}-Datei im Root des Repositories oder über Environment-Variablen im \texttt{docker-compose.yml}. Dadurch kann die Pipeline ohne Codeänderungen in unterschiedlichen Umgebungen betrieben werden – lokal, in Docker oder in Cloud-Instanzen. Die zentralen Parameter steuern sowohl API-Verhalten als auch Datenbankzugriffe und Backpressure-Mechanismen.
+
+Setzbare Einstellungen:
+
+\begin{itemize}
+  \item \texttt{PG\_DSN}:  
+  Vollständiger DSN-String für PostgreSQL. Falls nicht gesetzt, konstruiert der Ingestor automatisch einen DSN aus den einzelnen \texttt{POSTGRES\_*}-Variablen.
+
+  \item \texttt{POSTGRES\_*}:  
+  Host, Port, Benutzer, Passwort und Datenbankname zur manuellen DSN-Zusammenstellung. Dies erleichtert flexible Deployments, ohne DSNs hartkodieren zu müssen.
+
+  \item \texttt{LOBBY\_API\_*}:  
+  Basis-URL, Endpunkte und optionale Zugangstoken für die Bundestag-API. Diese Variablen steuern, wohin und wie der HTTP-Client seine Anfragen richtet.
+
+  \item \texttt{HTTP\_CONCURRENCY}:  
+  Obergrenze paralleler HTTP-Requests. Begrenzt sowohl die eigene Netzlast als auch die Anfragefrequenz gegenüber der API, um Timeouts und Rate-Limits zu vermeiden.
+
+  \item \texttt{DB\_WORKERS}:  
+  Anzahl parallel arbeitender Consumer, die Datenbank-Schreiboperationen ausführen. Erhöht die Schreibkapazität, ohne den Connection-Pool zu überlasten.
+
+  \item Backoff-Parameter:  
+  Steuerung von Retry-Strategien (z.\,B. exponentieller Backoff, maximale Retry-Zahl). Verhindert aggressive Request-Stürme bei temporären API- oder Netzwerkfehlern.
+
+  \item \texttt{PROGRESS\_EVERY}:  
+  Intervall für Fortschrittslogs. Hilft beim Monitoring langer Läufe, insbesondere in Entwicklungs- und Lehrkontexten.
+
+  \item \texttt{INGEST\_QUEUE\_SIZE}:  
+  Maximale Größe der internen \texttt{asyncio}-Queue zwischen Producer und Consumer. Bildet die zentrale Backpressure-Komponente: Überläuft die Queue, drosselt der Producer automatisch.
+\end{itemize}
+
+
+\chapter{API-Gathering und ETL-Fluss}
+
+\section{HTTP-Client}
+
+Der \texttt{LobbyregisterClient} (\texttt{api.py}) bildet die Schnittstelle zur öffentlichen API des Deutschen Bundestags. Kern ist ein \texttt{httpx.AsyncClient} mit explizit konfigurierten Connection-Limits, sodass die in den Umgebungsvariablen definierte \texttt{HTTP\_CONCURRENCY} strikt eingehalten wird. Damit lässt sich steuern, wie viele parallele Requests das System gleichzeitig absetzt, was sowohl für die eigene Laststeuerung als auch für Fair Use gegenüber dem API-Endpunkt wichtig ist.
+
+Wesentliche Aspekte der Implementierung:
+
+\begin{itemize}
+  \item \textbf{Pagination}:  
+  Die Methode \texttt{iter\_register\_entries} folgt den vom Server bereitgestellten Cursor-Links und vermeidet doppelte Tokens, um konsistent voranzuschreiten. Pro Seite werden Meta-Daten wie \texttt{sourceDate} oder \texttt{totalResultCount} injiziert, um Kontext für spätere Schritte zu erhalten. Cursor-Pagination verhindert unnötige Übertragungen und reduziert Lastspitzen auf der API.
+  
+  \item \textbf{Robuste Payload-Prüfung}:  
+  \texttt{\_extract\_entries} akzeptiert ausschließlich Listen von Mappings. Wird ein abweichendes oder beschädigtes Format geliefert, löst der Client einen \texttt{ApiError} aus und gibt ein begrenztes Preview der empfangenen Daten aus. Fehlerzustände lassen sich dadurch schneller analysieren, ohne unkontrolliert große Antwortkörper zu loggen.
+  
+  \item \textbf{Retry/Backoff}:  
+  Fehler wie 5xx, 429 oder 408 werden mit einem exponentiellen Backoff erneut versucht, bis die definierte Obergrenze \texttt{HTTP\_MAX\_RETRIES} erreicht ist. 404 wird hingegen sofort als \texttt{ResourceNotFoundError} gewertet, da kein Retry sinnvoll wäre. Der Backoff ist gekappt, um eskalierende Wartezeiten zu vermeiden.
+\end{itemize}
+
+Durch Asynchronität wird der effektive Durchsatz erhöht: HTTP-Latenzen überlappen sich, ohne dass zusätzliche Threads nötig wären. Die vom Bundestag bereitgestellte API arbeitet cursorbasiert; jede Seite liefert einen Token, der beim nächsten Request wiederverwendet wird. Dieses Verfahren ist stabil gegenüber Datenänderungen zwischen Aufrufen und vermeidet die typischen Schwächen klassischer Offset-Pagination (z.\,B. große Skips, Race Conditions oder inkonsistente Seiten). Zugleich wird nur der tatsächlich benötigte Ausschnitt übertragen, was Netzwerk- und CPU-Verbrauch reduziert.
+
+\section{Pipeline-Orchestrierung}
+
+Der Einstiegspunkt ist \texttt{python -m lobbyregister\_ingestor} (\texttt{\_\_main\_\_.py}). Das Skript führt mehrere Schritte kontrolliert und asynchron aus:
+
+\begin{enumerate}
+  \item Initiales Anlegen oder Aktualisieren des Schemas über \texttt{apply\_schema}.
+  \item Aufbau eines \texttt{psycopg\_pool.ConnectionPool} zur effizienten Verwaltung paralleler Datenbankverbindungen.
+  \item Starten eines Producers (API-Fetch) und mehrerer Consumer entsprechend \texttt{DB\_WORKERS}, die Daten in die Datenbank schreiben.
+\end{enumerate}
+
+Die Kommunikation zwischen Producer und Consumer erfolgt über eine \texttt{asyncio.Queue}. Diese entkoppelt die Geschwindigkeiten beider Systeme: Ein schneller HTTP-Client produziert Einträge, aber überflutet die Datenbank nicht, da die Queue nur eine begrenzte Kapazität besitzt und Backpressure erzeugt. Abbildung~\ref{fig:pipeline} visualisiert den Fluss.
+
+\begin{figure}[H]
+  \centering
+  \input{figures/pipeline_diagram.tex}
+  \caption{Asynchroner ETL-Fluss mit Producer/Consumer.}
+  \label{fig:pipeline}
+\end{figure}
+
+Robustheitsaspekte der Orchestrierung:
+
+\begin{itemize}
+  \item \textbf{Transiente DB-Fehler}:  
+  Deadlocks oder Sperren führen zu automatischen Wiederholungen bis \texttt{MAX\_DB\_WRITE\_RETRIES}. Bleibt ein Datensatz fehlerhaft, wird er übersprungen, der Lauf bleibt jedoch stabil.
+
+  \item \textbf{Stop-Token}:  
+  Für jeden Consumer wird ein Stop-Token in die Queue gestellt. Dies verhindert Hängenbleiben, wenn der Producer beendet ist und keine neuen Elemente mehr eintreffen.
+
+  \item \textbf{Fortschritt}:  
+  Die API liefert \texttt{totalResultCount}, wodurch ein Schätzwert für den Fortschritt des gesamten ETL-Laufs verfügbar ist.
+\end{itemize}
+
+\section{Vom JSON zur Datenbank}
+
+Die Verarbeitung eines einzelnen Eintrags beginnt in \texttt{ingest\_entry} (\texttt{writer.py}). Die Funktion ruft \texttt{upsert\_register\_entry} auf, entfernt veraltete Kindobjekte über \texttt{purge\_children\_for\_entry} und iteriert anschließend die in \texttt{SECTION\_HANDLERS} definierten Abschnittsverarbeiter (\texttt{mappings/registry.py}). Jeder Handler übernimmt die Transformation und das Schreiben eines spezifischen API-Teilbaums.
+
+Beispiele für verarbeitete Abschnitte:
+
+\begin{itemize}
+  \item \textbf{accountDetails}:  
+  Versionierung, Grunddaten, Zuordnung von Gesetzeskatalogen (\texttt{GL2022}, \texttt{GL2024}).
+
+  \item \textbf{lobbyistIdentity}:  
+  Personen- und Organisationsdaten, Adressen, Kontaktinformationen und vertretungsberechtigte Personen.
+
+  \item \textbf{activitiesAndInterests}:  
+  Interessensfelder, Formen der Lobbyarbeit sowie gemeldete regulatorische Projekte (\texttt{regulatory\_projects.py}).
+
+  \item \textbf{financialExpenses}, \textbf{donators}, \textbf{membershipFees}:  
+  Finanzielle Angaben, Betragsnormalisierung, Periodeninterpretation und strukturiertes Auflösen von Listen.
+
+  \item \textbf{contracts}, \textbf{codeOfConduct}:  
+  Vertragsangaben, Compliance-Dokumentation und zugehörige Metadaten.
+\end{itemize}
+
+\texttt{mappings/common.py} stellt robuste Hilfsfunktionen bereit: Idempotenz über \texttt{upsert\_code\_label} und \texttt{insert\_address}, Datumsnormalisierung mittels \texttt{normalize\_year\_month} sowie konsistente Reihenfolgen durch \texttt{ordinal}. Diese gemeinsame Basis verhindert Schema-Duplikationen und stellt sicher, dass alle Abschnitte unter denselben Regeln verarbeitet werden.
+
+\chapter{Relationales Datenmodell und Datenbankaspekte}
+
+\section{Normalisierung und Entscheidung gegen JSONB}
+
+Das relationale Schema (\texttt{scheme.sql}) löst sämtliche Listenstrukturen der API in klar definierte Child-Tabellen auf. Jede Liste wird über einen \texttt{ordinal}-Wert in eine stabile Reihenfolge gebracht, sodass sowohl Idempotenz als auch Reproduzierbarkeit gewährleistet bleiben. Die Entscheidung gegen eine Speicherung der API-Blöcke in JSONB ist bewusst getroffen und folgt mehreren technischen Überlegungen:
+
+\begin{itemize}
+  \item \textbf{Integrität}:  
+  Fremdschlüsselbeziehungen – etwa zwischen \texttt{address} und \texttt{country\_label} – erzwingen Konsistenz auf Datenebene. Solche Garantien sind mit JSONB nur schwer oder gar nicht durchsetzbar, da die Struktur dort untypisiert vorliegt.
+
+  \item \textbf{Bessere Planner-Statistiken}:  
+  PostgreSQL liefert für relationale Tabellen exakte oder gut schätzbare Kardinalitäten. Für JSONB-Felder hingegen sind Selektivitätsschätzungen oft ungenau, was zu suboptimalen Ausführungsplänen führt. Da spätere Analysen auf \texttt{EXPLAIN (ANALYZE)} basieren, ist ein strukturiertes Schema essenziell.
+
+  \item \textbf{Einfache Deduplizierung}:  
+  Tabellen wie \texttt{code\_label} nutzen \texttt{UNIQUE(domain, code)}, um doppelte oder inkonsistente Werte zu verhindern. Diese Form der Normalisierung ist in JSONB weder natürlich noch performant umsetzbar.
+\end{itemize}
+
+Die Kombination aus strikter Typisierung, expliziten Relationen und stabilen Kardinalitäten bildet die Grundlage für spätere Optimierungsschritte, etwa Indexdesign oder Materialized Views.
+
+\section{Tabellen-Hotspots}
+
+Das Modell trennt Kernobjekte, Dimensionen und Detailtabellen klar voneinander. Wesentliche Tabellen sind:
+
+\begin{itemize}
+  \item \textbf{register\_entry}:  
+  Zentrales Objekt des Schemas; enthält Identität, Quelle, Metadaten sowie den Primärschlüssel für sämtliche abhängigen Tabellen.
+
+  \item \textbf{register\_entry\_version}:  
+  Versionierte Sachstände erlauben es, historische Unterschiede (z.\,B. zwischen \texttt{GL2022} und \texttt{GL2024}) zu erfassen, ohne ältere Daten zu überschreiben.
+
+  \item \textbf{lobbyist\_identity} und \textbf{client\_*}:  
+  Trennen Identitäten von Interessenvertretern und Auftraggebern. Adressen und Kontaktinformationen werden als wiederverwendbare Dimensionstabellen geführt, wodurch Redundanz minimiert wird.
+
+  \item \textbf{regulatory\_projects}:  
+  Erfasst gemeldete Projekte inkl.\ Ministerien. Der \texttt{ordinal}-Wert stellt die vom API gelieferte Reihenfolge her, was für deterministische Läufe wichtig ist.
+\end{itemize}
+
+\section{Indizes und Performance-Tuning}
+
+Das Schema enthält Foreign-Key-Indizes, deren Existenz für performante Joins wesentlich ist. Darüber hinaus bieten sich weitere Indizes an:
+
+\begin{itemize}
+  \item Eindeutigkeitsindex auf \texttt{register\_entry.register\_number} zur schnellen Identifikation von Einträgen.
+  \item Zeitbasierte Indizes auf \texttt{donation(year)} und \texttt{financial\_expense(year)} für typische Auswertungen über Jahre oder Berichtperioden.
+  \item Optionale GIN-Indizes auf Textspalten, falls spätere Volltextsuchen oder Filterfunktionen vorgesehen sind.
+\end{itemize}
+
+Für Analyse und langfristiges Tuning stehen \texttt{pg\_stat\_statements} (zur Identifikation teurer Anfragen) sowie \texttt{auto\_explain} (zum Loggen unerwarteter oder kostenintensiver Pläne) zur Verfügung. Durch die relationale Struktur lassen sich Hot-Queries klar isolieren und gezielt optimieren.
+
+\section{Mapper-Strategie und Beispiel}
+
+Die Pipeline nutzt eine modulare Mapper-Strategie: Jeder Abschnitt der API besitzt einen dedizierten Handler, der für Parsing, Normalisierung und Persistierung verantwortlich ist. Dies kapselt Logik lokal und reduziert die Kopplung zwischen Schema und höherer Pipeline.
+
+Beispiel aus \texttt{funding.py}:
+
+\begin{enumerate}[label=\alph*)]
+  \item \texttt{load\_financial\_expenses}:  
+  Aggregiert und normalisiert Jahresangaben und schreibt sie in \texttt{financial\_expense}.
+
+  \item \texttt{load\_main\_funding\_sources}:  
+  Legt Hauptfinanzierungsquellen via \texttt{insert\_returning} an und referenziert dazugehörige Beträge über einen stabilen \texttt{ordinal}-Wert.
+
+  \item \texttt{load\_donators}:  
+  Verwendet \texttt{upsert\_country}, um Länderangaben zu deduplizieren, bevor zugehörige Spenden erfasst werden.
+\end{enumerate}
+
+Ändert sich ein API-Block strukturell, bleibt die notwendige Anpassung sauber auf den jeweiligen Handler und die betroffenen Schemaelemente beschränkt. Dadurch bleibt das Gesamtmodell wartbar und erweiterbar.
+
+\chapter{Betrieb}
+
+Die lokale Ausführung kann entweder vollständig containerisiert oder nativ auf dem Host-System erfolgen. Der Docker-Workflow bietet eine reproduzierbare Umgebung, in der alle Dienste – Datenbank, Adminer, Grafana und der Ingestor – in definierten Startreihenfolgen bereitgestellt werden. Ein einfacher Aufruf von \texttt{docker compose up --build} startet die gesamte Kette. Nach erfolgreichem Healthcheck der PostgreSQL-Instanz führt der Ingestor einen vollständigen Lauf aus; Adminer und Grafana stehen sofort zur manuellen Analyse und Visualisierung zur Verfügung.
+
+\section{Lokal}
+
+Für den nativen Betrieb ohne Container wird zunächst mit \texttt{uv sync} das Python-Umfeld eingerichtet. Anschließend genügt \texttt{docker compose up -d db adminer}, um ausschließlich die benötigte Datenbank und das Adminer-Interface in Containern bereitzustellen. Der eigentliche Ingestor läuft dann direkt über \texttt{uv run python -m lobbyregister\_ingestor}.  
+Das relationale Schema wird dabei bei Bedarf automatisch angelegt und bleibt anschließend stabil; wiederholte Läufe verursachen keine Migrationen. Dadurch eignet sich die lokale Umgebung gut für Entwicklung und Debugging, da Änderungen an Code und Mappern sofort getestet werden können, ohne den gesamten Stack neu aufzubauen.
+
+\section{Docker}
+
+Die Docker-Variante kapselt sämtliche Abhängigkeiten und ermöglicht eine vollständig isolierte Ausführung. Postgres, Adminer und Grafana laufen als dauerhafte Dienste; der Ingestor ist als Einmal-Job konzipiert, der nach Abschluss seines Laufes beendet wird. Persistente Docker-Volumes sichern Datenbankinhalte dauerhaft, sodass erneute Läufe nur neue oder geänderte Einträge schreiben.  
+Ressourcenlimits und Healthchecks im Compose-File steuern Start, Überwachung und Verhalten der Container. Damit eignet sich dieser Modus sowohl für reproduzierbare Testläufe als auch für den finalen Betrieb auf Serverumgebungen.
+
+\chapter{Reflexion}
+
+Die Zerlegung der API-Domäne in klar abgegrenzte Mapper-Module hat sich als tragfähiges Architekturprinzip erwiesen. Jede Teilstruktur des JSON kann unabhängig verarbeitet, getestet und angepasst werden. Änderungen an der API – sei es neue Felder, neue Kodierungen oder strukturelle Modifikationen – betreffen damit nur den jeweils zuständigen Handler. Die Pipeline bleibt stabil, und Anpassungen bleiben lokal, ohne Kaskaden über das gesamte System auszulösen.
+
+Der cursorbasierte Abruf der Bundestag-API erwies sich ebenfalls als vorteilhaft. Durch die serverseitig bereitgestellten Cursor-Token entstehen kleine, konsistente Batches; unnötige Offsets werden vermieden, und die Datenbank des Bundestags wird nicht mit großvolumigen Abfragen belastet. Das Verfahren ist zudem resilient gegenüber Änderungen zwischen einzelnen Requests, da keine großen Sprünge in der Ergebnismenge existieren.
+
+Die Entscheidung für eine strikte dritte Normalform führt naturgemäß zu einer größeren Anzahl an Tabellen und Foreign Keys. Für die aktuelle Datenmenge überwiegen jedoch die verbesserten Integritätsgarantien, die klaren Kardinalitäten und die Vorhersagbarkeit von Abfrageplänen. Die Pipeline profitiert davon, dass jeder Wert genau strukturiert abgelegt ist und spätere Analysewerkzeuge zuverlässige Statistiken erhalten.
+
+Python und AsyncIO boten während der Implementierung einen geeigneten Kompromiss aus Effizienz und Verständlichkeit. Die semantische Klarheit von \texttt{async/await} erleichtert die Nachvollziehbarkeit, während das Event-Loop-Modell genügend Parallelität liefert, um Netzwerkwartezeiten zu überlappen. Gerade im Lehrkontext ist diese Verbindung aus Transparenz, Einfachheit und funktionaler Leistungsfähigkeit ein wesentliches Kriterium.
+
+\chapter{Fazit}
+
+Die Kombination aus Python/AsyncIO, streng normalisiertem PostgreSQL-Schema und einem bewusst schlanken Docker-Stack hat sich als robuste Grundlage für eine transparente ETL-Pipeline erwiesen. Cursor-Pagination reduziert die externe API-Last, und die interne Queue schützt die Datenbank vor Überlast. Die klar getrennte Mapper-Architektur erhöht die Wartbarkeit und erleichtert Erweiterungen ebenso wie Fehleranalysen. Im Lehrkontext ist die Nachvollziehbarkeit wichtiger als maximale absolute Performance, und gerade diese strukturelle Klarheit ermöglicht ein präzises Verständnis der Datenflüsse und Transformationsschritte.
+
+\chapter{Ausblick}
+
+Der nächste Portfolioteil wird die Abfrageoptimierung und die Visualisierung der Daten in den Vordergrund stellen. Geplant sind geeignete Indizes, selektive Materialized Views und systematische Tuningrunden mit \texttt{EXPLAIN (ANALYZE)}. Die Nutzung von \texttt{pg\_stat\_statements} ermöglicht es dabei, Hot-Queries anhand realer Ausführungszeiten und Zugriffshäufigkeiten zu identifizieren. Darauf aufbauend sollen Grafana-Dashboards entstehen, etwa zu jährlichen Spendenvolumina, thematischen Aktivitätsfeldern oder Metriken der Pipeline-Laufzeit. Damit verschiebt sich der Schwerpunkt von der strukturellen Funktionsfähigkeit der ETL-Strecke hin zu performanten Auswertungen und anschaulichen Visualisierungen.
+
+%%%%%%%%%%%%%%%%%%%
+%% Literatur
+%%%%%%%%%%%%%%%%%%%
+\backmatter
+\printbibliography
+
+\end{document}
