@@ -1,14 +1,24 @@
 \begin{tikzpicture}[
-  node distance=1.6cm,
-  box/.style={rectangle, rounded corners, draw, thick, minimum width=3.2cm, minimum height=1.1cm, align=center},
-  arrow/.style={-Latex, thick}
+    node distance=1.6cm,
+% 1. Reduced minimum width from 3.2cm to 2.8cm to save space
+% 2. Added 'font=\small' to keep text readable inside smaller boxes
+    box/.style={rectangle, rounded corners, draw, thick, minimum width=2.8cm, minimum height=1.1cm, align=center, font=\small},
+    arrow/.style={-Latex, thick}
 ]
-  \node[box, fill=gray!10] (fetch) {Producer\\\texttt{iter\_register\_entries}};
-  \node[box, fill=blue!8, right=3.2cm of fetch] (queue) {\texttt{asyncio.Queue}\\(\texttt{INGEST\_QUEUE\_SIZE})};
-  \node[box, fill=orange!15, right=3.2cm of queue] (cons) {\texttt{consumer\_worker}\\(\texttt{DB\_WORKERS} parallel)};
-  \node[box, fill=yellow!15, below=1.6cm of cons] (db) {PostgreSQL\\\texttt{psycopg\_pool}};
+    % Nodes
+    \node[box, fill=gray!10] (fetch) {Producer\\\texttt{iter\_register\_entries}};
 
-  \draw[arrow] (fetch) -- node[above]{Detail-JSON} (queue);
-  \draw[arrow] (queue) -- node[above]{(seq, payload)} (cons);
-  \draw[arrow] (cons) -- node[right]{SQL Inserts/Upserts} (db);
+    % Reduced distance from 3.2cm to 1.5cm
+    \node[box, fill=blue!8, right=1.5cm of fetch] (queue) {\texttt{asyncio.Queue}\\(\texttt{INGEST\_QUEUE\_SIZE})};
+
+    % Reduced distance from 3.2cm to 1.5cm
+    \node[box, fill=orange!15, right=1.5cm of queue] (cons) {\texttt{consumer\_worker}\\(\texttt{DB\_WORKERS} parallel)};
+
+    \node[box, fill=yellow!15, below=1.6cm of cons] (db) {PostgreSQL\\\texttt{psycopg\_pool}};
+
+    % Arrows (Added font=\footnotesize to labels so they fit in the smaller gaps)
+% Arrows (Labels are now tiny to fit the 0.8cm gap)
+    \draw[arrow] (fetch) -- node[above, font=\tiny, align=center]{Detail-\\JSON} (queue);
+    \draw[arrow] (queue) -- node[above, font=\tiny, align=center]{(seq,\\payload)} (cons);
+    \draw[arrow] (cons) -- node[right, font=\scriptsize, align=left]{SQL Inserts} (db);
 \end{tikzpicture}
