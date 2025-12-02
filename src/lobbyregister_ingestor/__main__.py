@@ -6,8 +6,10 @@ import asyncio
 import itertools
 import logging
 from contextlib import suppress
+from pathlib import Path
 from typing import Any, Dict, Optional
 
+import psycopg
 from dotenv import load_dotenv
 from psycopg import errors as pg_errors
 from psycopg.rows import dict_row
@@ -22,7 +24,7 @@ from .writer import ingest_entry
 
 
 def register_number_from(
-    detail: Dict[str, Any], fallback: Optional[str] = None
+        detail: Dict[str, Any], fallback: Optional[str] = None
 ) -> Optional[str]:
     return detail.get("registerNumber") or fallback or detail.get("register_number")
 
@@ -46,6 +48,24 @@ def _is_transient_db_error(exc: BaseException) -> bool:
 
 
 MAX_DB_WRITE_RETRIES = 3
+
+
+def apply_optimizations(dsn: str) -> None:
+    """
+    Applies additional performance optimizations (indexes, materialized views)
+    defined in optimization.sql, if the file exists.
+    """
+    logger = get_logger(__name__)
+    opt_path = Path(__file__).parent / "optimization.sql"
+
+    if not opt_path.exists():
+        logger.debug("No optimization.sql found, skipping optimizations.")
+        return
+
+    logger.info("Applying optimizations from %s...", opt_path.name)
+    with psycopg.connect(dsn, autocommit=True) as conn:
+        with conn.cursor() as cur:
+            cur.execute(opt_path.read_text(encoding="utf-8"))
 
 
 async def run_ingestion(settings: Settings, pool: Optional[ConnectionPool]) -> int:
@@ -97,7 +117,7 @@ async def run_ingestion(settings: Settings, pool: Optional[ConnectionPool]) -> i
                             attempt,
                             MAX_DB_WRITE_RETRIES + 1,
                             exc.__class__.__name__,
-                        )
+                            )
                         continue
 
                     logger.error(
@@ -148,9 +168,9 @@ async def run_ingestion(settings: Settings, pool: Optional[ConnectionPool]) -> i
             stats = {}
 
         total_hint_candidate = (
-            stats.get("totalResultCount")
-            or stats.get("totalCount")
-            or stats.get("registerEntriesTotalCount")
+                stats.get("totalResultCount")
+                or stats.get("totalCount")
+                or stats.get("registerEntriesTotalCount")
         )
         try:
             total_hint = (
@@ -214,6 +234,12 @@ async def async_main() -> int:
     if apply_schema(settings.db_dsn):
         logger.info("Initialized database schema from scheme.sql.")
 
+    # 1. Apply additional optimizations (Indexes, MVs) defined in optimization.sql
+    try:
+        apply_optimizations(settings.db_dsn)
+    except Exception as exc:
+        logger.warning("Failed to apply optimizations: %s", exc)
+
     pool = ConnectionPool(
         conninfo=settings.db_dsn,
         min_size=1,
@@ -222,6 +248,19 @@ async def async_main() -> int:
     pool.wait()
     try:
         processed = await run_ingestion(settings, pool)
+
+        # 2. Refresh Materialized Views if new data was ingested
+        if processed > 0:
+            logger.info("Refreshing materialized views...")
+            with pool.connection() as conn:
+                # Postgres Syntax: REFRESH MATERIALIZED VIEW view_name; (no IF EXISTS support)
+                try:
+                    conn.execute("REFRESH MATERIALIZED VIEW public.mv_financial_tops;")
+                except pg_errors.UndefinedTable:
+                    logger.warning("Materialized view 'public.mv_financial_tops' does not exist, skipping refresh.")
+                # Add other views here if you create more
+            logger.info("Views refreshed.")
+
     except ApiError as exc:
         logger.error("Ingestion aborted due to API error: %s", exc)
         return 1

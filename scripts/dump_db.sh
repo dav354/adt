@@ -15,7 +15,7 @@ fi
 pg_user="${POSTGRES_USER}"
 pg_password="${POSTGRES_PASSWORD}"
 pg_db="${POSTGRES_DB}"
-pg_host="${POSTGRES_HOST:-localhost}"
+pg_host="${POSTGRES_HOST:-db}"
 pg_port="${POSTGRES_PORT:-5432}"
 
 if [[ -z "${pg_user}" || -z "${pg_password}" || -z "${pg_db}" ]]; then
