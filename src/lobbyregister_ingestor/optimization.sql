@@ -7,6 +7,11 @@ CREATE INDEX IF NOT EXISTS idx_finance_year_amount
 CREATE INDEX IF NOT EXISTS idx_activities_entry
     ON public.activities_interests (entry_id);
 
+
+-- Beschleunigt die Suche nach beendeten Regierungsfunktionen und sortiert direkt nach Datum
+CREATE INDEX IF NOT EXISTS idx_recent_gov_ended_date
+    ON public.recent_government_function (ended, end_year_month DESC);
+
 -- 2. Materialized View: Finanz-Dashboard (Der "Performance-Booster")
 -- Diese View "plättet" die 5-fache Join-Hierarchie für das Dashboard
 CREATE MATERIALIZED VIEW IF NOT EXISTS public.mv_financial_tops AS
