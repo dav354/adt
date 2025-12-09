@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
-import json
 import time
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 import psycopg
-from psycopg.rows import dict_row
 
 # Konfiguration
 DSN = os.getenv("PG_DSN", "postgresql://test:test@localhost:5432/lobby")
-OUTPUT_FILE = Path("docs/benchmark_report.md")
+
+# Standard-Ausgabedatei, falls kein Argument übergeben wird
+DEFAULT_OUTPUT = Path("docs/benchmark_report.md")
 
 # ==========================================
 # DEFINITION DER TEST-SZENARIEN (HOT QUERIES)
 # ==========================================
-# Diese Queries decken verschiedene Aspekte deines Schemas ab (Joins, Aggregationen, Filter)
 BENCHMARK_QUERIES = [
     {
         "name": "1. Finanz-Heatmap (Themenfelder)",
@@ -78,86 +78,133 @@ BENCHMARK_QUERIES = [
                WHERE ci.clients_present = true
                LIMIT 1000;
                """
+    },
+    {
+        "name": "5. Textsuche (Trigram Index Showcase)",
+        "description": "Suche nach Firmen/Personen mit Teilstring-Match (z.B. 'Energy'). Profitiert von GIN-Indizes.",
+        "sql": """
+               SELECT name_text, identity
+               FROM public.lobbyist_identity
+               WHERE name_text ILIKE '%Energy%'
+               LIMIT 100;
+               """
+    },
+    {
+        "name": "6. Drehtür-Analyse (Complex MV)",
+        "description": "Aggregierte Liste aller Personen mit Regierungsamt aus der Materialized View (falls vorhanden).",
+        "sql": """
+               SELECT organization_name, last_name, gov_function_type
+               FROM public.mv_revolving_door_network
+               WHERE end_year_month > '2020-01'
+               ORDER BY end_year_month DESC
+               LIMIT 500;
+               """
     }
 ]
 
-def run_benchmark():
+def run_benchmark(output_file: Path):
     results = []
-
     print(f"🚀 Starte Benchmark auf {DSN}...")
+    print(f"📄 Report wird gespeichert in: {output_file}")
 
-    with psycopg.connect(DSN) as conn:
-        for scenario in BENCHMARK_QUERIES:
-            print(f"   Messe: {scenario['name']}...")
+    try:
+        with psycopg.connect(DSN) as conn:
+            for scenario in BENCHMARK_QUERIES:
+                print(f"   Messe: {scenario['name']}...")
 
-            # Wir nutzen EXPLAIN (ANALYZE, FORMAT JSON) um exakte DB-Metriken zu bekommen
-            # Das ist genauer als Python time(), da es Netzwerk-Latenz ignoriert
-            explain_sql = f"EXPLAIN (ANALYZE, FORMAT JSON) {scenario['sql']}"
+                # Falls eine View/Tabelle noch nicht existiert (z.B. vor der Optimierung), fangen wir den Fehler ab
+                try:
+                    explain_sql = f"EXPLAIN (ANALYZE, FORMAT JSON) {scenario['sql']}"
 
-            start_wall = time.time()
-            with conn.cursor() as cur:
-                cur.execute(explain_sql)
-                plan_raw = cur.fetchone()[0]
+                    start_wall = time.time()
+                    with conn.cursor() as cur:
+                        cur.execute(explain_sql)
+                        plan_raw = cur.fetchone()[0]
+                    end_wall = time.time()
 
-            end_wall = time.time()
+                    plan_node = plan_raw[0]
+                    exec_time_ms = plan_node.get('Execution Time', 0.0)
+                    planning_time_ms = plan_node.get('Planning Time', 0.0)
+                    total_cost = plan_node['Plan']['Total Cost']
 
-            # Extrahiere Metriken aus dem JSON Plan
-            # Der Plan ist eine Liste mit einem Element
-            plan_node = plan_raw[0]
-            exec_time_ms = plan_node.get('Execution Time', 0.0)
-            planning_time_ms = plan_node.get('Planning Time', 0.0)
+                    results.append({
+                        "name": scenario['name'],
+                        "desc": scenario['description'],
+                        "exec_time_ms": exec_time_ms,
+                        "plan_time_ms": planning_time_ms,
+                        "wall_time_s": end_wall - start_wall,
+                        "total_cost": total_cost,
+                        "error": None
+                    })
+                except psycopg.errors.UndefinedTable:
+                    # Das passiert, wenn die MV noch nicht existiert (Unoptimized Run)
+                    conn.rollback()
+                    print(f"      ⚠️  Überspringe (Tabelle/View fehlt): {scenario['name']}")
+                    results.append({
+                        "name": scenario['name'],
+                        "desc": scenario['description'],
+                        "exec_time_ms": 0,
+                        "plan_time_ms": 0,
+                        "total_cost": 0,
+                        "error": "Tabelle/View existiert noch nicht (Optimierung fehlt)"
+                    })
+                except Exception as e:
+                    conn.rollback()
+                    print(f"      ❌ Fehler: {e}")
+                    results.append({
+                        "name": scenario['name'],
+                        "desc": scenario['description'],
+                        "exec_time_ms": 0,
+                        "plan_time_ms": 0,
+                        "total_cost": 0,
+                        "error": str(e)
+                    })
 
-            results.append({
-                "name": scenario['name'],
-                "desc": scenario['description'],
-                "exec_time_ms": exec_time_ms,
-                "plan_time_ms": planning_time_ms,
-                "wall_time_s": end_wall - start_wall,
-                "total_cost": plan_node['Plan']['Total Cost']
-            })
+        write_markdown_report(results, output_file)
+        print("✅ Benchmark abgeschlossen.")
 
-    write_markdown_report(results)
-    print(f"✅ Benchmark fertig. Bericht gespeichert in: {OUTPUT_FILE}")
+    except Exception as e:
+        print(f"🔥 Kritischer Verbindungsfehler: {e}")
+        sys.exit(1)
 
-def write_markdown_report(results):
+def write_markdown_report(results, filepath):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    filename = filepath.name
 
-    md_content = f"""# 📊 Lobbyregister Performance Benchmark
+    md_content = f"""# 📊 Benchmark Report: {filename}
 
 **Datum:** {timestamp}  
 **Datenbank:** PostgreSQL
 
-Dieser Bericht wurde automatisch generiert. Er misst die Performance kritischer Analyse-Abfragen ("Hot Queries").
-
-## Zusammenfassung
-
-| Szenario | Execution Time (ms) | Planning Time (ms) | Kosten (Cost) |
-| :--- | :--- | :--- | :--- |
+| Szenario | Execution (ms) | Planning (ms) | Cost | Anmerkung |
+| :--- | :--- | :--- | :--- | :--- |
 """
 
     for r in results:
-        # Formatierung: Fett gedruckt, wenn sehr langsam (>500ms)
-        exec_str = f"{r['exec_time_ms']:.2f}"
-        if r['exec_time_ms'] > 500:
-            exec_str = f"**{exec_str}** ⚠️"
+        if r['error']:
+            md_content += f"| {r['name']} | - | - | - | ❌ {r['error']} |\n"
+        else:
+            exec_str = f"{r['exec_time_ms']:.2f}"
+            # Highlight langsame Queries fett
+            if r['exec_time_ms'] > 500:
+                exec_str = f"**{exec_str}**"
 
-        md_content += f"| {r['name']} | {exec_str} | {r['plan_time_ms']:.2f} | {r['total_cost']:.2f} |\n"
+            md_content += f"| {r['name']} | {exec_str} | {r['plan_time_ms']:.2f} | {r['total_cost']:.2f} | |\n"
 
-    md_content += "\n## Details & SQL\n\n"
-
+    md_content += "\n## SQL Details\n\n"
     for i, r in enumerate(results):
-        orig_sql = BENCHMARK_QUERIES[i]['sql'].strip()
-        md_content += f"### {r['name']}\n"
-        md_content += f"_{r['desc']}_\n\n"
-        md_content += "```sql\n" + orig_sql + "\n```\n\n"
+        sql_text = BENCHMARK_QUERIES[i]['sql'].strip()
+        md_content += f"### {r['name']}\nRunning: `{r['desc']}`\n```sql\n{sql_text}\n```\n\n"
 
-    # Verzeichnis sicherstellen
-    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-
-    # Datei schreiben (anhängen oder überschreiben? Hier: Überschreiben für den aktuellen Run)
-    # Wenn du eine Historie willst, könntest du den Dateinamen mit Timestamp versehen.
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    with open(filepath, "w", encoding="utf-8") as f:
         f.write(md_content)
 
 if __name__ == "__main__":
-    run_benchmark()
+    # Dateiname kann als Argument übergeben werden (für das Shell-Script)
+    if len(sys.argv) > 1:
+        target_file = Path(sys.argv[1])
+    else:
+        target_file = DEFAULT_OUTPUT
+
+    run_benchmark(target_file)
