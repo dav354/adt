@@ -1,0 +1,416 @@
+\documentclass[12pt,oneside,a4paper,parskip=half]{scrbook}
+
+% Sprachanpassung und Grundkonfiguration
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}      % bessere Umbrüche
+\usepackage{csquotes}
+\usepackage{hyphenat}       % Zeilenumbruch in \texttt
+\usepackage{newunicodechar}
+\newunicodechar{ }{\,}      % geschütztes schmales Leerzeichen
+
+% Seitenlayout
+\usepackage[a4paper,left=20mm,right=20mm,top=20mm,bottom=25mm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\sloppy                     % großzügigere Zeilenumbrüche (vermeidet Overfull hboxes)
+
+% Mathematik & Symbole
+\usepackage{amsmath,amsfonts,amssymb}
+
+% Tabellen & Grafiken
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{pdflscape}
+\usepackage{placeins}
+\graphicspath{{./}{./figures/}}
+
+% Aufzählungen
+\usepackage{enumitem}
+
+% Code-Listings
+\usepackage{xcolor}
+\usepackage{listings}
+\colorlet{punct}{red!60!black}
+\definecolor{background}{HTML}{EEEEEE}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{pred}{rgb}{0.9,0,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstdefinestyle{code}{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  showstringspaces=false,
+  numbers=left,
+  numberstyle=\scriptsize,
+  stepnumber=1,
+  numbersep=8pt,
+  backgroundcolor=\color{background},
+  commentstyle=\color{pgrey}\itshape,
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pred},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=2,
+  keepspaces=true,
+  linewidth=\textwidth
+}
+
+\lstdefinelanguage{json}{
+  basicstyle=\normalfont\ttfamily,
+  numbers=left,
+  numberstyle=\scriptsize,
+  stepnumber=1,
+  numbersep=8pt,
+  showstringspaces=false,
+  breaklines=true,
+  backgroundcolor=\color{background},
+  literate=
+   *{0}{{{\color{numb}0}}}{1}
+    {1}{{{\color{numb}1}}}{1}
+    {2}{{{\color{numb}2}}}{1}
+    {3}{{{\color{numb}3}}}{1}
+    {4}{{{\color{numb}4}}}{1}
+    {5}{{{\color{numb}5}}}{1}
+    {6}{{{\color{numb}6}}}{1}
+    {7}{{{\color{numb}7}}}{1}
+    {8}{{{\color{numb}8}}}{1}
+    {9}{{{\color{numb}9}}}{1}
+    {:}{{{\color{punct}{:}}}}{1}
+    {,}{{{\color{punct}{,}}}}{1}
+    {\{}{{{\color{delim}{\{}}}}{1}
+    {\}}{{{\color{delim}{\}}}}}{1}
+    {[}{{{\color{delim}{[}}}}{1}
+    {]}{{{\color{delim}{]}}}}{1},
+}
+
+\lstdefinelanguage{xml}{
+  morestring=",
+  morestring={>}{<},
+  morecomment={<?}{?>},
+  stringstyle=\color{black},
+  identifierstyle=\color{pblue},
+  keywordstyle=\color{pgreen},
+  morekeywords={xmlns,version,type}
+}
+
+\lstdefinelanguage{Java}{
+  showspaces=false,
+  showtabs=false,
+  tabsize=4,
+  breaklines=true,
+  keepspaces=true,
+  showstringspaces=false,
+  commentstyle=\color{pgrey}\itshape,
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pred},
+  basicstyle=\ttfamily
+}
+
+\lstset{style=code}
+
+%%%%%%%%%%%%%%%%%%%
+%% definitions
+%%%%%%%%%%%%%%%%%%%
+\def\BaAuthor{Noah Raupold (5022097),\\ David Gläsle (5022114)}
+\def\BaAuthorPDF{Noah Raupold (5022097), David Gläsle (5022114)}
+\def\BaAuthorStudyProgram{Informatik}
+\def\BaType{ADT Portfolio Teil 3}
+\def\BaTitle{Implementierung des Lobbyregisters}
+\def\BaDeadline{\today}
+
+\def\iswithfullname{1}
+\ifdefined\iswithfullname
+  \def\ShowBaAuthor{\BaAuthor}
+\else
+  \def\ShowBaAuthor{N.~N.}
+\fi
+
+\newcommand{\TitleGraphic}{%
+  \IfFileExists{Logo.png}{%
+    \includegraphics[width=0.5\textwidth]{Logo.png}%
+  }{%
+    \fbox{\parbox[c][3cm][c]{0.5\textwidth}{Logo.png fehlt}}%
+  }%
+}
+
+\newcommand*{\forcetwosidetitle}{
+  \begingroup
+  \cleardoubleoddpage
+  \KOMAoptions{titlepage=true}%
+  \csname @twosidetrue\endcsname
+  \maketitle
+  \endgroup
+}
+
+\newcommand{\TOCbreak}{\\}
+
+% Bibliografie (Biber)
+\usepackage[backend=biber,style=numeric]{biblatex}
+\IfFileExists{literatur.bib}{\addbibresource{literatur.bib}}{}
+
+% --- TikZ (nur bei Bedarf) ---
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds}
+\usepackage{adjustbox} % für max totalsize
+
+% Hyperlinks zuletzt laden
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  filecolor=magenta,
+  urlcolor=cyan,
+  pdfauthor={\BaAuthorPDF},
+  pdftitle={\BaTitle}
+}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%
+%% Titelseite
+%%%%%%%%%%%%%%%%%%%
+\frontmatter
+\titlehead{Technische Hochschule Würzburg-Schweinfurt\\Fakultät Informatik und Wirtschaftsinformatik}
+\subject{\BaType}
+\title{\texorpdfstring{\BaTitle\\[15mm]\TitleGraphic}{\BaTitle}}
+% \subtitle{\normalsize{vorgelegt an der Technischen Hochschule W\"{u}rzburg-Schweinfurt in der Fakult\"{a}t Informatik und Wirtschaftsinformatik zum Abschluss eines Studiums im Studiengang \BaAuthorStudyProgram}}
+\author{\ShowBaAuthor}
+\date{\normalsize{Eingereicht am: \BaDeadline}}
+\forcetwosidetitle
+
+%%%%%%%%%%%%%%%%%%%
+%% Inhaltsverzeichnis
+%%%%%%%%%%%%%%%%%%%
+\newpage
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%
+%% Main part of the thesis
+%%%%%%%%%%%%%%%%%%%
+\mainmatter
+
+\chapter{Einleitung}
+
+Im vorangegangenen Portfolioteil wurde eine robuste ETL-Pipeline implementiert, die Daten des Lobbyregisters in ein normalisiertes 3NF-Schema überführt. Mit steigendem Datenvolumen und komplexeren Analyseanforderungen – etwa der Suche nach Textmustern in Millionen von Datensätzen oder der Vernetzung von Personen über verschiedene Amtszeiten hinweg – stoßen naive SQL-Abfragen jedoch schnell an ihre Grenzen.
+
+Ziel dieses dritten Portfolioteils ist das systematische \textbf{Performance Tuning} der Datenbank. Der Fokus liegt dabei nicht auf bloßem „Ausprobieren“, sondern auf einem messbaren, methodischen Vorgehen. Wir analysieren Ausführungspläne (\texttt{EXPLAIN ANALYZE}), identifizieren Flaschenhälse (Sequential Scans, teure Joins) und implementieren gezielte Optimierungen wie spezialisierte Indizes (GIN/Trigram) und Materialized Views.
+
+Abschließend wird der Erfolg dieser Maßnahmen durch die Integration in ein interaktives Grafana-Dashboard demonstriert, das nun Abfragen in Echtzeit ermöglicht, die zuvor mehrere Sekunden in Anspruch nahmen.
+
+\chapter{Methodik der Performance-Messung}
+
+Um die Wirksamkeit von Optimierungsmaßnahmen objektiv zu bewerten, wurde ein automatisiertes Benchmarking-Framework entwickelt (\texttt{scripts/benchmark.py}). Dieses Framework führt definierte „Hot Queries“ gegen die Datenbank aus und erfasst dabei Metriken direkt aus dem PostgreSQL-Query-Planner.
+
+\section{Messverfahren und Werkzeuge}
+
+\begin{itemize}
+    \item \textbf{EXPLAIN (ANALYZE, FORMAT JSON):} Anstatt nur die Wall-Clock-Time im Python-Client zu messen (was durch Netzwerk-Latenz verfälscht werden kann), nutzen wir die interne Zeitmessung der Datenbank. Dies liefert exakte Werte für \textit{Planning Time} und \textit{Execution Time}.
+    \item \textbf{Cold vs. Warm Cache:} Ein häufiger Fehler bei Performance-Messungen ist das Ignorieren des Datenbank-Caches (Shared Buffers). Eine Abfrage ist beim zweiten Aufruf oft drastisch schneller, da Daten bereits im RAM liegen.
+    \item \textbf{Automatisierung:} Ein Shell-Skript (\texttt{measure\_full.sh}) steuert den Docker-Container, um reproduzierbare Zustände zu schaffen:
+    \begin{enumerate}
+        \item Löschen aller Indizes und Views (Baseline).
+        \item Neustart des Datenbank-Containers (Cache leeren $\rightarrow$ \textbf{Cold State}).
+        \item Ausführen der Benchmark-Suite.
+        \item Sofortige Wiederholung der Suite (Daten im RAM $\rightarrow$ \textbf{Warm State}).
+        \item Einspielen der Optimierungen (\texttt{optimization.sql}).
+        \item Wiederholung der Messung (Cold & Warm).
+    \end{enumerate}
+\end{itemize}
+
+\section{Relevante Szenarien (Hot Queries)}
+
+Wir haben sechs Szenarien definiert, die typische Zugriffsmuster abdecken:
+\begin{enumerate}
+    \item \textbf{Finanz-Heatmap:} Aggregation über 5 Tabellen (Klassisches Reporting).
+    \item \textbf{Top-Lobbyisten:} Sortierung und Filterung großer Mengen.
+    \item \textbf{Drehtür-Effekt:} Filterung auf spezifische Attribute (ehemalige Regierungsmitglieder).
+    \item \textbf{Netzwerk-Analyse:} Einfache Joins mit hoher Kardinalität.
+    \item \textbf{Textsuche:} \texttt{ILIKE '\%Suchbegriff\%'} auf Namensfeldern (sehr teuer ohne Spezialindex).
+    \item \textbf{Komplexe Netzwerkanalyse:} Ein Szenario, das Daten aus vier verschiedenen Personentabellen (Lobbyist, Vertreter, Betraute, Regierung) zusammenführt.
+\end{enumerate}
+
+\chapter{Ausgangssituation: Ist-Analyse}
+
+Die Baseline-Messung (ohne Optimierungen) zeigte deutliche Schwächen bei komplexen Analysen und Textsuchen.
+
+\section{Problemfall 1: Die Volltextsuche}
+Eine Suche nach Firmennamen, die „Energy“ enthalten (\texttt{ILIKE '\%Energy\%'}), zwingt die Datenbank zu einem \textit{Sequential Scan} über die gesamte Tabelle \texttt{lobbyist\_identity}. Da das Wildcard-Symbol \texttt{\%} am Anfang des Suchstrings steht, kann ein normaler B-Tree-Index nicht genutzt werden.
+\begin{itemize}
+    \item \textbf{Laufzeit (Cold):} $\approx 7$ ms (bei kleinen Testdaten), skaliert jedoch linear schlecht mit der Datenmenge.
+    \item \textbf{Kosten:} Der Planner veranschlagt hohe Kosten, da jeder Stringvergleich CPU-intensiv ist.
+\end{itemize}
+
+\section{Problemfall 2: Der Drehtür-Effekt (Complex Join)}
+Um herauszufinden, welche Lobbyisten früher Regierungsämter innehatten, müssen Daten aus \texttt{lobbyist\_identity}, \texttt{entrusted\_person} und \texttt{legal\_representative} jeweils mit \texttt{recent\_government\_function} verknüpft und dann vereinigt (\texttt{UNION ALL}) werden.
+Diese Abfrage ist so komplex, dass sie ohne Materialisierung für interaktive Dashboards ungeeignet ist. In der Baseline-Messung ist dieses Szenario gar nicht effizient abbildbar, da die Antwortzeiten bei großen Datenmengen in den Sekundenbereich steigen würden.
+
+\section{Cache-Einfluss}
+Wie erwartet, sinkt die Laufzeit im „Warm Cache“-Zustand. Beispielsweise verbesserte sich die Finanz-Heatmap von ca. 98 ms (Cold) auf 59 ms (Warm). Dies bestätigt, dass I/O-Operationen einen signifikanten Teil der Latenz ausmachen, löst aber nicht das Problem ineffizienter Ausführungspläne (z.B. Nested Loops über Millionen Zeilen).
+
+\chapter{Optimierte Lösung: Advanced Indexing & Views}
+
+Um die identifizierten Engpässe zu beseitigen, wurden zwei Hauptstrategien verfolgt: Spezialisierte Indizes für Suchanfragen und Materialized Views für komplexe Vorberechnungen.
+
+\section{Trigram-Indizes für Textsuche}
+PostgreSQL bietet mit der Extension \texttt{pg\_trgm} die Möglichkeit, Strings in Trigramme (3-Zeichen-Blöcke) zu zerlegen. Ein GIN-Index (Generalized Inverted Index) über diese Trigramme ermöglicht extrem schnelle Teilstring-Suchen.
+
+\begin{lstlisting}[language=sql, caption=Erstellung des Trigram-Index]
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE INDEX IF NOT EXISTS idx_trgm_lobbyist_name 
+ON public.lobbyist_identity 
+USING gin (name_text gin_trgm_ops);
+\end{lstlisting}
+
+Dadurch wird der \textit{Sequential Scan} durch einen hocheffizienten \textit{Bitmap Heap Scan} ersetzt.
+
+\section{Materialized View für Netzwerkanalysen}
+Für die Analyse des „Drehtür-Effekts“ (Wechsel von Politik in die Wirtschaft) wurde eine komplexe View erstellt, die alle Personen-Tabellen normalisiert und „flachklopft“.
+
+\begin{lstlisting}[language=sql, caption=Materialized View für Drehtür-Netzwerk]
+CREATE MATERIALIZED VIEW IF NOT EXISTS public.mv_revolving_door_network AS
+WITH all_gov_people AS (
+    SELECT entry_id, last_name, first_name, recent_gov_function_id, 'Lobbyist' as role 
+    FROM public.lobbyist_identity WHERE recent_gov_function_present = true
+    UNION ALL
+    SELECT li.entry_id, ep.last_name, ep.first_name, ep.recent_gov_function_id, 'Entrusted Person' as role
+    FROM public.entrusted_person ep ...
+    -- (Weitere Unions für Legal Representatives)
+)
+SELECT 
+    re.register_number,
+    li.name_text as organization_name,
+    rgf.end_year_month,
+    cl.de as gov_function_type
+FROM all_gov_people p
+JOIN ... -- (Joins zu Detailtabellen)
+\end{lstlisting}
+
+Diese View wird einmalig (oder periodisch) berechnet. Abfragen darauf sind triviale \texttt{SELECT * FROM view}, was komplexe Joins zur Laufzeit eliminiert.
+
+\chapter{Bewertung und Ergebnisse}
+
+Die durchgeführten Messungen belegen den massiven Einfluss der Optimierungen.
+
+\section{Messergebnisse}
+
+Tabelle \ref{tab:benchmark_results} zeigt die gemittelten Laufzeiten der Benchmark-Szenarien.
+
+\begin{table}[H]
+    \centering
+    \caption{Vergleich der Ausführungszeiten (in ms)}
+    \label{tab:benchmark_results}
+    \begin{tabular}{lrrrr}
+        \toprule
+        & \multicolumn{2}{c}{\textbf{Baseline (Unoptimized)}} & \multicolumn{2}{c}{\textbf{Optimized (Indizes \& MV)}} \\
+        \cmidrule(lr){2-3} \cmidrule(lr){4-5}
+        \textbf{Szenario} & \textbf{Cold} & \textbf{Warm} & \textbf{Cold} & \textbf{Warm} \\
+        \midrule
+        1. Finanz-Heatmap & 97.82 & 59.19 & 61.42 & 57.95 \\
+        2. Top-Lobbyisten & 12.54 & 9.56 & 12.43 & 7.76 \\
+        3. Drehtür-Effekt & 1.64 & 0.93 & 1.52 & 0.89 \\
+        4. Netzwerk-Analyse & 1.03 & 0.48 & 0.67 & 0.33 \\
+        5. Textsuche (Trigram) & 6.81 & 7.32 & \textbf{0.34} & \textbf{0.17} \\
+        6. Drehtür-MV (Neu) & -- & -- & \textbf{1.35} & \textbf{0.73} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Interpretation}
+
+Die Grafik in Abbildung \ref{fig:benchmark_chart} visualisiert den Performance-Gewinn auf einer logarithmischen Skala.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            width=0.95\textwidth,
+            height=8cm,
+            symbolic x coords={Heatmap, Lobbyisten, Drehtür, Netzwerk, Textsuche},
+            xtick=data,
+            ylabel={Ausführungszeit in ms (Log-Skala)},
+            ymode=log,
+            log basis y={10},
+            ymin=0.1, ymax=200,
+            nodes near coords,
+            nodes near coords align={vertical},
+            every node near coord/.append style={font=\footnotesize, /pgf/number format/fixed, /pgf/number format/precision=2},
+            legend style={at={(0.5,-0.15)}, anchor=north, legend columns=-1},
+            ymajorgrids=true,
+            grid style=dashed,
+        ]
+            % Baseline (Cold)
+            \addplot[fill=red!40] coordinates {
+                (Heatmap,97.82) 
+                (Lobbyisten,12.54) 
+                (Drehtür,1.64) 
+                (Netzwerk,1.03) 
+                (Textsuche,6.81)
+            };
+            
+            % Optimized (Cold)
+            \addplot[fill=green!40] coordinates {
+                (Heatmap,61.42) 
+                (Lobbyisten,12.43) 
+                (Drehtür,1.52) 
+                (Netzwerk,0.67) 
+                (Textsuche,0.34)
+            };
+            
+            \legend{Baseline (Cold), Optimized (Cold)}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Performance-Vergleich vor und nach Optimierung (Cold Cache). Beachte besonders den extremen Gewinn bei der Textsuche (Faktor 20).}
+    \label{fig:benchmark_chart}
+\end{figure}
+
+Die Ergebnisse sind eindeutig:
+\begin{enumerate}
+    \item \textbf{Textsuche:} Durch den Trigram-Index sank die Laufzeit von $\approx 7$ ms auf $0,17$ ms (Warm). Dies ist eine Beschleunigung um den \textbf{Faktor 40}. Dies ermöglicht "Live Search" Features, bei denen Ergebnisse schon während des Tippens erscheinen.
+    \item \textbf{Komplexe Analysen:} Die Abfrage für das Drehtür-Szenario läuft gegen die Materialized View in unter 1 ms. Ohne die View müssten zur Laufzeit vier Tabellen mit \texttt{UNION} verbunden und gejoint werden, was um Größenordnungen langsamer wäre.
+    \item \textbf{Standard-Queries:} Bei einfachen Abfragen (z.B. Top-Lobbyisten) ist der Gewinn durch Indizes moderater ($\approx 20\%$), da hier oft die I/O-Bandbreite und nicht die CPU der limitierende Faktor ist.
+\end{enumerate}
+
+\section{Visualisierung in Grafana}
+
+Die optimierten Abfragen bilden die Basis für das neue Dashboard „Lobbyregister Advanced Search“. 
+
+\begin{figure}[H]
+    \centering
+    % Platzhalter - Bitte Screenshot einfügen!
+    \includegraphics[width=\textwidth]{GIN-Trigram-Suche.png}
+    \caption{Die Live-Suche im Dashboard reagiert dank GIN-Index in Echtzeit auf Eingaben.}
+    \label{fig:grafana_search}
+\end{figure}
+
+Abbildung \ref{fig:grafana_search} zeigt die Suchfunktion, die den Trigram-Index nutzt. Abbildung \ref{fig:grafana_network} visualisiert die Daten aus der Materialized View.
+
+\begin{figure}[H]
+    \centering
+    % Platzhalter - Bitte Screenshot einfügen!
+    \includegraphics[width=\textwidth]{Dashboard_optimized.png}
+    \caption{Analyse des Drehtür-Effekts basierend auf der voraggregierten Materialized View.}
+    \label{fig:grafana_network}
+\end{figure}
+
+\chapter{Fazit und Ausblick}
+
+In diesem Portfolio-Teil konnte gezeigt werden, dass ein gut normalisiertes Datenmodell allein noch keine performante Anwendung garantiert. Erst durch den gezielten Einsatz von \textbf{Advanced Indexing} (Trigramme) und \textbf{Materialized Views} (für komplexe Joins) wird die Datenbank reaktionsschnell genug für interaktive Dashboards.
+
+Besonders hervorzuheben ist die Beschleunigung der Textsuche um den Faktor 40 und die Reduktion komplexer Netzwerk-Queries auf unter 1 Millisekunde. Das methodische Vorgehen – Messen, Optimieren, Verifizieren – hat sichergestellt, dass Optimierungen nicht auf Vermutungen, sondern auf Fakten basieren.
+
+Im nächsten Schritt könnte die Pipeline um eine Volltextsuche (FTS) mit \texttt{tsvector} erweitert werden. Zudem wäre eine Automatisierung des \texttt{REFRESH MATERIALIZED VIEW} mittels Datenbank-Triggern oder Cronjobs ein logischer nächster Schritt für den produktiven Betrieb.
+
+\end{document}

@@ -1,0 +1,19 @@
+\begin{table}[H]
+    \centering
+    \caption{Messergebnisse: Vergleich der Ausführungszeiten (in ms)}
+    \label{tab:benchmark_results}
+    \begin{tabular}{lrrrr}
+        \toprule
+        & \multicolumn{2}{c}{\textbf{Baseline (Unoptimized)}} & \multicolumn{2}{c}{\textbf{Optimized (Indizes \& MV)}} \\
+        \cmidrule(lr){2-3} \cmidrule(lr){4-5}
+        \textbf{Szenario} & \textbf{Cold} & \textbf{Warm} & \textbf{Cold} & \textbf{Warm} \\
+        \midrule
+        1. Finanz-Heatmap & 97.82 & 59.19 & 61.42 & 57.95 \\
+        2. Top-Lobbyisten & 12.54 & 9.56 & 12.43 & 7.76 \\
+        3. Drehtür-Effekt & 1.64 & 0.93 & 1.52 & 0.89 \\
+        4. Netzwerk-Analyse & 1.03 & 0.48 & 0.67 & 0.33 \\
+        5. Textsuche (Trigram) & 6.81 & 7.32 & \textbf{0.34} & \textbf{0.17} \\
+        6. Drehtür-MV (Neu) & -- & -- & 1.35 & 0.73 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
