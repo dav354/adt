@@ -131,9 +131,7 @@
   "refresh": "",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": [
-    "lobbyregister"
-  ],
+  "tags": ["portfolio-4"],
   "templating": {
     "list": [
       {

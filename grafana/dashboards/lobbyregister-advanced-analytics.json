@@ -1,0 +1,108 @@
+{
+  "id": null,
+  "uid": "lobbyregister-advanced-analytics",
+  "title": "Lobbyregister - Advanced Analytics (Portfolio 4)",
+  "editable": true,
+  "refresh": "30m",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "",
+  "tags": ["portfolio-4"],
+  "time": {
+    "from": "now-5y",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "Dashboard Documentation",
+      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "mode": "markdown",
+        "content": "# Portfolio 4: Advanced Database Analytics\n\nThis dashboard demonstrates advanced SQL techniques and data analysis tailored to the available dataset.\n\n**Analyses:**\n1. **Network of Influence (Deep Join)**: Uncovers hidden links between clients and ex-politicians via agencies.\n2. **Lobbying Efficiency (Computed Metric)**: Calculates 'Spending per Employee' by joining financial data with employee counts, identifying high-leverage organizations.\n3. **Spending Distribution (Bucketing)**: Categorizes organizations into budget classes (Low/Mid/High) using SQL Case logic."
+      }
+    },
+    {
+      "id": 2,
+      "type": "barchart",
+      "title": "Top Lobbying Efficiency (Spend per Head)",
+      "description": "Calculates the average spending per employee (Full Time Equivalent). High numbers indicate small teams with massive budgets (high leverage).",
+      "datasource": { "type": "postgres", "uid": "lobbyregister" },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 4 },
+      "options": {
+        "orientation": "horizontal",
+        "xField": "name",
+        "yField": "spend_per_head",
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" }
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  li.name_text AS name,\n  (fe.expenses_to_eur / GREATEST(emp.employee_fte, 1.0)) AS spend_per_head\nFROM register_entry re\nJOIN lobbyist_identity li ON re.id = li.entry_id\nJOIN financial_expenses fe ON re.id = fe.entry_id\nJOIN employees_involved emp ON re.id = emp.entry_id\nWHERE fe.expenses_to_eur IS NOT NULL \n  AND emp.employee_fte > 0\nORDER BY spend_per_head DESC\nLIMIT 15;"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "piechart",
+      "title": "Spending Power Distribution",
+      "description": "Segments organizations into budget tiers.",
+      "datasource": { "type": "postgres", "uid": "lobbyregister" },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 4 },
+      "options": {
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "tooltip": { "mode": "single" },
+        "legend": { "displayMode": "table", "placement": "right" }
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  CASE \n    WHEN expenses_to_eur < 20000 THEN 'Low Budget (<20k)'\n    WHEN expenses_to_eur < 100000 THEN 'Mid Budget (20k-100k)'\n    WHEN expenses_to_eur < 500000 THEN 'High Budget (100k-500k)'\n    ELSE 'Whales (>500k)'\n  END AS budget_tier,\n  COUNT(*) AS value\nFROM financial_expenses\nWHERE expenses_to_eur IS NOT NULL\nGROUP BY budget_tier\nORDER BY value DESC;"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "table",
+      "title": "Network of Influence: Indirect Government Access",
+      "description": "Shows 'Hidden' connections: Companies (Clients) that hire Agencies which employ Ex-Politicians.",
+      "datasource": { "type": "postgres", "uid": "lobbyregister" },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 14 },
+      "options": {
+        "showHeader": true,
+        "footer": { "enablePagination": true }
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n    cco.name AS \"Auftraggeber (Client)\",\n    li.name_text AS \"Beauftragte Agentur\",\n    COALESCE(ep.last_name || ', ' || ep.first_name, li2.name_text) AS \"Ex-Politiker im Team\",\n    cl.de AS \"Ehemalige Funktion\"\nFROM contract_client_org cco\n-- Join Path: Client -> Contract -> Agency\nJOIN contract_clients cc ON cco.clients_id = cc.id\nJOIN contract_item c_item ON cc.contract_item_id = c_item.id\nJOIN contracts c ON c_item.parent_id = c.id\nJOIN register_entry re ON c.entry_id = re.id\nJOIN lobbyist_identity li ON re.id = li.entry_id\n-- Check for Government Background (Entrusted Person or Legal Rep)\nLEFT JOIN entrusted_person ep ON li.id = ep.identity_id\nLEFT JOIN legal_representative lr ON li.id = lr.identity_id\nLEFT JOIN lobbyist_identity li2 ON re.id = li2.entry_id\nJOIN recent_government_function rgf \n    ON (ep.recent_gov_function_id = rgf.id OR lr.recent_gov_function_id = rgf.id)\nLEFT JOIN code_label cl ON rgf.type_label_id = cl.id\nWHERE rgf.id IS NOT NULL\nLIMIT 100;"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Financial Trends: Top Spenders History",
+      "description": "Visualizes the budget history of the top 5 current spenders using Time Series.",
+      "datasource": { "type": "postgres", "uid": "lobbyregister" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 26 },
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "table", "placement": "right" }
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  TO_DATE(fe.fiscal_year_start_ym, 'YYYY-MM') AS time,\n  li.name_text AS metric,\n  fe.expenses_to_eur AS value\nFROM financial_expenses fe\nJOIN lobbyist_identity li ON fe.entry_id = li.entry_id\nWHERE fe.fiscal_year_start_ym IS NOT NULL -- CRITICAL FIX for Grafana\n  AND li.id IN (\n    SELECT li_inner.id \n    FROM financial_expenses fe_inner\n    JOIN lobbyist_identity li_inner ON fe_inner.entry_id = li_inner.entry_id\n    ORDER BY fe_inner.expenses_to_eur DESC NULLS LAST\n    LIMIT 5\n)\nORDER BY time ASC;"
+        }
+      ]
+    }
+  ]
+}
