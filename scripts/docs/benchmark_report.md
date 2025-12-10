@@ -1,24 +1,22 @@
-# 📊 Lobbyregister Performance Benchmark
+# 📊 Benchmark Report: benchmark_report.md
 
-**Datum:** 2025-12-03 00:14:08  
-**Datenbank:** PostgreSQL
+**Datum:** 2025-12-10 15:41:12  
+**Datenbank:** PostgreSQL  
+**Legende:** Hits = Cache Treffer (RAM), Reads = Disk I/O (Festplatte)
 
-Dieser Bericht wurde automatisch generiert. Er misst die Performance kritischer Analyse-Abfragen ("Hot Queries").
+| Szenario | Execution (ms) | I/O (Hits/Reads) | Cost | Anmerkung |
+| :--- | :--- | :--- | :--- | :--- |
+| 1. Finanz-Heatmap (Themenfelder) | 81.19 | 25 / 20119 💾 | 5727.77 | |
+| 2. Top-Lobbyisten (Kosten-Analyse) | 9.10 | 2380 / 985 💾 | 1396.43 | |
+| 3. Drehtür-Effekt (Regierungsfunktionen) | 1.68 | 4161 / 135 💾 | 593.58 | |
+| 4. Netzwerk-Analyse (Auftraggeber) | 3.90 | 874 / 169 💾 | 89.50 | |
+| 5. Textsuche (Trigram Index Showcase) | 1.11 | 108 / 15 💾 | 40.02 | |
+| 6. Drehtür-Analyse (Complex MV) | 1.05 | 0 / 57 💾 | 79.21 | |
 
-## Zusammenfassung
-
-| Szenario | Execution Time (ms) | Planning Time (ms) | Kosten (Cost) |
-| :--- | :--- | :--- | :--- |
-| 1. Finanz-Heatmap (Themenfelder) | 47.57 | 1.22 | 5727.77 |
-| 2. Top-Lobbyisten (Kosten-Analyse) | 6.98 | 0.39 | 1396.43 |
-| 3. Drehtür-Effekt (Regierungsfunktionen) | 0.84 | 0.18 | 598.46 |
-| 4. Netzwerk-Analyse (Auftraggeber) | 0.29 | 0.29 | 89.50 |
-
-## Details & SQL
+## SQL Details
 
 ### 1. Finanz-Heatmap (Themenfelder)
-_Aggregiert Ausgaben pro Themenfeld. Join über 5 Tabellen._
-
+Running: `Aggregiert Ausgaben pro Themenfeld. Join über 5 Tabellen.`
 ```sql
 SELECT
                    cl.de as thema,
@@ -35,8 +33,7 @@ SELECT
 ```
 
 ### 2. Top-Lobbyisten (Kosten-Analyse)
-_Findet die Organisationen mit den höchsten Ausgaben. Join Identity & Expenses._
-
+Running: `Findet die Organisationen mit den höchsten Ausgaben. Join Identity & Expenses.`
 ```sql
 SELECT
                    li.name_text,
@@ -51,8 +48,7 @@ SELECT
 ```
 
 ### 3. Drehtür-Effekt (Regierungsfunktionen)
-_Sucht Lobbyisten mit vorheriger Regierungsfunktion. Filter & Join._
-
+Running: `Sucht Lobbyisten mit vorheriger Regierungsfunktion. Filter & Join.`
 ```sql
 SELECT
                    li.last_name,
@@ -65,8 +61,7 @@ SELECT
 ```
 
 ### 4. Netzwerk-Analyse (Auftraggeber)
-_Verknüpft Einträge mit ihren Auftraggebern (Clients)._
-
+Running: `Verknüpft Einträge mit ihren Auftraggebern (Clients).`
 ```sql
 SELECT
                    re.register_number,
@@ -77,5 +72,24 @@ SELECT
                         JOIN public.client_org co ON ci.id = co.client_identity_id
                WHERE ci.clients_present = true
                LIMIT 1000;
+```
+
+### 5. Textsuche (Trigram Index Showcase)
+Running: `Suche nach Firmen/Personen mit Teilstring-Match (z.B. 'Energy'). Profitiert von GIN-Indizes.`
+```sql
+SELECT name_text, identity
+               FROM public.lobbyist_identity
+               WHERE name_text ILIKE '%Energy%'
+               LIMIT 100;
+```
+
+### 6. Drehtür-Analyse (Complex MV)
+Running: `Aggregierte Liste aller Personen mit Regierungsamt aus der Materialized View (falls vorhanden).`
+```sql
+SELECT organization_name, last_name, gov_function_type
+               FROM public.mv_revolving_door_network
+               WHERE end_year_month > '2020-01'
+               ORDER BY end_year_month DESC
+               LIMIT 500;
 ```
 

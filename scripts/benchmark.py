@@ -102,6 +102,20 @@ BENCHMARK_QUERIES = [
     }
 ]
 
+def _sum_buffers(plan_node):
+    """
+    Rekursive Funktion, um Buffer-Stats (Hits/Reads) aus dem JSON-Plan zu summieren.
+    """
+    hits = plan_node.get('Shared Hit Blocks', 0)
+    reads = plan_node.get('Shared Read Blocks', 0)
+
+    if 'Plans' in plan_node:
+        for child in plan_node['Plans']:
+            c_hits, c_reads = _sum_buffers(child)
+            hits += c_hits
+            reads += c_reads
+    return hits, reads
+
 def run_benchmark(output_file: Path):
     results = []
     print(f"🚀 Starte Benchmark auf {DSN}...")
@@ -112,9 +126,9 @@ def run_benchmark(output_file: Path):
             for scenario in BENCHMARK_QUERIES:
                 print(f"   Messe: {scenario['name']}...")
 
-                # Falls eine View/Tabelle noch nicht existiert (z.B. vor der Optimierung), fangen wir den Fehler ab
                 try:
-                    explain_sql = f"EXPLAIN (ANALYZE, FORMAT JSON) {scenario['sql']}"
+                    # BUFFERS Option liefert uns I/O Statistiken
+                    explain_sql = f"EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) {scenario['sql']}"
 
                     start_wall = time.time()
                     with conn.cursor() as cur:
@@ -127,26 +141,31 @@ def run_benchmark(output_file: Path):
                     planning_time_ms = plan_node.get('Planning Time', 0.0)
                     total_cost = plan_node['Plan']['Total Cost']
 
+                    # Buffer-Analyse extrahieren
+                    hits, reads = _sum_buffers(plan_node['Plan'])
+
                     results.append({
                         "name": scenario['name'],
                         "desc": scenario['description'],
                         "exec_time_ms": exec_time_ms,
                         "plan_time_ms": planning_time_ms,
+                        "hits": hits,
+                        "reads": reads,
                         "wall_time_s": end_wall - start_wall,
                         "total_cost": total_cost,
                         "error": None
                     })
                 except psycopg.errors.UndefinedTable:
-                    # Das passiert, wenn die MV noch nicht existiert (Unoptimized Run)
                     conn.rollback()
                     print(f"      ⚠️  Überspringe (Tabelle/View fehlt): {scenario['name']}")
                     results.append({
                         "name": scenario['name'],
                         "desc": scenario['description'],
                         "exec_time_ms": 0,
+                        "hits": 0, "reads": 0,
                         "plan_time_ms": 0,
                         "total_cost": 0,
-                        "error": "Tabelle/View existiert noch nicht (Optimierung fehlt)"
+                        "error": "View/Tabelle fehlt (Optimierung ausstehend)"
                     })
                 except Exception as e:
                     conn.rollback()
@@ -155,6 +174,7 @@ def run_benchmark(output_file: Path):
                         "name": scenario['name'],
                         "desc": scenario['description'],
                         "exec_time_ms": 0,
+                        "hits": 0, "reads": 0,
                         "plan_time_ms": 0,
                         "total_cost": 0,
                         "error": str(e)
@@ -174,9 +194,10 @@ def write_markdown_report(results, filepath):
     md_content = f"""# 📊 Benchmark Report: {filename}
 
 **Datum:** {timestamp}  
-**Datenbank:** PostgreSQL
+**Datenbank:** PostgreSQL  
+**Legende:** Hits = Cache Treffer (RAM), Reads = Disk I/O (Festplatte)
 
-| Szenario | Execution (ms) | Planning (ms) | Cost | Anmerkung |
+| Szenario | Execution (ms) | I/O (Hits/Reads) | Cost | Anmerkung |
 | :--- | :--- | :--- | :--- | :--- |
 """
 
@@ -189,7 +210,12 @@ def write_markdown_report(results, filepath):
             if r['exec_time_ms'] > 500:
                 exec_str = f"**{exec_str}**"
 
-            md_content += f"| {r['name']} | {exec_str} | {r['plan_time_ms']:.2f} | {r['total_cost']:.2f} | |\n"
+            io_str = f"{r['hits']} / {r['reads']}"
+            if r['reads'] > 0:
+                # Highlight wenn Disk I/O stattfindet (Cold Cache Indikator)
+                io_str += " 💾"
+
+            md_content += f"| {r['name']} | {exec_str} | {io_str} | {r['total_cost']:.2f} | |\n"
 
     md_content += "\n## SQL Details\n\n"
     for i, r in enumerate(results):
@@ -201,7 +227,6 @@ def write_markdown_report(results, filepath):
         f.write(md_content)
 
 if __name__ == "__main__":
-    # Dateiname kann als Argument übergeben werden (für das Shell-Script)
     if len(sys.argv) > 1:
         target_file = Path(sys.argv[1])
     else:
