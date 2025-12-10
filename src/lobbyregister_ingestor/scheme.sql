@@ -103,7 +103,6 @@ CREATE TABLE IF NOT EXISTS address (
   post_box                 TEXT,
   country_id               BIGINT REFERENCES country_label(id)
 );
-CREATE INDEX IF NOT EXISTS idx_address_country ON address(country_id);
 
 -- Contact block (phone + arrays of emails / websites)
 -- JSON path: lobbyistIdentity.contactDetails, capitalCityRepresentation.contactDetails,
@@ -120,7 +119,6 @@ CREATE TABLE IF NOT EXISTS contact_email (
   ordinal     INT NOT NULL,
   email       TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_contact_email_contact ON contact_email(contact_id);
 
 -- JSON path: *.contactDetails.websites[]
 CREATE TABLE IF NOT EXISTS contact_website (
@@ -129,7 +127,6 @@ CREATE TABLE IF NOT EXISTS contact_website (
   ordinal     INT NOT NULL,
   website     TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_contact_website_contact ON contact_website(contact_id);
 
 -- Department used in federalGovernment and ministries
 -- JSON path: recentGovernmentFunction.federalGovernment.department,
@@ -219,7 +216,6 @@ CREATE TABLE IF NOT EXISTS account_details (
   last_update_date            TIMESTAMPTZ,
   account_has_codex_violations BOOLEAN NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_account_details_entry ON account_details(entry_id);
 
 -- JSON path: accountDetails.activeDateRanges[]
 CREATE TABLE IF NOT EXISTS account_active_range (
@@ -324,7 +320,6 @@ CREATE TABLE IF NOT EXISTS lobbyist_identity (
   members_present               BOOLEAN,
   memberships_present           BOOLEAN
 );
-CREATE INDEX IF NOT EXISTS idx_identity_entry ON lobbyist_identity(entry_id);
 
 -- Capital city representation (Berlin) wrapper
 -- JSON path: lobbyistIdentity.capitalCityRepresentation
@@ -414,7 +409,6 @@ CREATE TABLE IF NOT EXISTS activities_interests (
   activity_operation_type  TEXT REFERENCES activity_operation_type(code),
   activity_description     TEXT
 );
-CREATE INDEX IF NOT EXISTS idx_activities_entry ON activities_interests(entry_id);
 
 -- JSON path: activitiesAndInterests.typesOfExercisingLobbyWork[]
 CREATE TABLE IF NOT EXISTS activity_exercising_type (
@@ -455,7 +449,6 @@ CREATE TABLE IF NOT EXISTS client_identity (
   clients_present  BOOLEAN NOT NULL,
   clients_count    INTEGER
 );
-CREATE INDEX IF NOT EXISTS idx_client_identity_entry ON client_identity(entry_id);
 
 -- JSON path: clientIdentity.clientOrganizations[]
 CREATE TABLE IF NOT EXISTS client_org (
@@ -471,7 +464,6 @@ CREATE TABLE IF NOT EXISTS client_org (
   address_id                BIGINT REFERENCES address(id),
   contact_id                BIGINT REFERENCES contact(id)
 );
-CREATE INDEX IF NOT EXISTS idx_client_org_ci ON client_org(client_identity_id);
 
 -- JSON path: clientIdentity.clientOrganizations[].legalRepresentatives[]
 CREATE TABLE IF NOT EXISTS client_org_legal_rep (
@@ -1067,121 +1059,6 @@ CREATE TABLE IF NOT EXISTS code_of_conduct (
   own_code_of_conduct   BOOLEAN NOT NULL,
   code_of_conduct_pdf_url TEXT
 );
-
--- ========================
--- Indexes for FK acceleration (selected)
--- ========================
-CREATE INDEX IF NOT EXISTS idx_recent_gov_fn_type ON recent_government_function(type_label_id);
-CREATE INDEX IF NOT EXISTS idx_recent_gov_house_fn ON recent_gov_house_reps(recent_gov_fn_id);
-CREATE INDEX IF NOT EXISTS idx_recent_gov_house_label ON recent_gov_house_reps(function_label_id);
-CREATE INDEX IF NOT EXISTS idx_recent_gov_fed_fn ON recent_gov_federal_gov(recent_gov_fn_id);
-CREATE INDEX IF NOT EXISTS idx_recent_gov_fed_label ON recent_gov_federal_gov(function_label_id);
-CREATE INDEX IF NOT EXISTS idx_recent_gov_fed_dept ON recent_gov_federal_gov(department_id);
-CREATE INDEX IF NOT EXISTS idx_recent_gov_admin_fn ON recent_gov_federal_admin(recent_gov_fn_id);
-
-CREATE INDEX IF NOT EXISTS idx_account_active_account ON account_active_range(account_id);
-CREATE INDEX IF NOT EXISTS idx_account_inactive_account ON account_inactive_range(account_id);
-CREATE INDEX IF NOT EXISTS idx_account_rev_account ON account_register_entry_version(account_id);
-CREATE INDEX IF NOT EXISTS idx_codex_violation_account ON codex_violation(account_id);
-CREATE INDEX IF NOT EXISTS idx_entry_details_entry ON register_entry_details(entry_id);
-CREATE INDEX IF NOT EXISTS idx_entry_annual_details ON register_entry_annual_update(details_id);
-CREATE INDEX IF NOT EXISTS idx_entry_fiscal_details ON register_entry_fiscal_year_update(details_id);
-
-CREATE INDEX IF NOT EXISTS idx_identity_recent_gov ON lobbyist_identity(recent_gov_function_id);
-CREATE INDEX IF NOT EXISTS idx_identity_capital_city_repr ON lobbyist_identity(capital_city_repr_id);
-CREATE INDEX IF NOT EXISTS idx_identity_address ON lobbyist_identity(address_id);
-CREATE INDEX IF NOT EXISTS idx_identity_contact ON lobbyist_identity(contact_id);
-CREATE INDEX IF NOT EXISTS idx_identity_legal_form_label ON lobbyist_identity(legal_form_label_id);
-CREATE INDEX IF NOT EXISTS idx_identity_legal_form_type ON lobbyist_identity(legal_form_type_label_id);
-CREATE INDEX IF NOT EXISTS idx_capital_city_repr_address ON capital_city_representation(address_id);
-CREATE INDEX IF NOT EXISTS idx_capital_city_repr_contact ON capital_city_representation(contact_id);
-CREATE INDEX IF NOT EXISTS idx_entrusted_person_identity ON entrusted_person(identity_id);
-CREATE INDEX IF NOT EXISTS idx_entrusted_person_recent_gov ON entrusted_person(recent_gov_function_id);
-CREATE INDEX IF NOT EXISTS idx_legal_rep_identity ON legal_representative(identity_id);
-CREATE INDEX IF NOT EXISTS idx_legal_rep_recent_gov ON legal_representative(recent_gov_function_id);
-CREATE INDEX IF NOT EXISTS idx_legal_rep_contact ON legal_representative(contact_id);
-CREATE INDEX IF NOT EXISTS idx_named_employee_identity ON named_employee(identity_id);
-CREATE INDEX IF NOT EXISTS idx_members_count_identity ON members_count(identity_id);
-CREATE INDEX IF NOT EXISTS idx_membership_identity ON membership(identity_id);
-
-CREATE INDEX IF NOT EXISTS idx_financial_expenses_entry ON financial_expenses(entry_id);
-CREATE INDEX IF NOT EXISTS idx_financial_expenses_year_amount ON financial_expenses(fiscal_year_start_ym, expenses_to_eur);
-CREATE INDEX IF NOT EXISTS idx_activity_ex_type_activities ON activity_exercising_type(activities_id);
-CREATE INDEX IF NOT EXISTS idx_activity_ex_type_label ON activity_exercising_type(label_id);
-CREATE INDEX IF NOT EXISTS idx_field_of_interest_activities ON field_of_interest(activities_id);
-CREATE INDEX IF NOT EXISTS idx_field_of_interest_label ON field_of_interest(label_id);
-CREATE INDEX IF NOT EXISTS idx_legislative_project_activities ON legislative_project(activities_id);
-
-CREATE INDEX IF NOT EXISTS idx_donators_entry ON donators(entry_id);
-CREATE INDEX IF NOT EXISTS idx_donator_item_parent ON donator_item(parent_id);
-CREATE INDEX IF NOT EXISTS idx_client_org_address ON client_org(address_id);
-CREATE INDEX IF NOT EXISTS idx_client_org_contact ON client_org(contact_id);
-CREATE INDEX IF NOT EXISTS idx_client_org_lr_org ON client_org_legal_rep(client_org_id);
-CREATE INDEX IF NOT EXISTS idx_client_person_ci ON client_person(client_identity_id);
-CREATE INDEX IF NOT EXISTS idx_employees_involved_entry ON employees_involved(entry_id);
-CREATE INDEX IF NOT EXISTS idx_public_allowance_country ON public_allowance_item(country_id);
-CREATE INDEX IF NOT EXISTS idx_public_allowances_entry ON public_allowances(entry_id);
-CREATE INDEX IF NOT EXISTS idx_public_allowance_item_parent ON public_allowance_item(parent_id);
-CREATE INDEX IF NOT EXISTS idx_public_allowance_item_type ON public_allowance_item(type_label_id);
-CREATE INDEX IF NOT EXISTS idx_main_funding_sources_entry ON main_funding_sources(entry_id);
-CREATE INDEX IF NOT EXISTS idx_main_funding_source_item_parent ON main_funding_source_item(parent_id);
-CREATE INDEX IF NOT EXISTS idx_membership_fees_entry ON membership_fees(entry_id);
-CREATE INDEX IF NOT EXISTS idx_individual_contributor_fees ON individual_contributor(fees_id);
-CREATE INDEX IF NOT EXISTS idx_annual_reports_entry ON annual_reports(entry_id);
-
-CREATE INDEX IF NOT EXISTS idx_contracts_entry ON contracts(entry_id);
-CREATE INDEX IF NOT EXISTS idx_contract_contractors_item ON contract_contractors(contract_item_id);
-CREATE INDEX IF NOT EXISTS idx_regproj_item_parent ON regulatory_project_item(parent_id);
-CREATE INDEX IF NOT EXISTS idx_regulatory_projects_entry ON regulatory_projects(entry_id);
-CREATE INDEX IF NOT EXISTS idx_reg_project_printed_matter_proj ON reg_project_printed_matter(project_item_id);
-CREATE INDEX IF NOT EXISTS idx_reg_project_printed_matter_ministry ON reg_project_printed_matter_ministry(printed_matter_id);
-CREATE INDEX IF NOT EXISTS idx_reg_project_printed_matter_ministry_id ON reg_project_printed_matter_ministry(ministry_id);
-CREATE INDEX IF NOT EXISTS idx_migrated_draft_bill_pmatter ON migrated_draft_bill(printed_matter_id);
-CREATE INDEX IF NOT EXISTS idx_migrated_draft_bill_ministry ON migrated_draft_bill_ministry(migrated_db_id);
-CREATE INDEX IF NOT EXISTS idx_migrated_draft_bill_ministry_id ON migrated_draft_bill_ministry(ministry_id);
-CREATE INDEX IF NOT EXISTS idx_draft_bill_project_item ON draft_bill(project_item_id);
-CREATE INDEX IF NOT EXISTS idx_draft_bill_ministry_bill ON draft_bill_ministry(draft_bill_id);
-CREATE INDEX IF NOT EXISTS idx_draft_bill_ministry_id ON draft_bill_ministry(ministry_id);
-CREATE INDEX IF NOT EXISTS idx_reg_proj_affected_law_proj ON reg_project_affected_law(project_item_id);
-CREATE INDEX IF NOT EXISTS idx_reg_proj_field_of_interest_proj ON reg_project_field_of_interest(project_item_id);
-CREATE INDEX IF NOT EXISTS idx_reg_proj_field_of_interest_label ON reg_project_field_of_interest(label_id);
-
-CREATE INDEX IF NOT EXISTS idx_statements_entry ON statements(entry_id);
-CREATE INDEX IF NOT EXISTS idx_statement_item_parent ON statement_item(parent_id);
-CREATE INDEX IF NOT EXISTS idx_contract_item_parent ON contract_item(parent_id);
-CREATE INDEX IF NOT EXISTS idx_statement_recipient_group_item ON statement_recipient_group(statement_item_id);
-CREATE INDEX IF NOT EXISTS idx_statement_recipient_parliament_group ON statement_recipient_parliament(group_id);
-CREATE INDEX IF NOT EXISTS idx_statement_recipient_parliament_label ON statement_recipient_parliament(label_id);
-CREATE INDEX IF NOT EXISTS idx_statement_recipient_federal_group ON statement_recipient_federal_gov(group_id);
-CREATE INDEX IF NOT EXISTS idx_statement_recipient_federal_dept ON statement_recipient_federal_gov(department_id);
-
-CREATE INDEX IF NOT EXISTS idx_contract_field_of_interest_item ON contract_field_of_interest(contract_item_id);
-CREATE INDEX IF NOT EXISTS idx_contract_field_of_interest_label ON contract_field_of_interest(label_id);
-CREATE INDEX IF NOT EXISTS idx_contract_reg_project_ref_item ON contract_reg_project_ref(contract_item_id);
-CREATE INDEX IF NOT EXISTS idx_contract_clients_item ON contract_clients(contract_item_id);
-CREATE INDEX IF NOT EXISTS idx_contract_client_org_clients ON contract_client_org(clients_id);
-CREATE INDEX IF NOT EXISTS idx_contract_client_org_address ON contract_client_org(address_id);
-CREATE INDEX IF NOT EXISTS idx_contract_client_org_contact ON contract_client_org(contact_id);
-CREATE INDEX IF NOT EXISTS idx_contract_client_org_lr_org ON contract_client_org_legal_rep(client_org_id);
-CREATE INDEX IF NOT EXISTS idx_contract_client_org_fr_org ON contract_client_org_financial_resources(client_org_id);
-CREATE INDEX IF NOT EXISTS idx_contract_client_person_clients ON contract_client_person(clients_id);
-CREATE INDEX IF NOT EXISTS idx_contract_client_person_fr_person ON contract_client_person_financial_resources(client_person_id);
-CREATE INDEX IF NOT EXISTS idx_contract_entrusted_person_contractors ON contractor_entrusted_person(contractors_id);
-CREATE INDEX IF NOT EXISTS idx_contract_entrusted_person_recent_gov ON contractor_entrusted_person(recent_gov_function_id);
-CREATE INDEX IF NOT EXISTS idx_contract_org_contractors ON contractor_org(contractors_id);
-CREATE INDEX IF NOT EXISTS idx_contract_org_address ON contractor_org(address_id);
-CREATE INDEX IF NOT EXISTS idx_contract_org_contact ON contractor_org(contact_id);
-CREATE INDEX IF NOT EXISTS idx_contract_org_capital_address ON contractor_org(capital_city_repr_address_id);
-CREATE INDEX IF NOT EXISTS idx_contract_org_capital_contact ON contractor_org(capital_city_repr_contact_id);
-CREATE INDEX IF NOT EXISTS idx_contract_org_lr_org ON contractor_org_legal_rep(contractor_org_id);
-CREATE INDEX IF NOT EXISTS idx_contract_org_lr_recent_gov ON contractor_org_legal_rep(recent_gov_function_id);
-CREATE INDEX IF NOT EXISTS idx_assigned_person_contractors ON assigned_person(contractors_id);
-CREATE INDEX IF NOT EXISTS idx_assigned_person_recent_gov ON assigned_person(recent_gov_function_id);
-CREATE INDEX IF NOT EXISTS idx_contract_person_contractors ON contractor_person(contractors_id);
-CREATE INDEX IF NOT EXISTS idx_contract_person_recent_gov ON contractor_person(recent_gov_function_id);
-
-CREATE INDEX IF NOT EXISTS idx_code_of_conduct_entry ON code_of_conduct(entry_id);
-CREATE INDEX IF NOT EXISTS idx_address_city ON address(city);
 
 -- ========================
 -- END OF SCHEMA
