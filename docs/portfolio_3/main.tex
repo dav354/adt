@@ -229,7 +229,7 @@ Unser Ansatz basiert auf drei Säulen der Messbarkeit:
 
 \item \textbf{Cold vs. Warm Cache Szenarien:} Ein häufiger Fehler in Datenbank-Benchmarks ist das Ignorieren des Caches. Eine Abfrage, die beim zweiten Aufruf schnell ist, kann beim ersten Aufruf das System blockieren. Unser Mess-Skript erzwingt daher durch Container-Neustarts einen „Cold State“, um den Worst-Case (I/O-Bound) zu simulieren, und misst anschließend den „Warm State“ (CPU-Bound).
 
-\item \textbf{Deterministische Hardware-Limits:} Um keine verfälschten Ergebnisse durch überzüchtete Entwickler-Hardware zu erhalten, wurde die PostgreSQL-Instanz im Docker-Container strikt limitiert. Dies simuliert eine realistische Cloud-Instanz (z.B. AWS t3.medium) und macht die I/O-Optimierungen erst sichtbar.
+\item \textbf{Deterministische Ressourcensteuerung:} Die PostgreSQL-Instanz erhält über \texttt{docker compose} klar definierte, performante Settings (NVMe-optimiertes I/O, parallele Worker, großzügige Cache-Hints). Das sorgt für reproduzierbare Benchmarks und zeigt die Wirkung der Optimierungen auf einer leistungsfähigen Konfiguration.
 \end{itemize}
 \newpage
 \begin{lstlisting}[language=bash, caption=PostgreSQL Docker Hardware-Constraints]
@@ -237,12 +237,50 @@ command: >
 postgres
 -c shared_buffers=512MB
 -c effective_cache_size=4GB
--c work_mem=32MB
 -c maintenance_work_mem=256MB
+-c work_mem=32MB
+-c default_statistics_target=200
+-c checkpoint_completion_target=0.9
+-c checkpoint_timeout=15min
+-c max_wal_size=2GB
+-c min_wal_size=512MB
+-c wal_buffers=16MB
+-c wal_compression=on
+-c random_page_cost=1.0
 -c effective_io_concurrency=400
 -c max_worker_processes=6
--c random_page_cost=1.0
+-c max_parallel_workers=6
+-c max_parallel_workers_per_gather=4
 \end{lstlisting}
+
+Diese Konfiguration ist bewusst auf hohe Performance getrimmt (NVMe/I/O, Parallelisierung, Cache-Hints) und hält die Rahmenbedingungen reproduzierbar, damit die Optimierungen messbar bleiben. Die Parameter lassen sich in drei Kategorien unterteilen:
+Der gesamte Datenbestand liegt aktuell bei ca. 241 MB und passt damit vollständig in den Cache – ideal, um Index- und Planner-Optimierungen sichtbar zu machen.
+
+\textbf{1. Speicher \& Caching:}
+\begin{itemize}
+    \item \texttt{shared\_buffers=512MB}: Dedizierter Speicher für PostgreSQL; liefert einen guten Mix aus Cache-Treffern und NVMe-Auslastung.
+    \item \texttt{effective\_cache\_size=4GB}: Teilt dem Query Planner mit, dass das Betriebssystem ca. 4GB Dateisystem-Cache zur Verfügung stellt. Dies fördert die Nutzung von Indizes gegenüber Sequential Scans.
+    \item \texttt{work\_mem=32MB}: Arbeitspeicher pro Operation (z.B. Sortieren, Hashen). Ein höherer Wert verhindert, dass temporäre Dateien auf die Festplatte geschrieben werden müssen.
+    \item \texttt{maintenance\_work\_mem=256MB}: Beschleunigt Wartungsarbeiten wie \texttt{VACUUM} oder das Erstellen von Indizes.
+\end{itemize}
+
+\textbf{2. I/O-Verhalten \& SSD-Optimierung:}
+\begin{itemize}
+    \item \texttt{random\_page\_cost=1.0}: Standardmäßig nimmt PostgreSQL an, dass wahlfreie Zugriffe (HDD) teurer sind als sequenzielle. Durch das Setzen auf 1.0 signalisieren wir die Nutzung von SSDs (NVMe), was den Planner aggressiver Indizes nutzen lässt.
+    \item \texttt{effective\_io\_concurrency=400}: Erlaubt PostgreSQL, hunderte I/O-Anfragen parallel an die SSD zu senden (Prefetching).
+\end{itemize}
+
+\textbf{3. Write-Ahead-Log (WAL) \& Checkpoints:}
+Diese Einstellungen optimieren die Schreibgeschwindigkeit bei großen Datenmengen (ETL-Prozess):
+\begin{itemize}
+    \item \texttt{checkpoint\_timeout=15min} / \texttt{max\_wal\_size=2GB}: Vergrößert den Abstand zwischen Checkpoints (Schreiben der Dirty Pages auf Disk), was die I/O-Last glättet.
+    \item \texttt{wal\_compression=on}: Komprimiert das Transaktionslog, um Disk-I/O zu sparen.
+\end{itemize}
+
+\textbf{4. Parallelisierung:}
+\begin{itemize}
+    \item \texttt{max\_parallel\_workers\_per\_gather=4}: Erlaubt einer einzelnen Query, bis zu 4 CPU-Kerne gleichzeitig zu nutzen (z.B. für parallele Sequential Scans oder Joins).
+\end{itemize}
 
 Nur durch diese Limitierung (insb. \texttt{shared\_buffers}) wird der Unterschied zwischen einem speicherfressenden Table-Scan und einem effizienten Index-Scan in den Messergebnissen deutlich.
 
@@ -276,7 +314,7 @@ Die politisch brisante Frage, welche Lobbyisten früher Regierungsämter innehat
 Um diese Liste zu erstellen, musste die Datenbank zur Laufzeit riesige Mengen an Relationen joinen und filtern. Ohne Optimierung ist diese Abfrage für ein interaktives Dashboard ungeeignet, da sie bei wachsenden Datenmengen linear langsamer wird und hohe I/O-Lasten auf dem Speichersystem erzeugt.
 
 \section{Einfluss des Caches}
-Unsere Messungen zeigten zudem, dass der „Warm Cache“ zwar die Laufzeit drückte (da Daten im RAM lagen), aber die *CPU-Kosten* hoch blieben. Das System war also ineffizient, selbst wenn es schnell antwortete. Unser Ziel für die Optimierung war daher nicht nur Geschwindigkeit, sondern Effizienz: Wir wollten die Arbeit, die die Datenbank leisten muss, fundamental reduzieren.
+Unsere Messungen zeigten zudem, dass der „Warm Cache“ zwar die Laufzeit drückte (da Daten im RAM lagen), aber die \emph{CPU-Kosten} hoch blieben. Das System war also ineffizient, selbst wenn es schnell antwortete. Unser Ziel für die Optimierung war daher nicht nur Geschwindigkeit, sondern Effizienz: Wir wollten die Arbeit, die die Datenbank leisten muss, fundamental reduzieren.
 
 \chapter{Optimierte Lösung: Advanced Indexing \& Views}
 
@@ -401,7 +439,7 @@ Abschließend führt Abbildung \ref{fig:dashboard_full} die optimierten Komponen
 \label{fig:dashboard_full}
 \end{figure}
 
-Dieses Beispiel verdeutlicht, dass Performance-Optimierung nicht nur isolierte Abfragen beschleunigt, sondern erst die **Kombination** verschiedener Analysewerkzeuge in einem Dashboard ermöglicht, ohne dass sich Ladezeiten akkumulieren.
+Dieses Beispiel verdeutlicht, dass Performance-Optimierung nicht nur isolierte Abfragen beschleunigt, sondern erst die \textbf{Kombination} verschiedener Analysewerkzeuge in einem Dashboard ermöglicht, ohne dass sich Ladezeiten akkumulieren.
 
 \subsection{Komplexe Finanz-Aggregation}
 
