@@ -1,0 +1,738 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    li.name_text as \"Name\",\n    a.city as \"Standort\",\n    li.legal_form_text as \"Rechtsform\",\n    mc.total_count as \"Mitglieder (Total)\",\n    re.register_number as \"Reg-Nr.\"\nFROM lobbyist_identity li\nJOIN register_entry re ON li.entry_id = re.id\nJOIN address a ON li.address_id = a.id\nLEFT JOIN members_count mc ON li.id = mc.identity_id\nWHERE li.name_text IN (${Organization:sqlstring})",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "lobbyist_identity",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Stammdaten",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT SUM(fe.expenses_to_eur) as \"Gesamtausgaben (Lifetime)\"\nFROM financial_expenses fe\nJOIN register_entry re ON fe.entry_id = re.id\nJOIN lobbyist_identity li ON re.id = li.entry_id\nWHERE li.name_text IN (${Organization:sqlstring})",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "financial_expenses",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Finanzvolumen Total",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 10,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    TO_DATE(fe.fiscal_year_start_ym, 'YYYY-MM') as \"time\",\n    fe.expenses_to_eur as \"Ausgaben\"\nFROM financial_expenses fe\nJOIN register_entry re ON fe.entry_id = re.id\nJOIN lobbyist_identity li ON re.id = li.entry_id\nWHERE li.name_text IN (${Organization:sqlstring})\nORDER BY 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "financial_expenses",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Ausgabenentwicklung (Trend)",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 14,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "WITH sector_avg AS (\n    SELECT AVG(fe.expenses_to_eur) as avg_spend\n    FROM financial_expenses fe\n    WHERE fe.fiscal_year_start_ym >= '2021-01'\n)\nSELECT \n    fe.expenses_to_eur as \"Aktuelle Ausgaben\",\n    (SELECT avg_spend FROM sector_avg) as \"Marktdurchschnitt\"\nFROM register_entry re\nJOIN lobbyist_identity li ON re.id = li.entry_id\nJOIN financial_expenses fe ON re.id = fe.entry_id\nWHERE li.name_text IN (${Organization:sqlstring})\nORDER BY fe.fiscal_year_start_ym DESC\nLIMIT 1;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "financial_expenses",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Benchmark (vs. Durchschnitt)",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
+      "id": 4,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    ep.last_name as \"Name\", \n    ep.first_name as \"Vorname\",\n    'Betraute Person' as \"Rolle\",\n    rgf.end_year_month as \"Regierungsamt bis\"\nFROM entrusted_person ep\nJOIN lobbyist_identity li ON ep.identity_id = li.id\nLEFT JOIN recent_government_function rgf ON ep.recent_gov_function_id = rgf.id\nWHERE li.name_text IN (${Organization:sqlstring})\nUNION ALL\nSELECT \n    lr.last_name, \n    lr.first_name,\n    'Gesetzlicher Vertreter',\n    rgf.end_year_month\nFROM legal_representative lr\nJOIN lobbyist_identity li ON lr.identity_id = li.id\nLEFT JOIN recent_government_function rgf ON lr.recent_gov_function_id = rgf.id\nWHERE li.name_text IN (${Organization:sqlstring})",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "entrusted_person",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Mitarbeiter & Netzwerk",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      },
+      "id": 5,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT rpi.title as \"Gesetzesvorhaben\"\nFROM regulatory_project_item rpi\nJOIN regulatory_projects rp ON rpi.parent_id = rp.id\nJOIN register_entry re ON rp.entry_id = re.id\nJOIN lobbyist_identity li ON re.id = li.entry_id\nWHERE li.name_text IN (${Organization:sqlstring})\nORDER BY 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "regulatory_project_item",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Aktuelle Gesetzesvorhaben",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 6,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    d.name as \"Spender\", \n    d.amount_to_eur as \"Betrag (bis)\",\n    d.description as \"Bemerkung\"\nFROM donator_item d\nJOIN donators dw ON d.parent_id = dw.id\nJOIN register_entry re ON dw.entry_id = re.id\nJOIN lobbyist_identity li ON re.id = li.entry_id\nWHERE li.name_text IN (${Organization:sqlstring})\nORDER BY 2 DESC",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "donator_item",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Erhaltene Spenden (Funding)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "id": 7,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    ci.description as \"Vertragsgegenstand\",\n    co.name as \"Auftragnehmer\"\nFROM contract_item ci\nJOIN contracts c ON ci.parent_id = c.id\nJOIN register_entry re ON c.entry_id = re.id\nJOIN lobbyist_identity li ON re.id = li.entry_id\nLEFT JOIN contract_contractors cc ON ci.id = cc.contract_item_id\nLEFT JOIN contractor_org co ON cc.id = co.contractors_id\nWHERE li.name_text IN (${Organization:sqlstring})",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "contract_item",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Regierungsaufträge (Contracts)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 22
+      },
+      "id": 15,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    pa.amount_to_eur as \"Betrag\",\n    pa.description as \"Grund\",\n    cl.de as \"Typ\",\n    pa.location as \"Ort\"\nFROM public_allowance_item pa\nJOIN public_allowances pas ON pa.parent_id = pas.id\nJOIN register_entry re ON pas.entry_id = re.id\nJOIN lobbyist_identity li ON re.id = li.entry_id\nLEFT JOIN code_label cl ON pa.type_label_id = cl.id\nWHERE li.name_text IN (${Organization:sqlstring})\nORDER BY 1 DESC;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "public_allowances",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Öffentliche Zuwendungen (Zuschüsse)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 22
+      },
+      "id": 16,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    ai.activity_description as \"Tätigkeitsbeschreibung\"\nFROM activities_interests ai\nJOIN register_entry re ON ai.entry_id = re.id\nJOIN lobbyist_identity li ON re.id = li.entry_id\nWHERE li.name_text IN (${Organization:sqlstring});",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "activities_interests",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Selbstbeschreibung (Textanalyse)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "id": 17,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    arev.version as \"Version\",\n    arev.valid_from_date as \"Gültig ab\",\n    arev.version_active_lobbyist as \"Aktiv?\"\nFROM account_register_entry_version arev\nJOIN account_details ad ON arev.account_id = ad.id\nJOIN register_entry re ON ad.entry_id = re.id\nJOIN lobbyist_identity li ON re.id = li.entry_id\nWHERE li.name_text IN (${Organization:sqlstring})\nORDER BY arev.version DESC\nLIMIT 20;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "account_register_entry_version",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Änderungshistorie (Versionen)",
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "lobbyregister"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "PostgreSQL",
+          "value": "PostgreSQL"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "postgres",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "definition": "SELECT DISTINCT name_text FROM lobbyist_identity ORDER BY name_text;",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Organisation",
+        "multi": false,
+        "name": "Organization",
+        "options": [],
+        "query": "SELECT DISTINCT name_text FROM lobbyist_identity ORDER BY name_text;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query",
+        "datasource": {
+          "type": "postgres",
+          "uid": "${datasource}"
+        }
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Lobbyregister - Organization Profiler",
+  "uid": "lobby_org",
+  "version": 2,
+  "weekStart": ""
+}

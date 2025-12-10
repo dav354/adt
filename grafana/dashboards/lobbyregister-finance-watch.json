@@ -1,0 +1,272 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    li.name_text as \"Empfänger\", \n    SUM(pa.amount_to_eur) as \"Zuwendungen (Max)\"\nFROM public_allowance_item pa\nJOIN public_allowances pas ON pa.parent_id = pas.id\nJOIN register_entry re ON pas.entry_id = re.id\nJOIN lobbyist_identity li ON re.id = li.entry_id\nGROUP BY li.name_text\nORDER BY 2 DESC\nLIMIT 20",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "public_allowance_item",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Top Empfänger staatlicher Zuschüsse",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    co.name as \"Auftragnehmer\",\n    COUNT(ci.id) as \"Anzahl Aufträge\"\nFROM contract_item ci\nJOIN contract_contractors cc ON ci.id = cc.contract_item_id\nJOIN contractor_org co ON cc.id = co.contractors_id\nGROUP BY co.name\nORDER BY 2 DESC\nLIMIT 20",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "contract_item",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Top Auftragnehmer der Regierung",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    COALESCE(cl.de, 'Unbekannt') as \"Regierungsfunktion\",\n    COUNT(*) as \"Anzahl Wechsler\"\nFROM recent_government_function rgf\nLEFT JOIN code_label cl ON rgf.type_label_id = cl.id\nWHERE rgf.id IN (SELECT recent_gov_function_id FROM lobbyist_identity WHERE recent_gov_function_present = true)\n   OR rgf.id IN (SELECT recent_gov_function_id FROM entrusted_person WHERE recent_gov_function_present = true)\nGROUP BY cl.de\nORDER BY 2 DESC\nLIMIT 15",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "recent_government_function",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Drehtür-Effekt: Woher kommen die Lobbyisten?",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 4,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    dept.title as \"Ministerium / Behörde\",\n    COUNT(*) as \"Anzahl ehemaliger Mitarbeiter im Lobbyismus\"\nFROM recent_government_function rgf\nJOIN recent_gov_federal_gov rbfg ON rgf.id = rbfg.recent_gov_fn_id\nJOIN department dept ON rbfg.department_id = dept.id\nWHERE rgf.id IN (SELECT recent_gov_function_id FROM lobbyist_identity WHERE recent_gov_function_present = true)\n   OR rgf.id IN (SELECT recent_gov_function_id FROM entrusted_person WHERE recent_gov_function_present = true)\nGROUP BY dept.title\nORDER BY 2 DESC\nLIMIT 20",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "department",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Ministerien-Ranking (Targeting)",
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "lobbyregister"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "PostgreSQL",
+          "value": "PostgreSQL"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "postgres",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Lobbyregister - Government & Finance Watch",
+  "uid": "lobby_gov_finance",
+  "version": 1,
+  "weekStart": ""
+}
