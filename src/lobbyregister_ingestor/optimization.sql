@@ -171,6 +171,7 @@ SELECT
   cl.de AS field_label,
   cl.code AS field_code
 FROM public.register_entry re
+JOIN public.lobbyist_identity li ON re.id = li.entry_id
 JOIN public.activities_interests ai ON re.id = ai.entry_id
 JOIN public.field_of_interest foi ON ai.id = foi.activities_id
 LEFT JOIN public.code_label cl ON foi.label_id = cl.id;

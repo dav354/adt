@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -eo pipefail
 
 # Verzeichnisse
 DOCS_DIR="docs/benchmark_results"
@@ -15,12 +15,27 @@ echo ""
 # PHASE 1: UNOPTIMIZED (Baseline)
 # ---------------------------------------------------------
 echo ">> [1/4] Bereite Baseline vor (Lösche Optimierungen)..."
-# Wir löschen sicherheitshalber MVs und Indizes, um den "Ur-Zustand" zu simulieren
+# Wir löschen sicherheitshalber alle neuen Views/MVs (vw_/mv_) und idx_-Indizes aus optimization.sql
 docker compose exec db psql -U test -d lobby -c "
-    DROP MATERIALIZED VIEW IF EXISTS public.mv_financial_tops;
-    DROP MATERIALIZED VIEW IF EXISTS public.mv_revolving_door_network;
-    DROP EXTENSION IF EXISTS pg_trgm CASCADE;
-    DROP INDEX IF EXISTS public.idx_active_lobbyists_only;
+DO \$\$DECLARE r record;
+BEGIN
+  -- Drop plain views (vw_*)
+  FOR r IN SELECT schemaname, viewname FROM pg_views WHERE schemaname = 'public' AND viewname LIKE 'vw_%'
+  LOOP EXECUTE format('DROP VIEW IF EXISTS %I.%I CASCADE;', r.schemaname, r.viewname); END LOOP;
+
+  -- Drop materialized views (mv_*)
+  FOR r IN SELECT schemaname, matviewname AS viewname FROM pg_matviews WHERE schemaname = 'public' AND matviewname LIKE 'mv_%'
+  LOOP EXECUTE format('DROP MATERIALIZED VIEW IF EXISTS %I.%I CASCADE;', r.schemaname, r.viewname); END LOOP;
+
+  -- Drop optimization indexes (idx_*)
+  FOR r IN SELECT schemaname, indexname FROM pg_indexes WHERE schemaname = 'public' AND indexname LIKE 'idx_%'
+  LOOP EXECUTE format('DROP INDEX IF EXISTS %I.%I;', r.schemaname, r.indexname); END LOOP;
+
+  -- Drop trigram extension if present
+  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_trgm') THEN
+    EXECUTE 'DROP EXTENSION IF EXISTS pg_trgm CASCADE';
+  END IF;
+END\$\$;
 " > /dev/null 2>&1
 
 echo ">> Restarting DB to clear Cache (Cold State)..."
