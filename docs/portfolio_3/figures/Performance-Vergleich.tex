@@ -18,27 +18,25 @@
             ymajorgrids=true,
             grid style=dashed,
         ]
-            % Baseline (Cold)
+            % Baseline (Cold) - Werte aus 1_baseline_cold.md
             \addplot[fill=red!40] coordinates {
-                (Heatmap,97.82) 
-                (Lobbyisten,12.54) 
-                (Drehtür,1.64) 
-                (Netzwerk,1.03) 
-                (Textsuche,6.81)
+                (Heatmap,123.05)
+                (Lobbyisten,14.46)
+                (Drehtür,2.88)
+                (Netzwerk,2.96)
+                (Textsuche,5.02)
             };
-            
-            % Optimized (Cold)
+            % Optimized (Cold) - Werte aus 3_optimized_cold.md
             \addplot[fill=green!40] coordinates {
-                (Heatmap,61.42) 
-                (Lobbyisten,12.43) 
-                (Drehtür,1.52) 
-                (Netzwerk,0.67) 
-                (Textsuche,0.34)
+                (Heatmap,61.61)
+                (Lobbyisten,13.03)
+                (Drehtür,1.58)
+                (Netzwerk,1.15)
+                (Textsuche,0.30)
             };
-            
             \legend{Baseline (Cold), Optimized (Cold)}
         \end{axis}
     \end{tikzpicture}
-    \caption{Performance-Vergleich vor und nach Optimierung (Cold Cache). Beachte besonders den extremen Gewinn bei der Textsuche (Faktor 20).}
+    \caption{Performance-Vergleich vor und nach Optimierung (Cold Cache). Beachte besonders die Reduktion bei der Textsuche und der Heatmap.}
     \label{fig:benchmark_chart}
 \end{figure}
