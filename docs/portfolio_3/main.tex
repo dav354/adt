@@ -218,8 +218,6 @@ Das Ergebnis ist eine Datenbank, die selbst komplexe Fragen zum Lobbyismus in Mi
 
 Performance-Optimierung ist ohne valide Messungen ein Blindflug. Um die Wirksamkeit unserer Maßnahmen objektiv zu bewerten, haben wir uns gegen einfache „Stoppuhr-Messungen“ im Client entschieden, da diese durch Netzwerklatenzen verfälscht werden können. Stattdessen wurde ein automatisiertes Benchmarking-Framework entwickelt (\texttt{scripts/benchmark.py}), das tief in die Interna der PostgreSQL-Engine blickt.
 
-% --- IN MAIN.TEX (Chapter 2) ---
-
 \section{Messverfahren und Metriken}
 
 Unser Ansatz basiert auf drei Säulen der Messbarkeit:
@@ -381,13 +379,10 @@ Die erstellte View \texttt{mv\_revolving\_door\_network} „plättet“ das norm
 
 Die Implementierung der Optimierungsstrategien führte zu messbaren Leistungssteigerungen, die unsere theoretischen Erwartungen bestätigten und in Teilen sogar übertrafen. Die Ergebnisse validieren den Ansatz, dass Schema-Design und physisches Design (Indizes/Views) Hand in Hand gehen müssen, um eine reaktive User Experience zu gewährleisten.
 
-% --- IN MAIN.TEX (Chapter 5) ---
-
 \section{Analyse der Messergebnisse}
 
 Wie Tabelle \ref{tab:benchmark_results} zeigt, konnten wir die Laufzeiten in den kritischen Bereichen massiv senken.
 
-% Hier wird die externe Tabelle eingebunden
 \input{figures/Messergebnisse.tex}
 
 Besonders signifikant ist der Unterschied bei der \textbf{Textsuche (Szenario 5)}. Durch den Einsatz des Trigram-Index sank die Laufzeit im Warm-Cache von $5,14$ ms auf $0,14$ ms. Das entspricht einer Beschleunigung um den \textbf{Faktor 36}. Auch im Cold-Cache-Szenario (siehe Diagramm) zeigt sich eine Verbesserung von $5,02$ ms auf $0,30$ ms. Was vorher bei vielen gleichzeitigen Nutzern zu einer spürbaren CPU-Last geführt hätte, ist nun im Systemrauschen kaum noch messbar.
@@ -398,7 +393,6 @@ Noch dramatischer ist der Effekt bei den komplexen Analysen. Die Nutzung der Mat
 
 Um die Größenordnungen der Verbesserung greifbar zu machen, stellt Abbildung \ref{fig:benchmark_chart} die Laufzeiten (Cold Cache) logarithmisch dar.
 
-% Hier wird das externe Diagramm eingebunden
 \input{figures/Performance-Vergleich.tex}
 
 Der Balken für die „Textsuche“ sinkt drastisch, was die Effizienz des GIN-Index belegt. Auch die Finanz-Heatmap profitierte deutlich von den optimierten Indizes (Reduktion von ca. 123 ms auf 61 ms im Cold-State), da weniger Random-I/O auf der Festplatte nötig war.
@@ -454,8 +448,6 @@ Abbildung \ref{fig:grafana_finance} demonstriert die Leistungsfähigkeit der Mat
 
 Zu sehen sind die Themenfelder mit den höchsten deklarierten Lobby-Ausgaben. Um diese Grafik zu erzeugen, müssten normalerweise fünf Tabellen (\texttt{register\_entry}, \texttt{financial\_expenses}, \texttt{activities}, \texttt{field\_of\_interest}, \texttt{code\_label}) verknüpft und summiert werden.
 Durch die Materialisierung dieser Berechnungskette (siehe unterer Teil des Screenshots: „Finanzdaten Tabelle (MV Source)“) wird die komplexe Logik vorweggenommen. Das Dashboard muss lediglich die fertigen Summen (z.B. „EU-Gesetzgebung: 539M €“) auslesen. Dies ermöglicht Managern und Analysten einen sofortigen Überblick über finanzielle Dimensionen, ohne auf Ladebalken warten zu müssen.
-
-
 
 \chapter{Fazit und Ausblick}
 
