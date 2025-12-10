@@ -1,0 +1,169 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n  CASE \n    WHEN function_position ILIKE '%CDU%' OR function_position ILIKE '%CSU%' THEN 'Union (CDU/CSU)'\n    WHEN function_position ILIKE '%SPD%' THEN 'SPD'\n    WHEN function_position ILIKE '%Grüne%' THEN 'Bündnis 90/Die Grünen'\n    WHEN function_position ILIKE '%FDP%' THEN 'FDP'\n    WHEN function_position ILIKE '%Linke%' OR function_position ILIKE '%AfD%' THEN 'Andere (Linke/AfD)'\n    ELSE 'Unbekannt/Verwaltung'\n  END as \"Partei / Fraktion\",\n  COUNT(*) as \"Anzahl Verbindungen\"\nFROM recent_gov_house_reps\nWHERE function_position IS NOT NULL\nGROUP BY 1\nORDER BY 2 DESC",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "account_active_range",
+          "timeColumn": "until_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Parteien-Verteilung (Textanalyse Regierungsämter)",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    d.name as \"Spender\",\n    d.description as \"Zweck / Empfänger\",\n    d.amount_to_eur as \"Betrag\"\nFROM donator_item d\nWHERE d.description ILIKE '%CDU%' \n   OR d.description ILIKE '%SPD%' \n   OR d.description ILIKE '%Grüne%' \n   OR d.description ILIKE '%FDP%'\nORDER BY 3 DESC\nLIMIT 20",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "donator_item",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Direkte Parteispenden (Gefunden in Beschreibungen)",
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "lobbyregister"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "PostgreSQL",
+          "value": "PostgreSQL"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "postgres",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Lobbyregister - Party Radar",
+  "uid": "lobby_party",
+  "version": 1,
+  "weekStart": ""
+}

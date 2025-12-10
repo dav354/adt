@@ -1,0 +1,1081 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(DISTINCT re.id) as \"Aktive Lobbyisten\"\nFROM register_entry re\nJOIN activities_interests ai ON re.id = ai.entry_id\nJOIN field_of_interest foi ON ai.id = foi.activities_id\nJOIN code_label cl ON foi.label_id = cl.id\nWHERE cl.de IN (${Sector:sqlstring})",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "activities_interests",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Anzahl Akteure",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT SUM(fe.expenses_to_eur) as \"Finanzvolumen Total\"\nFROM register_entry re\nJOIN financial_expenses fe ON re.id = fe.entry_id\nJOIN activities_interests ai ON re.id = ai.entry_id\nJOIN field_of_interest foi ON ai.id = foi.activities_id\nJOIN code_label cl ON foi.label_id = cl.id\nWHERE cl.de IN (${Sector:sqlstring})",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "activities_interests",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Finanzvolumen (Reported)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 10,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(DISTINCT rpi.title)\nFROM register_entry re\nJOIN activities_interests ai ON re.id = ai.entry_id\nJOIN field_of_interest foi ON ai.id = foi.activities_id\nJOIN code_label cl ON foi.label_id = cl.id\nJOIN regulatory_projects rp ON re.id = rp.entry_id\nJOIN regulatory_project_item rpi ON rp.id = rpi.parent_id\nWHERE cl.de IN (${Sector:sqlstring})",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "activities_interests",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Betroffene Gesetze",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT rpi.title, COUNT(DISTINCT re.id) as hits\nFROM register_entry re\nJOIN activities_interests ai ON re.id = ai.entry_id\nJOIN field_of_interest foi ON ai.id = foi.activities_id\nJOIN code_label cl ON foi.label_id = cl.id\nJOIN regulatory_projects rp ON re.id = rp.entry_id\nJOIN regulatory_project_item rpi ON rp.id = rpi.parent_id\nWHERE cl.de IN (${Sector:sqlstring})\nGROUP BY rpi.title\nORDER BY hits DESC\nLIMIT 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "activities_interests",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Top Gesetz",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 14,
+        "x": 0,
+        "y": 4
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    li.name_text as \"Organisation\", \n    SUM(fe.expenses_to_eur) as \"Gesamtausgaben\"\nFROM register_entry re\nJOIN lobbyist_identity li ON re.id = li.entry_id\nJOIN financial_expenses fe ON re.id = fe.entry_id\nJOIN activities_interests ai ON re.id = ai.entry_id\nJOIN field_of_interest foi ON ai.id = foi.activities_id\nJOIN code_label cl ON foi.label_id = cl.id\nWHERE cl.de IN (${Sector:sqlstring})\nGROUP BY li.name_text\nORDER BY 2 DESC\nLIMIT 15;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "activities_interests",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Top 15 Organisationen nach Ausgaben",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 14,
+        "y": 4
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    COALESCE(li.legal_form_text, 'Unbekannt') as \"Rechtsform\",\n    COUNT(DISTINCT re.id) as \"Anzahl\"\nFROM register_entry re\nJOIN lobbyist_identity li ON re.id = li.entry_id\nJOIN activities_interests ai ON re.id = ai.entry_id\nJOIN field_of_interest foi ON ai.id = foi.activities_id\nJOIN code_label cl ON foi.label_id = cl.id\nWHERE cl.de IN (${Sector:sqlstring})\nGROUP BY li.legal_form_text\nORDER BY 2 DESC\nLIMIT 10",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "activities_interests",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Verteilung Rechtsformen",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    TO_DATE(fe.fiscal_year_start_ym, 'YYYY-MM') as \"time\",\n    SUM(fe.expenses_to_eur) as \"Ausgaben des Sektors\"\nFROM register_entry re\nJOIN financial_expenses fe ON re.id = fe.entry_id\nJOIN activities_interests ai ON re.id = ai.entry_id\nJOIN field_of_interest foi ON ai.id = foi.activities_id\nJOIN code_label cl ON foi.label_id = cl.id\nWHERE cl.de IN (${Sector:sqlstring})\nGROUP BY fe.fiscal_year_start_ym\nORDER BY 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "financial_expenses",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Finanz-Trendanalyse (Wachstum des Sektors)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 20
+      },
+      "id": 13,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "WITH sector_entries AS (\n    SELECT re.id \n    FROM register_entry re\n    JOIN activities_interests ai ON re.id = ai.entry_id\n    JOIN field_of_interest foi ON ai.id = foi.activities_id\n    JOIN code_label cl ON foi.label_id = cl.id\n    WHERE cl.de IN (${Sector:sqlstring})
+)\nSELECT cl.de as \"Anderes Thema\", COUNT(*) as \"Überlappungen\"\nFROM sector_entries se\nJOIN activities_interests ai ON se.id = ai.entry_id\nJOIN field_of_interest foi ON ai.id = foi.activities_id\nJOIN code_label cl ON foi.label_id = cl.id\nWHERE cl.de NOT IN (${Sector:sqlstring})\nGROUP BY cl.de\nORDER BY 2 DESC\nLIMIT 20",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "activities_interests",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Interessen-Korrelation (Was interessiert sie noch?)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 8,
+        "y": 20
+      },
+      "id": 5,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT rpi.title as \"Gesetzesvorhaben\", COUNT(DISTINCT re.id) as \"Lobbyisten-Anzahl\"\nFROM register_entry re\nJOIN activities_interests ai ON re.id = ai.entry_id\nJOIN field_of_interest foi ON ai.id = foi.activities_id\nJOIN code_label cl ON foi.label_id = cl.id\nJOIN regulatory_projects rp ON re.id = rp.entry_id\nJOIN regulatory_project_item rpi ON rp.id = rpi.parent_id\nWHERE cl.de IN (${Sector:sqlstring})\nGROUP BY rpi.title\nORDER BY 2 DESC\nLIMIT 50;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "activities_interests",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Top Gesetzesvorhaben im Sektor",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 28
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT a.city, COUNT(DISTINCT re.id) as \"Anzahl\"\nFROM register_entry re\nJOIN lobbyist_identity li ON re.id = li.entry_id\nJOIN address a ON li.address_id = a.id\nJOIN activities_interests ai ON re.id = ai.entry_id\nJOIN field_of_interest foi ON ai.id = foi.activities_id\nJOIN code_label cl ON foi.label_id = cl.id\nWHERE cl.de IN (${Sector:sqlstring})\nGROUP BY a.city\nORDER BY 2 DESC\nLIMIT 10;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "activities_interests",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Geografische Verteilung (Top Städte)",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Finanzen"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyEUR"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 8,
+        "y": 28
+      },
+      "id": 7,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    li.name_text as \"Organisation\",\n    li.legal_form_text as \"Rechtsform\",\n    a.city as \"Stadt\",\n    SUM(fe.expenses_to_eur) as \"Finanzen\"\nFROM register_entry re\nJOIN lobbyist_identity li ON re.id = li.entry_id\nJOIN address a ON li.address_id = a.id\nJOIN financial_expenses fe ON re.id = fe.entry_id\nJOIN activities_interests ai ON re.id = ai.entry_id\nJOIN field_of_interest foi ON ai.id = foi.activities_id\nJOIN code_label cl ON foi.label_id = cl.id\nWHERE cl.de IN (${Sector:sqlstring})\nGROUP BY li.name_text, li.legal_form_text, a.city\nORDER BY 4 DESC\nLIMIT 100;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "activities_interests",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Detail-Liste der Lobbyisten",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      },
+      "id": 15,
+      "type": "row",
+      "title": "Compliance & Aktivität"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 37
+      },
+      "id": 16,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    li.name_text as \"Organisation\",\n    COUNT(DISTINCT arev.id) as \"Anzahl Updates (Versionen)\"\nFROM register_entry re\nJOIN lobbyist_identity li ON re.id = li.entry_id\nJOIN activities_interests ai ON re.id = ai.entry_id\nJOIN field_of_interest foi ON ai.id = foi.activities_id\nJOIN code_label cl ON foi.label_id = cl.id\nJOIN account_details ad ON re.id = ad.entry_id\nJOIN account_register_entry_version arev ON ad.id = arev.account_id\nWHERE cl.de IN (${Sector:sqlstring})\nGROUP BY li.name_text\nORDER BY 2 DESC\nLIMIT 20",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "activities_interests",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Die Aktivsten (Meiste Updates)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 37
+      },
+      "id": 17,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    li.name_text as \"Organisation\",\n    s.statements_count as \"Anzahl Stellungnahmen\"\nFROM register_entry re\nJOIN lobbyist_identity li ON re.id = li.entry_id\nJOIN activities_interests ai ON re.id = ai.entry_id\nJOIN field_of_interest foi ON ai.id = foi.activities_id\nJOIN code_label cl ON foi.label_id = cl.id\nJOIN statements s ON re.id = s.entry_id\nWHERE cl.de IN (${Sector:sqlstring}) AND s.statements_count > 0\nGROUP BY li.name_text, s.statements_count\nORDER BY 2 DESC\nLIMIT 20",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "activities_interests",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Die Lautesten (Meiste Stellungnahmen)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 37
+      },
+      "id": 18,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    li.name_text as \"Organisation\",\n    CASE WHEN fe.refuse_info THEN 'Finanzen' ELSE '' END as \"Verweigert Finanzen\",\n    CASE WHEN d.refuse_info THEN 'Spender' ELSE '' END as \"Verweigert Spender\"\nFROM register_entry re\nJOIN lobbyist_identity li ON re.id = li.entry_id\nJOIN activities_interests ai ON re.id = ai.entry_id\nJOIN field_of_interest foi ON ai.id = foi.activities_id\nJOIN code_label cl ON foi.label_id = cl.id\nLEFT JOIN financial_expenses fe ON re.id = fe.entry_id\nLEFT JOIN donators d ON re.id = d.entry_id\nWHERE cl.de IN (${Sector:sqlstring}) AND (fe.refuse_info = true OR d.refuse_info = true)\nGROUP BY li.name_text, fe.refuse_info, d.refuse_info\nLIMIT 20",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "activities_interests",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Transparenz-Lücken (Verweigerer)",
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "lobbyregister"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "PostgreSQL",
+          "value": "PostgreSQL"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "postgres",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "definition": "SELECT DISTINCT de FROM code_label WHERE domain = 'field_of_interest' ORDER BY de;",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Branche / Sektor",
+        "multi": true,
+        "name": "Sector",
+        "options": [],
+        "query": "SELECT DISTINCT de FROM code_label WHERE domain = 'field_of_interest' ORDER BY de;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query",
+        "datasource": {
+          "type": "postgres",
+          "uid": "${datasource}"
+        }
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Lobbyregister - Market Intelligence",
+  "uid": "lobby_market",
+  "version": 1,
+  "weekStart": ""
+}
