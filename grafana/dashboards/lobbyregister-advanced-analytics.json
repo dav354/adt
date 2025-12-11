@@ -81,26 +81,26 @@
         {
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n    cco.name AS \"Auftraggeber (Client)\",\n    li.name_text AS \"Beauftragte Agentur\",\n    COALESCE(ep.last_name || ', ' || ep.first_name, li2.name_text) AS \"Ex-Politiker im Team\",\n    cl.de AS \"Ehemalige Funktion\"\nFROM contract_client_org cco\n-- Join Path: Client -> Contract -> Agency\nJOIN contract_clients cc ON cco.clients_id = cc.id\nJOIN contract_item c_item ON cc.contract_item_id = c_item.id\nJOIN contracts c ON c_item.parent_id = c.id\nJOIN register_entry re ON c.entry_id = re.id\nJOIN lobbyist_identity li ON re.id = li.entry_id\n-- Check for Government Background (Entrusted Person or Legal Rep)\nLEFT JOIN entrusted_person ep ON li.id = ep.identity_id\nLEFT JOIN legal_representative lr ON li.id = lr.identity_id\nLEFT JOIN lobbyist_identity li2 ON re.id = li2.entry_id\nJOIN recent_government_function rgf \n    ON (ep.recent_gov_function_id = rgf.id OR lr.recent_gov_function_id = rgf.id)\nLEFT JOIN code_label cl ON rgf.type_label_id = cl.id\nWHERE rgf.id IS NOT NULL\nLIMIT 100;"
+          "rawSql": "SELECT\n    cco.name AS \"Auftraggeber (Client)\",\n    li.name_text AS \"Beauftragte Agentur\",\n    COALESCE(ep.last_name || ', ' || ep.first_name, li.name_text) AS \"Ex-Politiker im Team\",\n    cl.de AS \"Ehemalige Funktion\"\nFROM contract_client_org cco\n-- Join Path: Client -> Contract -> Agency\nJOIN contract_clients cc ON cco.clients_id = cc.id\nJOIN contract_item c_item ON cc.contract_item_id = c_item.id\nJOIN contracts c ON c_item.parent_id = c.id\nJOIN register_entry re ON c.entry_id = re.id\nJOIN lobbyist_identity li ON re.id = li.entry_id\n-- Check for Government Background (Entrusted Person or Legal Rep)\nLEFT JOIN entrusted_person ep ON li.id = ep.identity_id\nLEFT JOIN legal_representative lr ON li.id = lr.identity_id\nJOIN recent_government_function rgf \n    ON (ep.recent_gov_function_id = rgf.id OR lr.recent_gov_function_id = rgf.id)\nLEFT JOIN code_label cl ON rgf.type_label_id = cl.id\nWHERE rgf.id IS NOT NULL\nLIMIT 100;"
         }
       ]
     },
     {
       "id": 5,
-      "type": "timeseries",
-      "title": "Financial Trends: Top Spenders History",
-      "description": "Visualizes the budget history of the top 5 current spenders using Time Series.",
+      "type": "table",
+      "title": "Finanzielle Rankings (Top Budget)",
+      "description": "Top spenders ranking using SQL Window Function RANK().",
       "datasource": { "type": "postgres", "uid": "lobbyregister" },
       "gridPos": { "h": 10, "w": 24, "x": 0, "y": 26 },
       "options": {
-        "tooltip": { "mode": "multi" },
-        "legend": { "displayMode": "table", "placement": "right" }
+        "showHeader": true,
+        "footer": { "enablePagination": true }
       },
       "targets": [
         {
-          "format": "time_series",
+          "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  TO_DATE(fe.fiscal_year_start_ym, 'YYYY-MM') AS time,\n  li.name_text AS metric,\n  fe.expenses_to_eur AS value\nFROM financial_expenses fe\nJOIN lobbyist_identity li ON fe.entry_id = li.entry_id\nWHERE fe.fiscal_year_start_ym IS NOT NULL -- CRITICAL FIX for Grafana\n  AND li.id IN (\n    SELECT li_inner.id \n    FROM financial_expenses fe_inner\n    JOIN lobbyist_identity li_inner ON fe_inner.entry_id = li_inner.entry_id\n    ORDER BY fe_inner.expenses_to_eur DESC NULLS LAST\n    LIMIT 5\n)\nORDER BY time ASC;"
+          "rawSql": "SELECT\n    rank as \"Rang\",\n    name as \"Organisation\",\n    expenses as \"Budget (EUR)\"\nFROM (\n    SELECT\n        COALESCE(li.name_text, li.company_name) AS name,\n        fe.expenses_to_eur AS expenses,\n        RANK() OVER (\n            ORDER BY fe.expenses_to_eur DESC NULLS LAST\n        ) AS rank\n    FROM financial_expenses fe\n    JOIN lobbyist_identity li ON fe.entry_id = li.entry_id\n) AS ranked_stats\nWHERE rank <= 20\nORDER BY rank ASC;"
         }
       ]
     }

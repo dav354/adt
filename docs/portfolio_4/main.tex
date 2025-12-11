@@ -1,0 +1,546 @@
+\documentclass[12pt,oneside,a4paper,parskip=half]{scrbook}
+
+% Sprachanpassung und Grundkonfiguration
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{csquotes}
+\usepackage{hyphenat}
+\usepackage{newunicodechar}
+\newunicodechar{ }{\,}
+
+% Seitenlayout
+\usepackage[a4paper,left=20mm,right=20mm,top=20mm,bottom=25mm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\sloppy
+
+% Diagramme
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+
+% Mathematik & Symbole
+\usepackage{amsmath,amsfonts,amssymb}
+
+% Tabellen & Grafiken
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{pdflscape}
+\usepackage{placeins}
+\graphicspath{{./}{./figures/}}
+
+% Aufzählungen
+\usepackage{enumitem}
+
+% Farben (nur noch für Links oder Basics)
+\usepackage{xcolor}
+
+%%%%%%%%%%%%%%%%%%%
+%% definitions
+%%%%%%%%%%%%%%%%%%%
+\def\BaAuthor{Noah Raupold (5022097),\\ David Gläsle (5022114)}
+\def\BaAuthorPDF{Noah Raupold (5022097), David Gläsle (5022114)}
+\def\BaAuthorStudyProgram{Informatik}
+\def\BaType{ADT Portfolio Teil 4}
+\def\BaTitle{Visualisierung des Lobbyregisters}
+\def\BaDeadline{\today}
+
+\def\iswithfullname{1}
+\ifdefined\iswithfullname
+\def\ShowBaAuthor{\BaAuthor}
+\else
+\def\ShowBaAuthor{N.~N.}
+\fi
+
+\newcommand{\TitleGraphic}{
+\IfFileExists{logo.png}{
+\includegraphics[width=0.5\textwidth]{logo.png}%
+}{
+\fbox{\parbox[c][3cm][c]{0.5\textwidth}{Logo.png fehlt}}%
+}% 
+}
+
+\newcommand*{\forcetwosidetitle}{
+\begingroup
+\cleardoubleoddpage
+\KOMAoptions{titlepage=true}%
+\csname @twosidetrue\endcsname
+\maketitle
+\endgroup
+}
+
+\newcommand{\TOCbreak}{\\
+}
+
+% Bibliografie (Biber)
+\usepackage[backend=biber,style=numeric]{biblatex}
+\IfFileExists{literatur.bib}{\addbibresource{literatur.bib}}{}
+
+% Hyperlinks
+\usepackage{hyperref}
+\hypersetup{
+colorlinks=true,
+linkcolor=black,
+filecolor=magenta,
+urlcolor=cyan,
+pdfauthor={\BaAuthorPDF},
+pdftitle={\BaTitle}
+}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%
+%% Titelseite
+%%%%%%%%%%%%%%%%%%%
+\frontmatter
+\titlehead{Technische Hochschule Würzburg-Schweinfurt\\Fakultät Informatik und Wirtschaftsinformatik}
+\subject{\BaType}
+\title{\texorpdfstring{\BaTitle\\[15mm]\TitleGraphic}{\BaTitle}}
+\author{\ShowBaAuthor}
+\date{\normalsize{Eingereicht am: \BaDeadline}}
+\forcetwosidetitle
+
+%%%%%%%%%%%%%%%%%%%
+%% Inhaltsverzeichnis
+%%%%%%%%%%%%%%%%%%%
+\newpage
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%
+%% Main part of the thesis
+%%%%%%%%%%%%%%%%%%%
+\mainmatter
+\chapter{Einleitung: Vom Datengrab zum Dashboard}
+
+Nachdem in den vorangegangenen Projektphasen eine robuste Datenpipeline (ETL) und eine hochperformante Datenbankarchitektur (Indexing, Materialized Views) geschaffen wurden, widmet sich dieser letzte Portfolioteil der wohl wichtigsten Ebene: der \textit{Visualisierung}. Daten, die nur als Millionen von Tabellenzeilen existieren, sind für den menschlichen Entscheider wertlos. Erst durch Aggregation, Kontextualisierung und grafische Aufbereitung werden aus abstrakten Bytes greifbare Informationen.
+
+Ziel dieses Teils ist es, die technische Tiefe der PostgreSQL-Datenbank (Window Functions, CTEs, rekursive Abfragen) in intuitive Dashboards zu übersetzen. Dabei setzen wir auf Grafana als Visualisierungs-Layer, da es sich nahtlos in den bestehenden Docker-Stack integriert und SQL als First-Class-Citizen behandelt. Wir zeigen, wie wir versteckte Netzwerke („Wer kennt wen?“), finanzielle Ausreißer und inhaltliche Schwerpunkte des deutschen Lobbyismus sichtbar machen.
+
+\chapter{Visualisierungsstrategie mit Grafana}
+
+Die Wahl fiel auf Grafana, da es – im Gegensatz zu klassischen BI-Tools wie Tableau oder PowerBI – eine direkte, code-basierte Verbindung zur Datenbank erlaubt. Dies ermöglicht uns, die volle Mächtigkeit von SQL zu nutzen, anstatt uns auf Drag-and-Drop-Aggregationen zu beschränken.
+
+\section{Architektur der Dashboards}
+Unsere Visualisierungsstrategie folgt dem „Schneidenbohrer-Prinzip“ (Drill-Down):
+\begin{enumerate}
+    \item \textbf{High-Level Overview:} KPIs wie „Anzahl aktiver Lobbyisten“, „Gesamtbudget“ oder „Top 10 Themen“ geben einen sofortigen Statusbericht.
+    \item \textbf{Analytical Deep-Dive:} Spezifische Dashboards für Finanzen und Netzwerke erlauben die Analyse von Korrelationen (z.B. „Haben Firmen mit Ex-Politikern höhere Budgets?“).
+    \item \textbf{Forensische Detailansicht:} Tabellarische Auflistungen erlauben das Prüfen einzelner Verdachtsfälle bis auf Datensatzebene.
+\end{enumerate}
+
+\section{Technische Herausforderungen}
+Eine besondere Herausforderung stellte die Visualisierung von Graphen (Netzwerken) und Zeitreihen dar, da das Lobbyregister oft unvollständige Zeitstempel (nur Monat/Jahr) liefert. Hier mussten wir mittels SQL-Casting (\texttt{TO\_DATE}) und Fallback-Logiken robuste Zeitachsen für Grafana konstruieren.
+
+\chapter{Implementierung komplexer Analysen}
+
+Das Herzstück dieses Portfolios sind nicht die bunten Balken, sondern die SQL-Abfragen, die sie generieren. Wir präsentieren hier drei fortgeschrittene Analysen, die weit über einfaches \texttt{SELECT * FROM} hinausgehen.
+
+\section{Network of Influence: Die unsichtbaren Verbindungen}
+Ein zentrales Anliegen des Lobbyregisters ist Transparenz. Doch oft sind Verbindungen indirekt: Ein Unternehmen (Client) beauftragt eine Agentur, und diese Agentur beschäftigt einen ehemaligen Minister. Um diese Kette sichtbar zu machen, nutzen wir einen 5-Wege-Join.
+
+\begin{figure}[H]
+\caption{SQL-Query für das 'Network of Influence' Panel}
+\begin{verbatim}
+SELECT
+    cco.name AS "Auftraggeber (Client)",
+    li.name_text AS "Beauftragte Agentur",
+    -- Fallback: Name aus Personentabelle oder Organisationstabelle
+    COALESCE(ep.last_name || ', ' || ep.first_name, li2.name_text) 
+      AS "Ex-Politiker im Team",
+    cl.de AS "Ehemalige Funktion"
+FROM contract_client_org cco
+-- Der Weg des Geldes: Client -> Vertrag -> Agentur
+JOIN contract_clients cc ON cco.clients_id = cc.id
+JOIN contract_item c_item ON cc.contract_item_id = c_item.id
+JOIN contracts c ON c_item.parent_id = c.id
+JOIN register_entry re ON c.entry_id = re.id
+JOIN lobbyist_identity li ON re.id = li.entry_id
+-- Der personelle Link: Agentur -> Ex-Politiker
+LEFT JOIN entrusted_person ep ON li.id = ep.identity_id
+LEFT JOIN legal_representative lr ON li.id = lr.identity_id
+JOIN recent_government_function rgf 
+    ON (ep.recent_gov_function_id = rgf.id 
+        OR lr.recent_gov_function_id = rgf.id)
+LEFT JOIN code_label cl ON rgf.type_label_id = cl.id
+WHERE rgf.id IS NOT NULL;
+\end{verbatim}
+\end{figure}
+
+Ein konkreter Testlauf dieser Abfrage förderte folgende interessante Verbindung zutage:
+
+\begin{itemize}
+    \item \textbf{Auftraggeber:} Arena2036
+    \item \textbf{Beauftragte Agentur:} Strategische Agentur für Innovation in Europa (SAI Europe)
+    \item \textbf{Verbindung:} Bundestag (via ehemaligem Funktionsträger)
+\end{itemize}
+
+Dies zeigt exemplarisch, wie Forschungscampus-Projekte (Arena2036) über spezialisierte Agenturen Zugang zu politischen Entscheidern suchen.
+
+\section{Finanzielle Rankings: Window Functions im Einsatz}
+Um zu erkennen, welche Lobbyisten über die größten finanziellen Ressourcen verfügen, nutzen wir SQL Window Functions. Da der aktuelle Datensatz eine Momentaufnahme darstellt, verwenden wir \texttt{RANK()}, um eine dynamische Bestenliste direkt in der Datenbank zu erzeugen, ohne die Daten erst in die Applikation laden zu müssen.
+
+\begin{figure}[H]
+\caption{Berechnung des Budget-Rankings mittels RANK()}
+\begin{verbatim}
+SELECT
+    name,
+    expenses,
+    rank
+FROM (
+    SELECT
+        COALESCE(li.name_text, li.company_name) AS name,
+        fe.expenses_to_eur AS expenses,
+        -- Ranking basierend auf Ausgaben
+        RANK() OVER (
+            ORDER BY fe.expenses_to_eur DESC NULLS LAST
+        ) AS rank
+    FROM financial_expenses fe
+    JOIN lobbyist_identity li ON fe.entry_id = li.entry_id
+) AS ranked_stats
+WHERE rank <= 3;
+\end{verbatim}
+\end{figure}
+
+Das Ergebnis der Analyse zeigt die "Heavy Hitter" des deutschen Lobbyismus (Stand: aktueller Datenabzug):
+
+\begin{table}[H]
+\centering
+\begin{tabular}{clr}
+\toprule
+\textbf{Rang} & \textbf{Organisation} & \textbf{Budget (EUR)} \\
+\midrule
+1 & Gesamtverb. d. Dt. Versicherungswirtschaft & 15.300.000 \\
+2 & Verbraucherzentrale Bundesverband e.V. & 12.740.000 \\
+3 & Ramboll Management Consulting & 12.620.000 \\
+\bottomrule
+\end{tabular}
+\caption{Top 3 Lobbyisten nach gemeldeten Finanzaufwendungen.}
+\end{table}
+
+\chapter{Data Stories: Erkenntnisse aus den Daten}
+
+Jenseits der technischen Implementierung haben wir die Datenbank explorativ befragt („Data Mining“), um interessante Muster im deutschen Lobbyismus aufzudecken. Hier sind die Ergebnisse unserer „Fun Facts“-Analyse.
+
+\section{Die „Drehtür“-Ministerien}
+Wir haben analysiert, welche Bundesministerien oder Behörden am häufigsten in den Lebensläufen von Lobbyisten auftauchen (Tabelle \ref{tab:ministries}).
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llc}
+\toprule
+\textbf{Kürzel} & \textbf{Ministerium / Behörde} & \textbf{Anzahl Treffer} \\
+\midrule
+BMVg & Bundesministerium der Verteidigung & 6 \\
+BMU & Bundesministerium für Umwelt & 3 \\
+BMAS & Bundesministerium für Arbeit & 2 \\
+BMJ & Bundesministerium der Justiz & 2 \\
+BMBFSFJ & Bundesministerium für Familie & 1 \\
+\bottomrule
+\end{tabular}
+\caption{Top 5 Herkunftsorte von Lobbyisten mit Regierungshintergrund. Das Verteidigungsministerium führt die Liste an.}
+\label{tab:ministries}
+\end{table}
+
+Es ist auffällig, dass das Verteidigungsressort dominiert, gefolgt von Umwelt- und Arbeitsthemen.
+
+\section{Die teuersten Themenfelder}
+Welche politischen Themen sind den Lobbyisten das meiste Geld wert? Wir haben das Durchschnittsbudget aller Organisationen berechnet, die ein bestimmtes Interessenfeld angeben.
+Das gesamte im Register erfasste Finanzvolumen beläuft sich auf beeindruckende \textbf{909 Millionen Euro}.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    xbar,
+    xlabel={Durchschnittliches Budget (EUR)},
+    symbolic y coords={{Außenpolitik (EU)}, Strafrecht, Bevölkerungsschutz, Cybersicherheit, Digitalisierung},
+    ytick=data,
+    nodes near coords,
+    nodes near coords align={horizontal},
+    width=0.9\textwidth,
+    height=8cm,
+    xmin=0,
+    xmax=700000,
+    enlarge y limits=0.2,
+    scaled x ticks=false,
+    xticklabel style={/pgf/number format/fixed},
+    nodes near coords style={/pgf/number format/fixed}
+]
+\addplot coordinates {
+    (432089,{Außenpolitik (EU)})
+    (448935,Strafrecht)
+    (517532,Bevölkerungsschutz)
+    (519129,Cybersicherheit)
+    (641667,Digitalisierung)
+};
+\end{axis}
+\end{tikzpicture}
+\caption{Top 5 Themenfelder mit dem höchsten Durchschnittsbudget pro Lobby-Akteur.}
+\label{fig:top_topics}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{Platz 1: Digitalisierung (Ø 641.667 €)} – Das Megathema unserer Zeit zieht massives Kapital an.
+    \item \textbf{Platz 2: Cybersicherheit (Ø 519.129 €)} – Angesichts wachsender Bedrohungen ist die digitale Verteidigung das teuerste Pflaster des Lobbyismus (495 Akteure).
+    \item \textbf{Platz 3: Bevölkerungsschutz und Katastrophenhilfe (Ø 517.532 €)} – Ein Bereich, der oft staatliche Großaufträge impliziert und entsprechend finanzstarke Akteure anzieht (246 Akteure).
+\end{itemize}
+Interessant ist hierbei, dass klassische Industriethemen (Auto, Chemie) zwar in der Summe riesig sind, aber durch viele kleine Zulieferer im \textit{Durchschnitt} verwässert werden. Die oben genannten Themen werden hingegen fast ausschließlich von „Big Playern“ bespielt.
+
+Konkret zeigen die Daten, dass diese teuren Themenfelder von den finanzstärksten Verbänden Deutschlands dominiert werden. Dabei dienen die enormen Budgets oft einer breiten Themenabdeckung:
+\begin{itemize}
+    \item \textbf{Gesamtverband der Deutschen Versicherungswirtschaft e.V.} (15,3 Mio. € Jahresbudget) treibt den Durchschnitt im Bereich Strafrecht nach oben, verteilt seine Ressourcen jedoch auf insgesamt \textbf{37 Themenfelder}.
+    \item \textbf{Verbraucherzentrale Bundesverband e.V.} (12,7 Mio. €) ist federführend im Bereich Cybersicherheit, bespielt aber gleichzeitig \textbf{46 weitere Themen}.
+    \item \textbf{Verband der Automobilindustrie e.V.} (9,9 Mio. €) ist in allen drei Top-Kategorien aktiv, streut sein Budget jedoch am breitesten über \textbf{60 verschiedene Interessenfelder}.
+\end{itemize}
+
+\section{Effizienz-Analyse: Wer hat den größten Hebel?}
+Ein überraschendes Finding lieferte die Metrik „Ausgaben pro Mitarbeiter“ (Spending per Head).
+Während Großkonzerne wie die \textit{Deutsche Bank} oder \textit{Allianz} erwartungsgemäß hohe Budgets haben, führen spezialisierte Kammern und Tech-Konzerne das Effizienz-Ranking an.
+Die \textbf{German American Chamber of Commerce} (147.000 € pro Kopf) und \textbf{Meta Platforms} (129.000 € pro Kopf) investieren am meisten pro registriertem Lobbyisten. Dies deutet auf eine Strategie hin, bei der hochspezialisierte Experten mit großen Budgets ausgestattet werden.
+
+Zum Vergleich: Etablierte Großkonzerne agieren oft mit anderen Relationen. Die \textbf{Deutsche Bank AG} meldet beispielsweise ein Budget von 1,84 Mio. € bei nur 1,45 angegebenen Vollzeitäquivalenten (FTE)\footnote{FTE (Full Time Equivalent) bezeichnet das Vollzeitäquivalent. Es ist eine Kennzahl, die Teilzeitstellen in vergleichbare Vollzeitstellen umrechnet (z.B. zwei 50\%-Stellen = 1,0 FTE), um die tatsächliche Personalkapazität vergleichbar zu machen.}, was auf den Einsatz hochbezahlter externer Berater oder weniger, aber extrem teurer Spitzenlobbyisten hindeutet. Die \textbf{Allianz SE} operiert mit 980.000 € Budget bei 3,73 FTE etwas „konservativer“.
+
+\section{Lobbyregister Fun Facts}
+Zum Abschluss noch einige kuriose Statistiken, die wir direkt aus der Datenbank extrahiert haben:
+
+\begin{itemize}
+    \item \textbf{Der Spendenkönig:} Bill Gates (Privatperson) führt die Liste der Spender mit 97,9 Mio. € unangefochten an.
+    \item \textbf{Die Lobby-Hauptstädte:} Außerhalb von Berlin sitzen die meisten Lobbyisten in \textbf{München (383)}, gefolgt von Hamburg (318) und der ehemaligen Hauptstadt Bonn (230).
+    \item \textbf{Die „Vielseitigsten“:} Das „Aktionsbündnis Für die Würde unserer Städte“ vertritt stolze 62 verschiedene Auftraggeber (Clients) – ein Rekordwert für Bündelung von Interessen.
+    \item \textbf{Namensvettern:} Wer in Deutschland Lobbyist werden will, hat mit dem Vornamen \textbf{Andreas} (8 Treffer) statistisch die besten Chancen, dicht gefolgt von Peter und Michael.
+    \item \textbf{Bestvernetzt:} Die \textit{Deutsch-Taiwanische Gesellschaft e.V.} pflegt mit 12 direkten Verbindungen zu ehemaligen Regierungsmitgliedern das dichteste Kontaktnetzwerk im Datensatz.
+\end{itemize}
+
+\chapter{Geografische Deep-Dives}
+
+Neben der inhaltlichen Dimension ("Wer spricht worüber?") bietet das Datenmodell auch exzellente Möglichkeiten für geografische Analysen. Wir haben untersucht, wo die Lobbyisten tatsächlich sitzen – und ob "Berlin" wirklich der einzige Ort ist, an dem Entscheidungen beeinflusst werden.
+
+\section{Globale Akteure: Lobbying aus dem Ausland}
+Das Lobbyregistergesetz gilt nicht nur für deutsche Unternehmen. Viele internationale Akteure versuchen, Einfluss auf die Bundespolitik zu nehmen. Unsere "International-Query" filtert alle Einträge, deren Hauptsitz nicht in Deutschland liegt.
+
+\begin{figure}[H]
+\caption{SQL-Query zur Analyse internationaler Herkunftsländer}
+\begin{verbatim}
+SELECT 
+  cl.code as "Land", 
+  COUNT(DISTINCT re.id) as "Anzahl Akteure"
+FROM register_entry re
+JOIN lobbyist_identity li ON re.id = li.entry_id
+JOIN address a ON li.address_id = a.id
+JOIN country_label cl ON a.country_id = cl.id
+WHERE cl.code != 'DE' -- Ausschluss von Deutschland
+GROUP BY cl.code
+ORDER BY 2 DESC
+LIMIT 10;
+\end{verbatim}
+\end{figure}
+
+Das Ergebnis ist aufschlussreich: Neben den erwartbaren Nachbarn (Belgien/Brüssel, Österreich) tauchen auch die USA und Großbritannien weit oben auf. Dies verdeutlicht, dass Lobbyismus in Berlin ein globales Geschäft ist.
+Konkret führen \textbf{Belgien (49 Akteure)} und die \textbf{USA (47)} die Liste an, gefolgt von den Niederlanden (43), Großbritannien (41) und der Schweiz (38).
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    xbar,
+    xlabel={Anzahl Akteure},
+    symbolic y coords={Schweiz, Großbritannien, Niederlande, USA, Belgien},
+    ytick=data,
+    nodes near coords,
+    nodes near coords align={horizontal},
+    width=0.9\textwidth,
+    height=6cm,
+    xmin=0,
+    xmax=60
+]
+\addplot coordinates {
+    (38,Schweiz)
+    (41,Großbritannien)
+    (43,Niederlande)
+    (47,USA)
+    (49,Belgien)
+};
+\end{axis}
+\end{tikzpicture}
+\caption{Top 5 Herkunftsländer internationaler Lobbyisten (ohne Deutschland).}
+\label{fig:international}
+\end{figure}
+
+\section{München vs. Berlin: Wo sitzt das Geld?}
+Ein besonders spannendes "Data Storytelling"-Element ergab sich aus dem Vergleich der durchschnittlichen Finanzausstattung pro Stadt. Zwar hat Berlin die absolute Mehrheit an Lobbybüros, doch das "große Geld" sitzt oft in den Konzernzentralen.
+
+Wir haben dazu die Tabelle \texttt{financial\_expenses} mit der Adress-Tabelle \texttt{address} verknüpft und nach Städten gruppiert.
+
+\begin{figure}[H]
+\caption{Vergleich der durchschnittlichen Budgets nach Städten}
+\begin{verbatim}
+SELECT 
+  a.city as "Stadt",
+  ROUND(AVG(fe.expenses_to_eur), 0) as "Ø Budget (EUR)"
+FROM register_entry re
+JOIN lobbyist_identity li ON re.id = li.entry_id
+JOIN address a ON li.address_id = a.id
+JOIN financial_expenses fe ON re.id = fe.entry_id
+WHERE a.city IN ('Berlin', 'München', 'Hamburg', 'Frankfurt am Main')
+GROUP BY a.city
+ORDER BY 2 DESC;
+\end{verbatim}
+\end{figure}
+
+Das Ergebnis überraschte uns: Nicht die Politik-Hauptstadt Berlin, sondern die Finanzmetropole \textbf{Frankfurt am Main} führt das Ranking mit einem Durchschnittsbudget von ca. \textbf{199.679 €} an. Dicht darauf folgt \textbf{München} (189.133 €). Berlin landet mit ca. \textbf{183.790 €} nur auf dem dritten Platz, noch vor Hamburg (166.201 €). Dies zeigt deutlich, dass hohe Budgets vor allem im Finanz- und Industriesektor (Frankfurt/München) zu finden sind.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    ylabel={Ø Budget (EUR)},
+    symbolic x coords={Hamburg, Berlin, München, Frankfurt},
+    xtick=data,
+    nodes near coords,
+    nodes near coords align={vertical},
+    width=0.9\textwidth,
+    height=7cm,
+    ymin=0,
+    ymax=250000,
+    enlarge x limits=0.2,
+    scaled y ticks=false,
+    yticklabel style={/pgf/number format/fixed},
+    nodes near coords style={/pgf/number format/fixed}
+]
+\addplot coordinates {
+    (Hamburg,166201)
+    (Berlin,183790)
+    (München,189133)
+    (Frankfurt,199679)
+};
+\end{axis}
+\end{tikzpicture}
+\caption{Vergleich der durchschnittlichen Lobby-Budgets deutscher Großstädte. Finanzmetropolen liegen vor der politischen Hauptstadt.}
+\label{fig:cities}
+\end{figure}
+
+\chapter{Transparenz \& Compliance}
+
+Ein Register ist nur so gut wie die Datenqualität, die eingepflegt wird. Ein Teil unseres Dashboards widmet sich daher der "Meta-Analyse": Wie gut halten sich die Akteure an die Regeln?
+
+\section{Die Verweigerer}
+Das Gesetz erlaubt in bestimmten Härtefällen, Finanzdaten zu verweigern (Feld \texttt{refuse\_info}). Wir wollten wissen, wie oft von dieser Klausel Gebrauch gemacht wird.
+
+\begin{figure}[H]
+\caption{Ermittlung von Transparenz-Lücken}
+\begin{verbatim}
+SELECT 
+    COUNT(*) as "Anzahl Verweigerer",
+    SUM(CASE WHEN refuse_reason IS NOT NULL THEN 1 ELSE 0 END) 
+      as "Mit Begründung"
+FROM financial_expenses
+WHERE refuse_info = true;
+\end{verbatim}
+\end{figure}
+
+Diese Query speist ein "Alarm-Panel" im Dashboard. Aktuell haben \textbf{113 Akteure} die Finanzangaben verweigert, wovon nur 33 eine explizite Begründung hinterlegt haben. Dies ist zwar eine kleine Minderheit, aber für Journalisten ("Watchdogs") eine extrem relevante Zielgruppe.
+
+\section{Heuristische Parteinähe-Erkennung}
+Das Datenmodell enthält kein explizites Feld für "Parteizugehörigkeit". Dennoch ist für Nutzer interessant, welchem politischen Spektrum ein Ex-Politiker zuzuordnen ist. Wir haben hierfür eine Text-Mining-Lösung direkt in SQL implementiert, die das Feld \texttt{function\_position} (z.B. "Ehemaliger MdB (SPD)") analysiert.
+
+\begin{figure}[H]
+\caption{SQL-basierte Textklassifikation von Parteizugehörigkeiten}
+\begin{verbatim}
+SELECT 
+  CASE 
+    WHEN function_position ILIKE '%CDU%' 
+      OR function_position ILIKE '%CSU%' THEN 'Union'
+    WHEN function_position ILIKE '%SPD%' THEN 'SPD'
+    WHEN function_position ILIKE '%Grüne%' THEN 'Grüne'
+    WHEN function_position ILIKE '%FDP%' THEN 'FDP'
+    ELSE 'Sonstige / Unbekannt'
+  END as "Partei",
+  COUNT(*) as "Treffer"
+FROM recent_gov_house_reps
+WHERE function_position IS NOT NULL
+GROUP BY 1
+ORDER BY 2 DESC;
+\end{verbatim}
+\end{figure}
+
+Dieser Ansatz demonstriert die Mächtigkeit von \texttt{CASE WHEN} Statements. Die Analyse ergab zwar eine Dominanz der Kategorie "Sonstige" (664 Treffer), was auf unstrukturierte Eingaben hindeutet. Unter den erkennbaren Parteien führte jedoch die \textbf{FDP (9)} vor Union (4) und SPD (4).
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    ylabel={Anzahl Treffer},
+    symbolic x coords={Grüne, SPD, Union, FDP},
+    xtick=data,
+    nodes near coords,
+    width=0.8\textwidth,
+    height=6cm,
+    ymin=0,
+    ymax=12
+]
+\addplot coordinates {
+    (Grüne,2)
+    (SPD,4)
+    (Union,4)
+    (FDP,9)
+};
+\end{axis}
+\end{tikzpicture}
+\caption{Erkannte Parteizugehörigkeiten bei Ex-Politikern (Text-Mining).}
+\label{fig:parties}
+\end{figure}
+
+\section{Strukturanalyse: Rechtsformen und ihre Agenda}
+Ein weiterer tieferer Blick in die Daten offenbart eine klare Arbeitsteilung zwischen den verschiedenen Rechtsformen der Akteure. Wir haben untersucht, welches Themenfeld bei welcher Rechtsform am häufigsten genannt wird und wie viel Budget durchschnittlich dahintersteht.
+
+Die Analyse bestätigt das klassische Bild der Interessensvertretung:
+\begin{itemize}
+    \item \textbf{Zivilgesellschaft (e.V. und Stiftungen):} Hier dominieren ganz klar ökologische Themen. Sowohl bei eingetragenen Vereinen als auch bei Stiftungen steht „Nachhaltigkeit und Ressourcenschutz“ unangefochten auf Platz 1.
+    \item \textbf{Wirtschaft (GmbH und AG):} Kapitalgesellschaften setzen andere Prioritäten. Ihr Top-Thema ist konsistent „Wissenschaft, Forschung und Technologie“.
+\end{itemize}
+
+Dies deutet darauf hin, dass Unternehmen Lobbying primär als Hebel für Innovationsförderung und Standortpolitik nutzen, während NGOs die normative Debatte um Nachhaltigkeit treiben.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llc}
+\toprule
+\textbf{Rechtsform} & \textbf{Top-Thema} & \textbf{Ø Budget (EUR)} \\
+\midrule
+Stiftung & Nachhaltigkeit und Ressourcenschutz & 269.333 \\
+Eingetragener Verein (e.V.) & Nachhaltigkeit und Ressourcenschutz & 262.830 \\
+GmbH & Wissenschaft, Forschung und Technologie & 177.708 \\
+Aktiengesellschaft (AG) & Wissenschaft, Forschung und Technologie & 94.242 \\
+\bottomrule
+\end{tabular}
+\caption{Dominante Themenfelder je nach Rechtsform des Lobby-Akteurs.}
+\end{table}
+
+\chapter{Fazit}
+
+In diesem Portfolio haben wir gezeigt, dass ein Lobbyregister mehr ist als eine Liste von Namen. Durch die Kombination von:
+\begin{itemize}
+    \item \textbf{Relationaler Modellierung} (für die Datenintegrität),
+    \item \textbf{Performantem Indexing} (für die Geschwindigkeit) und
+    \item \textbf{Intelligenter Visualisierung} (für die Erkenntnis)
+\end{itemize}
+konnten wir Licht in das Dunkelfeld der politischen Einflussnahme bringen.
+Wir haben Netzwerke sichtbar gemacht, die dem bloßen Auge verborgen bleiben, und Finanzströme vergleichbar gemacht. Das Projekt demonstriert somit exemplarisch, wie moderne Data-Engineering-Methoden einen direkten Beitrag zur demokratischen Transparenz leisten können.
+
+%%%%%%%%%%%%%%%%%%%
+%% Literatur
+%%%%%%%%%%%%%%%%%%%
+\backmatter
+\nocite{*}
+\printbibliography
+
+\end{document}
