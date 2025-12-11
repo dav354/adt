@@ -39,6 +39,43 @@
 
 % Farben (nur noch für Links oder Basics)
 \usepackage{xcolor}
+\usepackage{listings}
+\lstdefinelanguage{SQL}{
+  sensitive=false,
+  morekeywords={
+    SELECT,FROM,WHERE,JOIN,LEFT,RIGHT,INNER,OUTER,FULL,ON,GROUP,BY,ORDER,ASC,DESC,
+    COUNT,AS,CASE,WHEN,THEN,ELSE,END,DISTINCT,UNION,ALL,LIMIT,OFFSET,
+    AND,OR,NOT,NULL,IS,COALESCE,ROUND,AVG,SUM,MIN,MAX,OVER,PARTITION,BY
+  },
+  morecomment=[l]{--},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]'
+}
+\lstdefinestyle{sql}{
+  language=SQL,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue!60!black}\bfseries,
+  commentstyle=\color{gray!70},
+  stringstyle=\color{orange!70!black},
+  numbers=left,
+  numberstyle=\tiny\color{gray!70},
+  numbersep=6pt,
+  columns=fullflexible,
+  keepspaces=true,
+  frame=single,
+  rulecolor=\color{black!15},
+  backgroundcolor=\color{black!2},
+  breaklines=true,
+  showstringspaces=false,
+  inputencoding=utf8,
+  extendedchars=true,
+  literate=
+    {ä}{{\"a}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+    {Ä}{{\"A}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+    {ß}{{\ss}}1
+    {€}{{\texteuro}}1
+    {Ø}{{\O}}1
+}
 
 %%%%%%%%%%%%%%%%%%%
 %% definitions
@@ -147,7 +184,7 @@ Ein zentrales Anliegen des Lobbyregisters ist Transparenz. Doch oft sind Verbind
 
 \begin{figure}[H]
 \caption{SQL-Query für das 'Network of Influence' Panel}
-\begin{verbatim}
+\begin{lstlisting}[style=sql]
 SELECT
     cco.name AS "Auftraggeber (Client)",
     li.name_text AS "Beauftragte Agentur",
@@ -170,7 +207,7 @@ JOIN recent_government_function rgf
         OR lr.recent_gov_function_id = rgf.id)
 LEFT JOIN code_label cl ON rgf.type_label_id = cl.id
 WHERE rgf.id IS NOT NULL;
-\end{verbatim}
+\end{lstlisting}
 \end{figure}
 
 Ein konkreter Testlauf dieser Abfrage förderte folgende interessante Verbindung zutage:
@@ -188,7 +225,7 @@ Um zu erkennen, welche Lobbyisten über die größten finanziellen Ressourcen ve
 
 \begin{figure}[H]
 \caption{Berechnung des Budget-Rankings mittels RANK()}
-\begin{verbatim}
+\begin{lstlisting}[style=sql]
 SELECT
     name,
     expenses,
@@ -205,7 +242,7 @@ FROM (
     JOIN lobbyist_identity li ON fe.entry_id = li.entry_id
 ) AS ranked_stats
 WHERE rank <= 3;
-\end{verbatim}
+\end{lstlisting}
 \end{figure}
 
 Das Ergebnis der Analyse zeigt die "Heavy Hitter" des deutschen Lobbyismus (Stand: aktueller Datenabzug):
@@ -327,7 +364,7 @@ Das Lobbyregistergesetz gilt nicht nur für deutsche Unternehmen. Viele internat
 
 \begin{figure}[H]
 \caption{SQL-Query zur Analyse internationaler Herkunftsländer}
-\begin{verbatim}
+\begin{lstlisting}[style=sql]
 SELECT 
   cl.code as "Land", 
   COUNT(DISTINCT re.id) as "Anzahl Akteure"
@@ -339,7 +376,7 @@ WHERE cl.code != 'DE' -- Ausschluss von Deutschland
 GROUP BY cl.code
 ORDER BY 2 DESC
 LIMIT 10;
-\end{verbatim}
+\end{lstlisting}
 \end{figure}
 
 Das Ergebnis ist aufschlussreich: Neben den erwartbaren Nachbarn (Belgien/Brüssel, Österreich) tauchen auch die USA und Großbritannien weit oben auf. Dies verdeutlicht, dass Lobbyismus in Berlin ein globales Geschäft ist.
@@ -380,10 +417,10 @@ Wir haben dazu die Tabelle \texttt{financial\_expenses} mit der Adress-Tabelle \
 
 \begin{figure}[H]
 \caption{Vergleich der durchschnittlichen Budgets nach Städten}
-\begin{verbatim}
+\begin{lstlisting}[style=sql]
 SELECT 
   a.city as "Stadt",
-  ROUND(AVG(fe.expenses_to_eur), 0) as "Ø Budget (EUR)"
+  ROUND(AVG(fe.expenses_to_eur), 0) as "Avg Budget (EUR)"
 FROM register_entry re
 JOIN lobbyist_identity li ON re.id = li.entry_id
 JOIN address a ON li.address_id = a.id
@@ -391,7 +428,7 @@ JOIN financial_expenses fe ON re.id = fe.entry_id
 WHERE a.city IN ('Berlin', 'München', 'Hamburg', 'Frankfurt am Main')
 GROUP BY a.city
 ORDER BY 2 DESC;
-\end{verbatim}
+\end{lstlisting}
 \end{figure}
 
 Das Ergebnis überraschte uns: Nicht die Politik-Hauptstadt Berlin, sondern die Finanzmetropole \textbf{Frankfurt am Main} führt das Ranking mit einem Durchschnittsbudget von ca. \textbf{199.679 €} an. Dicht darauf folgt \textbf{München} (189.133 €). Berlin landet mit ca. \textbf{183.790 €} nur auf dem dritten Platz, noch vor Hamburg (166.201 €). Dies zeigt deutlich, dass hohe Budgets vor allem im Finanz- und Industriesektor (Frankfurt/München) zu finden sind.
@@ -436,14 +473,14 @@ Das Gesetz erlaubt in bestimmten Härtefällen, Finanzdaten zu verweigern (Feld 
 
 \begin{figure}[H]
 \caption{Ermittlung von Transparenz-Lücken}
-\begin{verbatim}
+\begin{lstlisting}[style=sql]
 SELECT 
     COUNT(*) as "Anzahl Verweigerer",
     SUM(CASE WHEN refuse_reason IS NOT NULL THEN 1 ELSE 0 END) 
       as "Mit Begründung"
 FROM financial_expenses
 WHERE refuse_info = true;
-\end{verbatim}
+\end{lstlisting}
 \end{figure}
 
 Diese Query speist ein "Alarm-Panel" im Dashboard. Aktuell haben \textbf{113 Akteure} die Finanzangaben verweigert, wovon nur 33 eine explizite Begründung hinterlegt haben. Dies ist zwar eine kleine Minderheit, aber für Journalisten ("Watchdogs") eine extrem relevante Zielgruppe.
@@ -453,7 +490,7 @@ Das Datenmodell enthält kein explizites Feld für "Parteizugehörigkeit". Denno
 
 \begin{figure}[H]
 \caption{SQL-basierte Textklassifikation von Parteizugehörigkeiten}
-\begin{verbatim}
+\begin{lstlisting}[style=sql]
 SELECT 
   CASE 
     WHEN function_position ILIKE '%CDU%' 
@@ -468,7 +505,7 @@ FROM recent_gov_house_reps
 WHERE function_position IS NOT NULL
 GROUP BY 1
 ORDER BY 2 DESC;
-\end{verbatim}
+\end{lstlisting}
 \end{figure}
 
 Dieser Ansatz demonstriert die Mächtigkeit von \texttt{CASE WHEN} Statements. Die Analyse ergab zwar eine Dominanz der Kategorie "Sonstige" (664 Treffer), was auf unstrukturierte Eingaben hindeutet. Unter den erkennbaren Parteien führte jedoch die \textbf{FDP (9)} vor Union (4) und SPD (4).
