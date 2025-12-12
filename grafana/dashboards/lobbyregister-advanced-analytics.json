@@ -73,7 +73,7 @@
       },
       "gridPos": {
         "h": 10,
-        "w": 12,
+        "w": 16,
         "x": 0,
         "y": 0
       },
@@ -159,8 +159,8 @@
       },
       "gridPos": {
         "h": 10,
-        "w": 12,
-        "x": 12,
+        "w": 8,
+        "x": 16,
         "y": 0
       },
       "id": 3,
@@ -168,7 +168,10 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
-          "showLegend": true
+          "showLegend": true,
+          "values": [
+            "percent"
+          ]
         },
         "pieType": "donut",
         "reduceOptions": {
@@ -239,7 +242,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 563
+                "value": 856
               }
             ]
           },
@@ -251,7 +254,31 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 589
+                "value": 496
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ex-Politiker im Team"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 363
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ehemalige Funktion"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 238
               }
             ]
           }
@@ -343,6 +370,10 @@
               {
                 "id": "unit",
                 "value": "currencyEUR"
+              },
+              {
+                "id": "custom.width",
+                "value": 150
               }
             ]
           },
@@ -354,7 +385,19 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 295
+                "value": 91
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Organisation"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 1673
               }
             ]
           }
@@ -370,7 +413,13 @@
       "options": {
         "cellHeight": "sm",
         "enablePagination": false,
-        "showHeader": true
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Rang"
+          }
+        ]
       },
       "pluginVersion": "12.2.2",
       "targets": [
@@ -402,5 +451,5 @@
   "timezone": "",
   "title": "Lobbyregister - Advanced Analytics",
   "uid": "lobbyregister-advanced-analytics",
-  "version": 9
+  "version": 10
 }

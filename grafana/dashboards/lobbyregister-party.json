@@ -43,7 +43,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 19,
         "w": 12,
         "x": 0,
         "y": 0
@@ -53,7 +53,10 @@
         "legend": {
           "displayMode": "list",
           "placement": "right",
-          "showLegend": true
+          "showLegend": true,
+          "values": [
+            "percent"
+          ]
         },
         "pieType": "pie",
         "reduceOptions": {
@@ -119,7 +122,8 @@
             "footer": {
               "reducers": []
             },
-            "inspect": false
+            "inspect": false,
+            "wrapText": true
           },
           "mappings": [],
           "thresholds": {
@@ -146,13 +150,41 @@
               {
                 "id": "unit",
                 "value": "currencyEUR"
+              },
+              {
+                "id": "custom.width",
+                "value": 85
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Spender"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 205
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Zweck / Empfänger"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 670
               }
             ]
           }
         ]
       },
       "gridPos": {
-        "h": 8,
+        "h": 19,
         "w": 12,
         "x": 12,
         "y": 0
@@ -229,5 +261,5 @@
   "timezone": "",
   "title": "Lobbyregister - Party Radar",
   "uid": "lobby_party",
-  "version": 1
+  "version": 2
 }

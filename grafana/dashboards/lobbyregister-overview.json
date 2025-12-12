@@ -807,72 +807,72 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "expenses_from_eur"
+              "options": "Schätzwert (Ø)"
             },
             "properties": [
+              {
+                "id": "custom.width",
+                "value": 117
+              },
               {
                 "id": "unit",
                 "value": "currencyEUR"
-              },
-              {
-                "id": "custom.width",
-                "value": 153
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "expenses_to_eur"
+              "options": "Jahr (Ende)"
             },
             "properties": [
+              {
+                "id": "custom.width",
+                "value": 94
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ausgaben (Min)"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 126
+              },
               {
                 "id": "unit",
                 "value": "currencyEUR"
-              },
-              {
-                "id": "custom.width",
-                "value": 135
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "midpoint_estimate_eur"
+              "options": "Jahr (Start)"
             },
             "properties": [
+              {
+                "id": "custom.width",
+                "value": 95
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ausgaben (Max)"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              },
               {
                 "id": "unit",
                 "value": "currencyEUR"
-              },
-              {
-                "id": "custom.width",
-                "value": 176
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "related_year_start"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 204
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "related_year_end"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 205
               }
             ]
           }
@@ -901,7 +901,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  re.register_number,\n  fe.related_year_start,\n  fe.related_year_end,\n  COALESCE(fe.expenses_from_eur, 0) AS expenses_from_eur,\n  COALESCE(fe.expenses_to_eur, fe.expenses_from_eur, 0) AS expenses_to_eur,\n  ((COALESCE(fe.expenses_from_eur, fe.expenses_to_eur, 0) + COALESCE(fe.expenses_to_eur, fe.expenses_from_eur, 0)) / 2.0)::double precision AS midpoint_estimate_eur\nFROM financial_expenses fe\nJOIN register_entry re ON re.id = fe.entry_id\nWHERE fe.expenses_from_eur IS NOT NULL OR fe.expenses_to_eur IS NOT NULL\nORDER BY COALESCE(fe.expenses_to_eur, fe.expenses_from_eur, 0) DESC\nLIMIT 20;",
+          "rawSql": "SELECT\n  COALESCE(li.name_text, li.company_name, re.register_number) AS \"Name der Organisation\",\n  TO_CHAR(fe.related_year_start, 'YYYY') AS \"Jahr (Start)\",\n  TO_CHAR(fe.related_year_end, 'YYYY') AS \"Jahr (Ende)\",\n  COALESCE(fe.expenses_from_eur, 0) AS \"Ausgaben (Min)\",\n  COALESCE(fe.expenses_to_eur, fe.expenses_from_eur, 0) AS \"Ausgaben (Max)\",\n  ((COALESCE(fe.expenses_from_eur, fe.expenses_to_eur, 0) + COALESCE(fe.expenses_to_eur, fe.expenses_from_eur, 0)) / 2.0)::double precision AS \"Schätzwert (Ø)\"\nFROM financial_expenses fe\nJOIN register_entry re ON re.id = fe.entry_id\nLEFT JOIN lobbyist_identity li ON re.id = li.entry_id\nWHERE fe.expenses_from_eur IS NOT NULL OR fe.expenses_to_eur IS NOT NULL\nORDER BY COALESCE(fe.expenses_to_eur, fe.expenses_from_eur, 0) DESC\nLIMIT 20;",
           "refId": "A",
           "select": [
             [
@@ -937,5 +937,5 @@
   "timezone": "",
   "title": "Lobbyregister Overview",
   "uid": "lobbyregister-overview",
-  "version": 6
+  "version": 11
 }

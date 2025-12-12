@@ -53,7 +53,56 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Mitglieder (Total)"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 131
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Rechtsform"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 107
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Standort"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 190
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Reg-Nr."
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 103
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 6,
@@ -668,7 +717,8 @@
             "footer": {
               "reducers": []
             },
-            "inspect": false
+            "inspect": false,
+            "wrapText": true
           },
           "mappings": [],
           "thresholds": {
@@ -819,8 +869,8 @@
     "list": [
       {
         "current": {
-          "text": "PostgreSQL",
-          "value": "PostgreSQL"
+          "text": "Lobbyregister DB",
+          "value": "lobbyregister"
         },
         "includeAll": false,
         "label": "Datasource",
@@ -832,6 +882,10 @@
         "type": "datasource"
       },
       {
+        "current": {
+          "text": "Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e. V.",
+          "value": "Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e. V."
+        },
         "datasource": {
           "type": "postgres",
           "uid": "${datasource}"
@@ -856,5 +910,5 @@
   "timezone": "",
   "title": "Lobbyregister - Organization Profiler",
   "uid": "lobby_org",
-  "version": 2
+  "version": 3
 }
