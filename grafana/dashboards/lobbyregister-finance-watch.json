@@ -63,6 +63,22 @@
               {
                 "id": "unit",
                 "value": "currencyEUR"
+              },
+              {
+                "id": "custom.width",
+                "value": 184
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Empfänger"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 744
               }
             ]
           }
@@ -145,7 +161,20 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Anzahl Aufträge"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 193
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -156,7 +185,13 @@
       "id": 2,
       "options": {
         "cellHeight": "sm",
-        "showHeader": true
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Anzahl Aufträge"
+          }
+        ]
       },
       "pluginVersion": "12.2.2",
       "targets": [
@@ -165,7 +200,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT \n    co.name as \"Auftragnehmer\",\n    COUNT(ci.id) as \"Anzahl Aufträge\"\nFROM contract_item ci\nJOIN contract_contractors cc ON ci.id = cc.contract_item_id\nJOIN contractor_org co ON cc.id = co.contractors_id\nGROUP BY co.name\nORDER BY 2 DESC\nLIMIT 20",
+          "rawSql": "SELECT \n    COALESCE(co.name, co.reference_name, 'Unbekannt') as \"Auftragnehmer\",\n    COUNT(ci.id) as \"Anzahl Aufträge\"\nFROM contract_item ci\nJOIN contract_contractors cc ON ci.id = cc.contract_item_id\nJOIN contractor_org co ON cc.id = co.contractors_id\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 20",
           "refId": "A",
           "select": [
             [
@@ -335,11 +370,24 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Anzahl ehemaliger Mitarbeiter im Lobbyismus"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 331
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
-        "w": 24,
+        "w": 16,
         "x": 0,
         "y": 16
       },
@@ -381,6 +429,222 @@
       ],
       "title": "Ministerien-Ranking (Targeting)",
       "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "description": "Verteilung der Einnahmequellen (geschätzt).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 16
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.2.2",
+      "targets": [
+        {
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT 'Schenkungen' as \"Quelle\", SUM(total_to_eur) as \"Betrag\" FROM donators WHERE info_present = true UNION ALL SELECT 'Mitgliedsbeiträge', SUM(total_to_eur) FROM membership_fees WHERE related_year_finished = true UNION ALL SELECT 'Staatliche Zuwendungen', SUM(amount_to_eur) FROM public_allowance_item;",
+          "refId": "A"
+        }
+      ],
+      "title": "Finanz-Mix der Lobbyisten",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "description": "Die größten privaten Geldgeber (Schenkungen) im Lobbyregister.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Gesamtsumme"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyEUR"
+              },
+              {
+                "id": "custom.width",
+                "value": 146
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "12.2.2",
+      "targets": [
+        {
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT name as \"Name\", SUM(amount_to_eur) as \"Gesamtsumme\" FROM donator_item GROUP BY name ORDER BY 2 DESC LIMIT 20;",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Spender (Donors)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "description": "Die größten staatlichen Geldgeber (Zuwendungen).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Gesamtsumme"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyEUR"
+              },
+              {
+                "id": "custom.width",
+                "value": 119
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "id": 6,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "12.2.2",
+      "targets": [
+        {
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT name as \"Geldgeber\", SUM(amount_to_eur) as \"Gesamtsumme\" FROM public_allowance_item GROUP BY name ORDER BY 2 DESC LIMIT 20;",
+          "refId": "A"
+        }
+      ],
+      "title": "Staatliche Zuwendungen (Quellen)",
+      "type": "table"
     }
   ],
   "preload": false,
@@ -415,5 +679,5 @@
   "timezone": "",
   "title": "Lobbyregister - Government & Finance Watch",
   "uid": "lobby_gov_finance",
-  "version": 1
+  "version": 5
 }

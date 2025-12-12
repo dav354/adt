@@ -80,7 +80,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT \n  CASE \n    WHEN function_position ILIKE '%CDU%' OR function_position ILIKE '%CSU%' THEN 'Union (CDU/CSU)'\n    WHEN function_position ILIKE '%SPD%' THEN 'SPD'\n    WHEN function_position ILIKE '%Grüne%' THEN 'Bündnis 90/Die Grünen'\n    WHEN function_position ILIKE '%FDP%' THEN 'FDP'\n    WHEN function_position ILIKE '%Linke%' OR function_position ILIKE '%AfD%' THEN 'Andere (Linke/AfD)'\n    ELSE 'Unbekannt/Verwaltung'\n  END as \"Partei / Fraktion\",\n  COUNT(*) as \"Anzahl Verbindungen\"\nFROM recent_gov_house_reps\nWHERE function_position IS NOT NULL\nGROUP BY 1\nORDER BY 2 DESC",
+          "rawSql": "SELECT \n  CASE \n    WHEN function_position ILIKE '%CDU%' OR function_position ILIKE '%CSU%' THEN 'Union (CDU/CSU)'\n    WHEN function_position ILIKE '%SPD%' THEN 'SPD'\n    WHEN function_position ILIKE '%Grüne%' THEN 'Bündnis 90/Die Grünen'\n    WHEN function_position ILIKE '%FDP%' THEN 'FDP'\n    WHEN function_position ILIKE '%AfD%' THEN 'AfD'\n    WHEN function_position ILIKE '%Linke%' THEN 'Die Linke'\n    WHEN function_position ILIKE '%BSW%' THEN 'BSW'\n    ELSE 'Sonstige / Unbekannt'\n  END as \"Partei / Fraktion\",\n  COUNT(*) as \"Anzahl Verbindungen\"\nFROM recent_gov_house_reps\nWHERE function_position IS NOT NULL\nGROUP BY 1\nORDER BY 2 DESC",
           "refId": "A",
           "select": [
             [
@@ -201,7 +201,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT \n    d.name as \"Spender\",\n    d.description as \"Zweck / Empfänger\",\n    d.amount_to_eur as \"Betrag\"\nFROM donator_item d\nWHERE d.description ILIKE '%CDU%' \n   OR d.description ILIKE '%SPD%' \n   OR d.description ILIKE '%Grüne%' \n   OR d.description ILIKE '%FDP%'\nORDER BY 3 DESC\nLIMIT 20",
+          "rawSql": "SELECT \n    d.name as \"Geldgeber\",\n    CASE\n        WHEN d.description ~* '\\y(CDU|Christlich Demokratische Union)\\y' THEN 'CDU'\n        WHEN d.description ~* '\\y(CSU|Christlich-Soziale Union)\\y' THEN 'CSU'\n        WHEN d.description ~* '\\y(SPD|Sozialdemokratische Partei)\\y' OR d.name ~* '\\y(SPD)\\y' THEN 'SPD'\n        WHEN d.description ~* '\\y(Grüne|Bündnis 90)\\y' AND d.description !~* 'Grünes Band' THEN 'Grüne'\n        WHEN d.description ~* '\\y(FDP|Freie Demokratische)\\y' THEN 'FDP'\n        WHEN d.description ~* '\\y(AfD|Alternative für Deutschland)\\y' THEN 'AfD'\n        WHEN d.description ~* '\\y(Linke|Die Linke)\\y' THEN 'Die Linke'\n        ELSE 'Andere'\n    END as \"Verbundene Partei\",\n    d.description as \"Zweck / Beschreibung\",\n    d.amount_to_eur as \"Betrag\"\nFROM donator_item d\nWHERE d.description ~* '\\y(CDU|CSU|SPD|Grüne|FDP|AfD|Linke)\\y'\n   OR d.name ~* '\\y(CDU|CSU|SPD|Grüne|FDP|AfD|Linke)\\y'\nORDER BY 4 DESC\nLIMIT 50",
           "refId": "A",
           "select": [
             [
@@ -225,7 +225,7 @@
           ]
         }
       ],
-      "title": "Direkte Parteispenden (Gefunden in Beschreibungen)",
+      "title": "Finanzielle Zuwendungen von Parteien an Lobbyisten",
       "type": "table"
     }
   ],

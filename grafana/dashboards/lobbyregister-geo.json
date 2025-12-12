@@ -324,7 +324,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 9,
         "x": 0,
         "y": 12
       },
@@ -389,8 +389,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
+        "w": 10,
+        "x": 9,
         "y": 12
       },
       "id": 4,
@@ -443,6 +443,78 @@
         }
       ],
       "title": "Verhältnis Inland vs. Ausland",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "description": "Anzahl der Organisationen mit dedizierter Hauptstadt-Repräsentanz in Berlin (abweichend vom Hauptsitz).",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 5,
+        "x": 19,
+        "y": 12
+      },
+      "id": 103,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.2",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) as \"Hauptstadt-Büros\" FROM lobbyist_identity WHERE capital_city_repr_id IS NOT NULL;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "",
+          "timeColumn": "",
+          "where": []
+        }
+      ],
+      "title": "Hauptstadt-Repräsentanzen",
       "type": "stat"
     },
     {
@@ -590,5 +662,5 @@
   "timezone": "",
   "title": "Lobbyregister - Geographic Insights",
   "uid": "lobby_geo",
-  "version": 2
+  "version": 4
 }

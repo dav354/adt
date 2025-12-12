@@ -389,8 +389,8 @@
     "list": [
       {
         "current": {
-          "text": "PostgreSQL",
-          "value": "PostgreSQL"
+          "text": "Lobbyregister DB",
+          "value": "lobbyregister"
         },
         "includeAll": false,
         "label": "Datasource",
@@ -402,6 +402,14 @@
         "type": "datasource"
       },
       {
+        "current": {
+          "text": [
+            "Würzburg"
+          ],
+          "value": [
+            "Würzburg"
+          ]
+        },
         "datasource": {
           "type": "postgres",
           "uid": "${datasource}"
@@ -427,5 +435,5 @@
   "timezone": "",
   "title": "Lobbyregister - City Monitor",
   "uid": "lobby_city",
-  "version": 1
+  "version": 2
 }
