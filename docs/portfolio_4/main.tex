@@ -156,20 +156,26 @@ pdftitle={\BaTitle}
 \mainmatter
 \chapter{Einleitung: Vom Datengrab zum Dashboard}
 
-Nachdem in den vorangegangenen Projektphasen eine robuste Datenpipeline (ETL) und eine hochperformante Datenbankarchitektur (Indexing, Materialized Views) geschaffen wurden, widmet sich dieser letzte Portfolioteil der wohl wichtigsten Ebene: der \textit{Visualisierung}. Daten, die nur als Millionen von Tabellenzeilen existieren, sind für den menschlichen Entscheider wertlos. Erst durch Aggregation, Kontextualisierung und grafische Aufbereitung werden aus abstrakten Bytes greifbare Informationen.
+Nach dem Aufbau der ETL-Strecke und der optimierten Datenbankarchitektur (Indexing, Materialized Views) richtet sich der Abschluss dieses Portfolios auf die Visualisierungsschicht. Tausende Tabellenzeilen sind für Entscheidungen wertlos, solange sie nicht verdichtet, in Kontext gesetzt und visuell lesbar gemacht werden.
 
-Ziel dieses Teils ist es, die technische Tiefe der PostgreSQL-Datenbank (Window Functions, CTEs, rekursive Abfragen) in intuitive Dashboards zu übersetzen. Dabei setzen wir auf Grafana als Visualisierungs-Layer, da es sich nahtlos in den bestehenden Docker-Stack integriert und SQL als First-Class-Citizen behandelt. Wir zeigen, wie wir versteckte Netzwerke („Wer kennt wen?“), finanzielle Ausreißer und inhaltliche Schwerpunkte des deutschen Lobbyismus sichtbar machen.
+Ziel dieses Teils ist es, die technische Tiefe der PostgreSQL-Datenbank (Window Functions, CTEs\footnote{Common Table Expressions.}, rekursive Abfragen) in prägnante Dashboards zu übersetzen. Grafana passt hier, weil es sich reibungslos in den bestehenden Docker-Stack einfügt und SQL nicht hinter einer Oberfläche versteckt. Sichtbar werden sollen versteckte Netzwerke („Wer kennt wen?“), finanzielle Ausreißer und thematische Schwerpunkte im deutschen Lobbyregister.
+
+Die Visualisierung steht damit am Ende einer Kette von Entscheidungen, die in den vorangegangenen Portfolios getroffen wurden: Datenmodellierung nach strengem Normalisierungsgrad, robuste ETL-Pipeline mit \texttt{asyncio} und gezielte Performance-Tuning-Maßnahmen. Erst auf dieser Basis können Dashboards belastbare Aussagen treffen, ohne sich auf Voraggregationen oder manuelle Datenaufbereitung verlassen zu müssen.
+
+Adressaten der Visualisierungen sind unterschiedliche Gruppen: politische Entscheidungsträger, die einen schnellen Überblick benötigen; Analystinnen, die explorative Drill-downs durchführen; und Öffentlichkeit beziehungsweise Medien, die Transparenz über Verflechtungen erwarten. Alle drei profitieren von reproduzierbaren Panels, die unmittelbar aus der Datenbank gespeist werden und so eine konsistente „Single Source of Truth“ wahren.
 
 \chapter{Visualisierungsstrategie mit Grafana}
 
-Die Wahl fiel auf Grafana, da es – im Gegensatz zu klassischen BI-Tools wie Tableau oder PowerBI – eine direkte, code-basierte Verbindung zur Datenbank erlaubt. Dies ermöglicht uns, die volle Mächtigkeit von SQL zu nutzen, anstatt uns auf Drag-and-Drop-Aggregationen zu beschränken.
+Grafana bietet – anders als klassische BI-Tools wie Tableau oder PowerBI – einen direkten, code-basierten Zugriff auf die Datenbank. So bleibt die volle SQL-Funktionalität erhalten, statt auf generische Drag-and-Drop-Aggregationen reduziert zu werden. Der Grafana-Container ist in den bestehenden Docker-Stack eingebunden und greift über eine dedizierte PostgreSQL-Datasource auf die Materialized Views und Indizes zu, die in den vorherigen Phasen erarbeitet wurden.
+
+Im Fokus stehen reproduzierbare Panels mit klar definierten SQL-Queries, die ohne proprietäre Berechnungen auskommen. Durch diesen Ansatz bleibt das gesamte Datenmodell transparent; jede Kennzahl lässt sich auf eine Query zurückführen, die versioniert und nachvollziehbar dokumentiert ist.
 
 \section{Architektur der Dashboards}
 Unsere Visualisierungsstrategie folgt dem „Schneidenbohrer-Prinzip“ (Drill-Down):
 
 \begin{enumerate}
     \item \textbf{High-Level Overview:} 
-    Der Einstieg erfolgt über ein globales Dashboard, das die wichtigsten KPIs aggregiert. Hier sehen Entscheider sofort die Gesamtzahl der aktiven Lobbyisten, das kumulierte Finanzvolumen sowie die personelle Schlagkraft (FTE).
+    Der Einstieg erfolgt über ein globales Dashboard, das die wichtigsten KPIs aggregiert. Entscheider sehen dort sofort die Gesamtzahl der aktiven Lobbyisten, das kumulierte Finanzvolumen sowie die personelle Schlagkraft (FTE\footnote{Full Time Equivalent.}).
     
     \begin{figure}[H]
         \centering
@@ -227,14 +233,16 @@ Unsere Visualisierungsstrategie folgt dem „Schneidenbohrer-Prinzip“ (Drill-D
 \end{enumerate}
 
 \section{Technische Herausforderungen}
-Eine besondere Herausforderung stellte die Visualisierung von Graphen (Netzwerken) und Zeitreihen dar, da das Lobbyregister oft unvollständige Zeitstempel (nur Monat/Jahr) liefert. Hier mussten wir mittels SQL-Casting (\texttt{TO\_DATE}) und Fallback-Logiken robuste Zeitachsen für Grafana konstruieren.
+Knackpunkte waren die Visualisierung von Netzwerken und Zeitreihen, weil das Lobbyregister häufig nur Monats- und Jahresangaben liefert. Durch SQL-Casts (\texttt{TO\_DATE}) und Fallback-Logiken haben wir dennoch stabile Zeitachsen für Grafana aufgebaut.
 
 \chapter{Implementierung komplexer Analysen}
 
-Das Herzstück dieses Portfolios sind nicht die bunten Balken, sondern die SQL-Abfragen, die sie generieren. Wir präsentieren hier drei fortgeschrittene Analysen, die weit über einfaches \texttt{SELECT * FROM} hinausgehen.
+Im Mittelpunkt stehen nicht die Charts, sondern die SQL-Abfragen, die sie speisen. Grafana fungiert hier als Visualisierungsschicht, bleibt aber eng an der Datenbank: Alle Metriken entstehen aus versionierten Queries, die direkt auf den Materialized Views und Indizes aufsetzen. Damit sind die Analysen reproduzierbar und können sowohl im Dashboard als auch in isolierten SQL-Umgebungen ausgeführt werden.
+
+Die folgenden Beispiele zeigen drei Abfrageklassen, die über einfache Aggregationen hinausgehen: mehrstufige Joins zur Rekonstruktion von Personen- und Organisationsnetzwerken, Window Functions für Rankings sowie Text- und Datumsnormalisierung, um unvollständige Eingaben auszuwerten. Sie illustrieren, wie wir Transparenz, Performanz und fachliche Aussagekraft miteinander verbinden.
 
 \section{Network of Influence: Die unsichtbaren Verbindungen}
-Ein zentrales Anliegen des Lobbyregisters ist Transparenz. Doch oft sind Verbindungen indirekt: Ein Unternehmen (Client) beauftragt eine Agentur, und diese Agentur beschäftigt einen ehemaligen Minister. Um diese Kette sichtbar zu machen, nutzen wir einen 5-Wege-Join.
+Transparenz scheitert oft an indirekten Ketten: Ein Unternehmen (Client) beauftragt eine Agentur, die wiederum einen ehemaligen Minister beschäftigt. Sichtbar wird diese Spur mit einem 5-Wege-Join.
 
 \begin{figure}[H]
 \caption{SQL-Query für das 'Network of Influence' Panel}
@@ -264,7 +272,7 @@ WHERE rgf.id IS NOT NULL;
 \end{lstlisting}
 \end{figure}
 
-Ein konkreter Testlauf dieser Abfrage förderte folgende interessante Verbindung zutage:
+Ein konkreter Lauf der Abfrage zeigte beispielsweise:
 
 \begin{itemize}
     \item \textbf{Auftraggeber:} Arena2036
@@ -275,7 +283,7 @@ Ein konkreter Testlauf dieser Abfrage förderte folgende interessante Verbindung
 Dies zeigt exemplarisch, wie Forschungscampus-Projekte (Arena2036) über spezialisierte Agenturen Zugang zu politischen Entscheidern suchen.
 
 \section{Finanzielle Rankings: Window Functions im Einsatz}
-Um zu erkennen, welche Lobbyisten über die größten finanziellen Ressourcen verfügen, nutzen wir SQL Window Functions. Da der aktuelle Datensatz eine Momentaufnahme darstellt, verwenden wir \texttt{RANK()}, um eine dynamische Bestenliste direkt in der Datenbank zu erzeugen, ohne die Daten erst in die Applikation laden zu müssen.
+Um die finanzkräftigsten Akteure zu identifizieren, setzen wir SQL Window Functions ein. \texttt{RANK()} erzeugt eine dynamische Bestenliste direkt in der Datenbank; ein Umweg über die Applikation entfällt.
 
 \begin{figure}[H]
 \caption{Berechnung des Budget-Rankings mittels RANK()}
@@ -317,7 +325,7 @@ Das Ergebnis der Analyse zeigt die "Heavy Hitter" des deutschen Lobbyismus (Stan
 
 \chapter{Data Stories: Erkenntnisse aus den Daten}
 
-Jenseits der technischen Implementierung haben wir die Datenbank explorativ befragt („Data Mining“), um interessante Muster im deutschen Lobbyismus aufzudecken. Hier sind die Ergebnisse unserer „Fun Facts“-Analyse.
+Neben der Implementierung haben wir die Datenbank explorativ („Data Mining“) genutzt, um Muster im deutschen Lobbyismus freizulegen. Die folgenden Abschnitte fassen ausgewählte Befunde zusammen.
 
 \section{Die „Drehtür“-Ministerien}
 Wir haben analysiert, welche Bundesministerien oder Behörden am häufigsten in den Lebensläufen von Lobbyisten auftauchen (Tabelle \ref{tab:ministries}).
@@ -342,8 +350,7 @@ BMBFSFJ & Bundesministerium für Familie & 1 \\
 Es ist auffällig, dass das Verteidigungsressort dominiert, gefolgt von Umwelt- und Arbeitsthemen.
 
 \section{Die teuersten Themenfelder}
-Welche politischen Themen sind den Lobbyisten das meiste Geld wert? Wir haben das Durchschnittsbudget aller Organisationen berechnet, die ein bestimmtes Interessenfeld angeben.
-Das gesamte im Register erfasste Finanzvolumen beläuft sich auf beeindruckende \textbf{909 Millionen Euro}.
+Welche politischen Themen sind den Lobbyisten das meiste Geld wert? Wir berechnen das Durchschnittsbudget aller Organisationen, die ein bestimmtes Interessenfeld angeben. Das gesamte Finanzvolumen im Register liegt bei \textbf{909 Millionen Euro}.
 
 \begin{figure}[H]
 \centering
@@ -383,9 +390,9 @@ Das gesamte im Register erfasste Finanzvolumen beläuft sich auf beeindruckende 
     \item \textbf{Platz 2: Cybersicherheit (Ø 519.129 €)} – Angesichts wachsender Bedrohungen ist die digitale Verteidigung das teuerste Pflaster des Lobbyismus (495 Akteure).
     \item \textbf{Platz 3: Bevölkerungsschutz und Katastrophenhilfe (Ø 517.532 €)} – Ein Bereich, der oft staatliche Großaufträge impliziert und entsprechend finanzstarke Akteure anzieht (246 Akteure).
 \end{itemize}
-Interessant ist hierbei, dass klassische Industriethemen (Auto, Chemie) zwar in der Summe riesig sind, aber durch viele kleine Zulieferer im \textit{Durchschnitt} verwässert werden. Die oben genannten Themen werden hingegen fast ausschließlich von „Big Playern“ bespielt.
+Klassische Industriethemen (Auto, Chemie) sind in Summe groß, werden im \textit{Durchschnitt} aber durch viele kleine Zulieferer verwässert. Die oben genannten Felder werden dagegen fast ausschließlich von „Big Playern“ bespielt.
 
-Konkret zeigen die Daten, dass diese teuren Themenfelder von den finanzstärksten Verbänden Deutschlands dominiert werden. Dabei dienen die enormen Budgets oft einer breiten Themenabdeckung:
+Die Daten zeigen, dass diese teuren Themenfelder von finanzstarken Verbänden dominiert werden. Oft streuen sie ihre hohen Budgets breit:
 \begin{itemize}
     \item \textbf{Gesamtverband der Deutschen Versicherungswirtschaft e.V.} (15,3 Mio. € Jahresbudget) treibt den Durchschnitt im Bereich Strafrecht nach oben, verteilt seine Ressourcen jedoch auf insgesamt \textbf{37 Themenfelder}.
     \item \textbf{Verbraucherzentrale Bundesverband e.V.} (12,7 Mio. €) ist federführend im Bereich Cybersicherheit, bespielt aber gleichzeitig \textbf{46 weitere Themen}.
@@ -393,7 +400,7 @@ Konkret zeigen die Daten, dass diese teuren Themenfelder von den finanzstärkste
 \end{itemize}
 
 \section{Der Gesetzgebungs-Fußabdruck}
-Das Lobbyregister erfasst nicht nur abstrakte Interessenfelder, sondern auch konkrete Gesetzesvorhaben (\textit{Regulatory Projects}), auf die Einfluss genommen werden soll. Dies ermöglicht uns, den „legislativen Fußabdruck“ zu messen: Welche Gesetze mobilisieren die meisten Lobbyisten?
+Das Lobbyregister erfasst nicht nur Interessenfelder, sondern auch konkrete Gesetzesvorhaben (\textit{Regulatory Projects}). Damit lässt sich messen, welche Gesetze die meisten Lobbyisten mobilisieren.
 
 \begin{figure}[H]
 \caption{Identifikation der umkämpftesten Gesetzesvorhaben}
@@ -415,16 +422,13 @@ LIMIT 5;
 \end{lstlisting}
 \end{figure}
 
-Diese Analyse erlaubt es, frühzeitig politische Konfliktlinien zu erkennen, noch bevor sie in den Medien breit diskutiert werden.
-Ein konkreter Lauf dieser Abfrage für den Sektor „Digitalisierung“ zeigte überraschende Ergebnisse: Auf Platz 1 landete nicht etwa ein klassisches IT-Sicherheitsgesetz, sondern die \textbf{„Praxisorientierte Anpassung des Energieeffizienzgesetzes“} (10 betroffene Lobbyisten). Dies verdeutlicht, wie stark Digitalisierung und Energiepolitik mittlerweile verzahnt sind (Stichwort: Rechenzentren).
-Auch Themen wie die \textbf{EU-Plastikabgabe} oder die \textbf{Digitalisierbarkeit steuerlicher Prozesse} (je 9 Lobbyisten) stehen weit oben auf der Agenda.
+So werden politische Konfliktlinien sichtbar, bevor sie breit diskutiert werden. Ein Lauf der Abfrage für den Sektor „Digitalisierung“ zeigte überraschend: Nicht ein IT-Sicherheitsgesetz, sondern die \textbf{„Praxisorientierte Anpassung des Energieeffizienzgesetzes“} (10 betroffene Lobbyisten) führte. Das unterstreicht die Verzahnung von Digitalisierung und Energiepolitik. Auch die \textbf{EU-Plastikabgabe} und die \textbf{Digitalisierbarkeit steuerlicher Prozesse} (je 9 Lobbyisten) stehen weit oben.
 
 \section{Effizienz-Analyse: Wer hat den größten Hebel?}
-Ein überraschendes Finding lieferte die Metrik „Ausgaben pro Mitarbeiter“ (Spending per Head).
-Während Großkonzerne wie die \textit{Deutsche Bank} oder \textit{Allianz} erwartungsgemäß hohe Budgets haben, führen spezialisierte Kammern und Tech-Konzerne das Effizienz-Ranking an.
-Die \textbf{German American Chamber of Commerce} (147.000 € pro Kopf) und \textbf{Meta Platforms} (129.000 € pro Kopf) investieren am meisten pro registriertem Lobbyisten. Dies deutet auf eine Strategie hin, bei der hochspezialisierte Experten mit großen Budgets ausgestattet werden.
+Die Metrik „Ausgaben pro Mitarbeiter“ (Spending per Head) brachte unerwartete Spitzenreiter hervor.
+Großkonzerne wie \textit{Deutsche Bank} oder \textit{Allianz} haben erwartbar hohe Budgets, doch spezialisierte Kammern und Tech-Konzerne führen das Effizienz-Ranking. Die \textbf{German American Chamber of Commerce} (147.000 € pro Kopf) und \textbf{Meta Platforms} (129.000 € pro Kopf) investieren am meisten pro registriertem Lobbyisten – ein Hinweis auf wenige, aber hochspezialisierte Experten mit großen Budgets.
 
-Zum Vergleich: Etablierte Großkonzerne agieren oft mit anderen Relationen. Die \textbf{Deutsche Bank AG} meldet beispielsweise ein Budget von 1,84 Mio. € bei nur 1,45 angegebenen Vollzeitäquivalenten (FTE)\footnote{FTE (Full Time Equivalent) bezeichnet das Vollzeitäquivalent. Es ist eine Kennzahl, die Teilzeitstellen in vergleichbare Vollzeitstellen umrechnet (z.B. zwei 50\%-Stellen = 1,0 FTE), um die tatsächliche Personalkapazität vergleichbar zu machen.}, was auf den Einsatz hochbezahlter externer Berater oder weniger, aber extrem teurer Spitzenlobbyisten hindeutet. Die \textbf{Allianz SE} operiert mit 980.000 € Budget bei 3,73 FTE etwas „konservativer“.
+Zum Vergleich: Etablierte Großkonzerne agieren oft mit anderen Relationen. Die \textbf{Deutsche Bank AG} meldet beispielsweise ein Budget von 1,84 Mio. € bei nur 1,45 angegebenen Vollzeitäquivalenten (FTE), was auf den Einsatz hochbezahlter externer Berater oder weniger, aber extrem teurer Spitzenlobbyisten hindeutet. Die \textbf{Allianz SE} operiert mit 980.000 € Budget bei 3,73 FTE etwas „konservativer“.
 
 \section{Lobbyregister Fun Facts}
 Zum Abschluss noch einige kuriose Statistiken, die wir direkt aus der Datenbank extrahiert haben:
@@ -439,10 +443,10 @@ Zum Abschluss noch einige kuriose Statistiken, die wir direkt aus der Datenbank 
 
 \chapter{Geografische Deep-Dives}
 
-Neben der inhaltlichen Dimension ("Wer spricht worüber?") bietet das Datenmodell auch exzellente Möglichkeiten für geografische Analysen. Wir haben untersucht, wo die Lobbyisten tatsächlich sitzen – und ob "Berlin" wirklich der einzige Ort ist, an dem Entscheidungen beeinflusst werden.
+Neben der inhaltlichen Dimension ("Wer spricht worüber?") ermöglicht das Datenmodell präzise geografische Analysen. Wir wollten wissen, wo die Lobbyisten tatsächlich sitzen – und ob "Berlin" wirklich der einzige Ort ist, an dem Entscheidungen beeinflusst werden.
 
 \section{Globale Akteure: Lobbying aus dem Ausland}
-Das Lobbyregistergesetz gilt nicht nur für deutsche Unternehmen. Viele internationale Akteure versuchen, Einfluss auf die Bundespolitik zu nehmen. Unsere "International-Query" filtert alle Einträge, deren Hauptsitz nicht in Deutschland liegt.
+Das Lobbyregistergesetz gilt nicht nur für deutsche Unternehmen. Viele internationale Akteure versuchen, Einfluss auf die Bundespolitik zu nehmen. Unsere "International-Query" filtert alle Einträge mit Hauptsitz außerhalb Deutschlands.
 
 \begin{figure}[H]
 \caption{SQL-Query zur Analyse internationaler Herkunftsländer}
@@ -461,8 +465,7 @@ LIMIT 10;
 \end{lstlisting}
 \end{figure}
 
-Das Ergebnis ist aufschlussreich: Neben den erwartbaren Nachbarn (Belgien/Brüssel, Österreich) tauchen auch die USA und Großbritannien weit oben auf. Dies verdeutlicht, dass Lobbyismus in Berlin ein globales Geschäft ist.
-Konkret führen \textbf{Belgien (49 Akteure)} und die \textbf{USA (47)} die Liste an, gefolgt von den Niederlanden (43), Großbritannien (41) und der Schweiz (38).
+Das Ergebnis: Neben erwartbaren Nachbarn (Belgien/Brüssel, Österreich) tauchen auch USA und Großbritannien weit oben auf. Lobbyismus in Berlin ist damit klar international. Spitzenreiter sind \textbf{Belgien (49 Akteure)} und die \textbf{USA (47)}, gefolgt von den Niederlanden (43), Großbritannien (41) und der Schweiz (38).
 
 \begin{figure}[H]
     \centering
@@ -500,7 +503,7 @@ Konkret führen \textbf{Belgien (49 Akteure)} und die \textbf{USA (47)} die List
 \end{figure}
 
 \section{Die PLZ-Heatmap}
-Um eine geografische Verteilung innerhalb Deutschlands zu erhalten, ohne auf komplexe GIS-Systeme zurückgreifen zu müssen, haben wir eine Analyse auf Basis der ersten Ziffer der Postleitzahl durchgeführt. Dies liefert eine robuste „Heatmap“ der Lobby-Dichte.
+Um eine geografische Verteilung innerhalb Deutschlands zu erhalten, ohne auf komplexe GIS-Systeme\footnote{Geographic Information Systems.} zurückgreifen zu müssen, haben wir eine Analyse auf Basis der ersten Ziffer der Postleitzahl durchgeführt. Dies liefert eine robuste „Heatmap“ der Lobby-Dichte.
 
 \begin{figure}[H]
 \caption{Verteilung nach Postleitzahl-Regionen}
@@ -519,7 +522,7 @@ ORDER BY 1 ASC;
 \end{figure}
 
 Die Ergebnisse zeigen erwartungsgemäß eine massive Konzentration im Bereich \textbf{„1xxxx“} (Berlin/Brandenburg) mit \textbf{2.072 Organisationen}.
-Interessant sind jedoch die Cluster in der „Provinz“:
+Spannend sind die Cluster außerhalb der Hauptstadt:
 \begin{itemize}
     \item \textbf{Region 5xxxx (Köln/Bonn):} Mit 721 Organisationen immer noch ein Schwergewicht – ein Erbe der Bonner Republik.
     \item \textbf{Region 8xxxx (München/Bayern):} 687 Akteure, was die wirtschaftliche Stärke des Südens widerspiegelt.
@@ -535,7 +538,7 @@ Im Gegensatz dazu ist der Osten (PLZ 0xxxx) mit nur 221 Einträgen (außerhalb B
 \end{figure}
 
 \section{München vs. Berlin: Wo sitzt das Geld?}
-Ein besonders spannendes "Data Storytelling"-Element ergab sich aus dem Vergleich der durchschnittlichen Finanzausstattung pro Stadt. Zwar hat Berlin die absolute Mehrheit an Lobbybüros, doch das "große Geld" sitzt oft in den Konzernzentralen.
+Ein besonders spannendes "Data Storytelling"-Element ist der Vergleich der durchschnittlichen Finanzausstattung pro Stadt. Berlin hat die meisten Büros, doch das "große Geld" sitzt oft in den Konzernzentralen.
 
 Wir haben dazu die Tabelle \texttt{financial\_expenses} mit der Adress-Tabelle \texttt{address} verknüpft und nach Städten gruppiert.
 
@@ -590,7 +593,7 @@ Das Ergebnis überraschte uns: Nicht die Politik-Hauptstadt Berlin, sondern die 
 
 \chapter{Transparenz \& Compliance}
 
-Ein Register ist nur so gut wie die Datenqualität, die eingepflegt wird. Ein Teil unseres Dashboards widmet sich daher der "Meta-Analyse": Wie gut halten sich die Akteure an die Regeln?
+Ein Register steht und fällt mit der Datenqualität. Ein Teil unseres Dashboards widmet sich daher der "Meta-Analyse": Wie gut halten sich die Akteure an die Regeln?
 
 \section{Die Verweigerer}
 Das Gesetz erlaubt in bestimmten Härtefällen, Finanzdaten zu verweigern (Feld \texttt{refuse\_info}). Wir wollten wissen, wie oft von dieser Klausel Gebrauch gemacht wird.
@@ -610,7 +613,7 @@ WHERE refuse_info = true;
 Diese Query speist ein "Alarm-Panel" im Dashboard. Aktuell haben \textbf{113 Akteure} die Finanzangaben verweigert, wovon nur 33 eine explizite Begründung hinterlegt haben. Dies ist zwar eine kleine Minderheit, aber für Journalisten ("Watchdogs") eine extrem relevante Zielgruppe.
 
 \section{Heuristische Parteinähe-Erkennung}
-Das Datenmodell enthält kein explizites Feld für "Parteizugehörigkeit". Dennoch ist für Nutzer interessant, welchem politischen Spektrum ein Ex-Politiker zuzuordnen ist. Wir haben hierfür eine Text-Mining-Lösung direkt in SQL implementiert, die das Feld \texttt{function\_position} (z.B. "Ehemaliger MdB (SPD)") analysiert.
+Das Datenmodell enthält kein explizites Feld für "Parteizugehörigkeit". Dennoch möchten Nutzer wissen, welchem Spektrum ein Ex-Politiker zuzuordnen ist. Eine Text-Mining-Lösung in SQL analysiert deshalb das Feld \texttt{function\_position} (z.B. "Ehemaliger MdB (SPD)").
 
 \begin{figure}[H]
 \caption{SQL-basierte Textklassifikation von Parteizugehörigkeiten}
@@ -661,11 +664,11 @@ Dieser Ansatz demonstriert die Mächtigkeit von \texttt{CASE WHEN} Statements. D
 \end{figure}
 
 \section{Strukturanalyse: Rechtsformen und ihre Agenda}
-Ein weiterer tieferer Blick in die Daten offenbart eine klare Arbeitsteilung zwischen den verschiedenen Rechtsformen der Akteure. Wir haben untersucht, welches Themenfeld bei welcher Rechtsform am häufigsten genannt wird und wie viel Budget durchschnittlich dahintersteht.
+Ein tieferer Blick in die Daten zeigt eine Arbeitsteilung zwischen den Rechtsformen. Untersucht wurde, welches Themenfeld bei welcher Rechtsform am häufigsten genannt wird und wie viel Budget durchschnittlich dahintersteht.
 
 Die Analyse bestätigt das klassische Bild der Interessensvertretung:
 \begin{itemize}
-    \item \textbf{Zivilgesellschaft (e.V. und Stiftungen):} Hier dominieren ganz klar ökologische Themen. Sowohl bei eingetragenen Vereinen als auch bei Stiftungen steht „Nachhaltigkeit und Ressourcenschutz“ unangefochten auf Platz 1.
+    \item \textbf{Zivilgesellschaft (e.V. und Stiftungen):} Hier dominieren ökologische Themen. Sowohl bei eingetragenen Vereinen als auch bei Stiftungen steht „Nachhaltigkeit und Ressourcenschutz“ unangefochten auf Platz 1.
     \item \textbf{Wirtschaft (GmbH und AG):} Kapitalgesellschaften setzen andere Prioritäten. Ihr Top-Thema ist konsistent „Wissenschaft, Forschung und Technologie“.
 \end{itemize}
 
@@ -686,29 +689,40 @@ Aktiengesellschaft (AG) & Wissenschaft, Forschung und Technologie & 94.242 \\
 \caption{Dominante Themenfelder je nach Rechtsform des Lobby-Akteurs.}
 \end{table}
 
-\chapter{Gesamtfazit und Lessons Learned}
+\chapter{Gesamtfazit}
 
-Dieses Portfolio markiert den Abschluss eines umfassenden Data-Engineering-Projekts, das uns über das gesamte Semester begleitet hat. Was mit der abstrakten Idee begann, „Lobbyismus sichtbar zu machen“, entwickelte sich zu einer ausgewachsenen Analytics-Plattform. Rückblickend lässt sich dieser Prozess als Evolution in vier Phasen beschreiben, die jede für sich essenzielle Erkenntnisse lieferte.
+Dieses Portfolio markiert den Abschluss eines umfassenden Data-Engineering-Projekts. Das Ziel, die Strukturen des Lobbyregisters sichtbar zu machen, wurde zu einer konsistenten Analytics-Plattform weiterentwickelt. Die Arbeit lässt sich in vier Phasen gliedern, die jeweils prägende Erkenntnisse hervorbrachten.
 
-\section*{Phase 1: Die Komplexität der Realität (Modellierung)}
-Der erste „Realitätsschock“ traf uns bereits beim Entwurf des ER-Modells. Die Annahme, Lobbyismus ließe sich in wenigen Tabellen abbilden, erwies sich als Trugschluss. Die API des Bundestags lieferte tief verschachtelte JSON-Strukturen, die wir in ein strenges Schema der 3. Normalform überführten.
-\textbf{Learning:} Datenmodellierung ist kein akademischer Selbstzweck. Die Entscheidung für ein hochgradig normalisiertes Schema (über 80 Tabellen) garantierte uns zwar maximale Datenintegrität und Vermeidung von Redundanzen, legte aber bereits hier den Grundstein für die späteren Performance-Herausforderungen. Wir lernten, dass jedes `ARRAY` im JSON eine eigene 1:N-Tabelle fordert – ein massiver Aufwand, der sich jedoch für die Datenqualität auszahlte.
+\section*{Phase 1: Modellierung}
+Die Modellierung zeigte früh, wie komplex die Abbildung der Registerdaten ist. Die tief verschachtelten JSON-Strukturen der Bundestags-API erforderten ein streng normalisiertes Schema in der 3. Normalform mit über 80 Tabellen.
+\\[4mm]
+\textbf{Zentrale Erkenntnis:} 
+\newline
+Eine hohe Normalisierung sichert Datenintegrität und vermeidet Redundanzen, verschiebt aber Komplexität in spätere Performance-Optimierungen. Jedes Array in der Quelle benötigt eine eigene 1:N-Struktur – ein Aufwand, der sich zugunsten der Datenqualität auszahlt.
 
-\section*{Phase 2: Robustheit durch Engineering (ETL)}
-In der Implementierungsphase verschob sich der Fokus von der Struktur auf den Prozess. Wir bauten eine asynchrone Python-Pipeline, die nicht nur Daten „schaufelt“, sondern resilient gegenüber Fehlern ist.
-\textbf{Learning:} Eine gute Pipeline ist langweilig – sie bricht nicht ab. Der Einsatz von \texttt{asyncio} und Queues lehrte uns, wie man Producer (API) und Consumer (DB) entkoppelt. Besonders wertvoll war die Erfahrung mit Docker: Die Containerisierung der gesamten Umgebung (DB, Ingestor, Adminer, Grafana) machte das Projekt reproduzierbar und „teamfähig“.
+\section*{Phase 2: ETL Prozess}
+In der Implementierungsphase stand Prozessstabilität im Mittelpunkt. Eine asynchrone Python-Pipeline entkoppelte Producer (API) und Consumer (Datenbank) und wurde komplett containerisiert.
+\\[4mm]
+\textbf{Zentrale Erkenntnis:} 
+\newline
+Resiliente ETL-Strecken entstehen durch saubere Entkopplung und reproduzierbare Umgebungen. \texttt{asyncio}, Queues und Docker sorgten dafür, dass die Pipeline auch unter Last kontrolliert arbeitet und teamfähig bleibt.
 
-\section*{Phase 3: Der Preis der Normalisierung (Optimierung)}
-Dies war der technische Wendepunkt. Unsere normalisierte Datenbank war zwar sauber, aber für Analysen unerträglich langsam. Einfache Fragen wie „Wer kennt wen?“ erforderten Joins über fünf Tabellen.
-\textbf{Learning:} „Korrektheit“ ist nicht gleich „Performance“. Wir mussten lernen, unsere Prinzipien (Redundanzfreiheit) pragmatisch zu opfern. Durch den Einsatz von \textbf{Materialized Views} und spezialisierten \textbf{GIN-Indizes} (für Textsuche) konnten wir Antwortzeiten von Sekunden auf Millisekunden drücken. Die Erkenntnis: Ein Data Engineer muss nicht nur wissen, wie man Daten speichert, sondern auch, wie die Disk-I/O funktioniert.
+\section*{Phase 3: Optimierung}
+Die anschließende Optimierung adressierte die unvermeidbare Latenz einer stark normalisierten Datenbank. Analysen mit vielen Joins wurden zu langsam, um sie direkt in Dashboards zu nutzen.
+\\[4mm]
+\textbf{Zentrale Erkenntnis:}
+\newline
+Performanz verlangt gezielte Redundanz. \textbf{Materialized Views} und spezialisierte \textbf{GIN-Indizes}\footnote{Generalized Inverted Index.} reduzierten Antwortzeiten von Sekunden auf Millisekunden und machten die Daten für interaktive Analysen nutzbar.
 
-\section*{Phase 4: Von Daten zu Antworten (Visualisierung)}
-Im finalen Schritt schloss sich der Kreis. Die technischen Vorarbeiten mündeten in Grafana-Dashboards, die nun auch inhaltliche Fragen beantworten. Wir fanden heraus, dass das „Energieeffizienzgesetz“ ein Lobby-Hotspot ist und dass PLZ-Regionen klare Cluster bilden.
-\textbf{Learning:} SQL ist ein mächtiges BI-Tool. Die Fähigkeit, Daten nicht nur zu besitzen, sondern sie visuell explorierbar zu machen, ist der eigentliche Mehrwert des Projekts.
+\section*{Phase 4: Visualisierung}
+Die Visualisierung überführte die technische Basis in auswertbare Dashboards. Auf dieser Grundlage ließen sich Muster wie der Fokus auf das „Energieeffizienzgesetz“ oder PLZ-basierte Cluster transparent machen.
+\\[4mm]
+\textbf{Zentrale Erkenntnis:}
+\newline
+SQL bleibt auch im BI-Kontext ein zentrales Werkzeug. Erst die Kombination aus belastbarer Datenbasis und klaren Visualisierungen ermöglicht fundierte Aussagen zu Netzwerken, Budgets und Themenfeldern.
 
 \section*{Schlusswort}
-Zusammenfassend hat das Modul „Advanced Database Techniques“ weit mehr vermittelt als nur SQL-Syntax. Wir haben gelernt, ein komplexes System von der ersten Skizze bis zum produktiven Dashboard zu denken.
-Das Ergebnis ist eine Plattform, die beweist, wie moderne IT-Methoden (Container, Indizes, Analytics) einen Beitrag zur demokratischen Transparenz leisten können. Wir hinterlassen nicht nur Code, sondern ein Werkzeug, das Licht ins Dunkel politischer Einflussnahme bringt.
+Das Modul „Advanced Database Techniques“ machte sichtbar, wie Modellierung, ETL, Optimierung und Visualisierung ineinandergreifen. Das Ergebnis ist eine nachvollziehbare Plattform, die mit modernen IT-Methoden Transparenz im politischen Umfeld fördert. Sie übergibt nicht nur Quellcode, sondern ein belastbares Werkzeug zur Analyse des Lobbyregisters.
 
 %%%%%%%%%%%%%%%%%%%
 %% Literatur
