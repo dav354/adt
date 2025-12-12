@@ -166,10 +166,64 @@ Die Wahl fiel auf Grafana, da es – im Gegensatz zu klassischen BI-Tools wie Ta
 
 \section{Architektur der Dashboards}
 Unsere Visualisierungsstrategie folgt dem „Schneidenbohrer-Prinzip“ (Drill-Down):
+
 \begin{enumerate}
-    \item \textbf{High-Level Overview:} KPIs wie „Anzahl aktiver Lobbyisten“, „Gesamtbudget“ oder „Top 10 Themen“ geben einen sofortigen Statusbericht.
-    \item \textbf{Analytical Deep-Dive:} Spezifische Dashboards für Finanzen und Netzwerke erlauben die Analyse von Korrelationen (z.B. „Haben Firmen mit Ex-Politikern höhere Budgets?“).
-    \item \textbf{Forensische Detailansicht:} Tabellarische Auflistungen erlauben das Prüfen einzelner Verdachtsfälle bis auf Datensatzebene.
+    \item \textbf{High-Level Overview:} 
+    Der Einstieg erfolgt über ein globales Dashboard, das die wichtigsten KPIs aggregiert. Hier sehen Entscheider sofort die Gesamtzahl der aktiven Lobbyisten, das kumulierte Finanzvolumen sowie die personelle Schlagkraft (FTE).
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{figures/dashboard_overview.png}
+        \caption{Das Overview-Dashboard: Zentrale KPIs, FTE-Analyse und Themenfelder auf einen Blick.}
+        \label{fig:dash_overview}
+    \end{figure}
+
+    \item \textbf{Analytical Deep-Dive (Geo \& Organisation):} 
+    Für detaillierte Analysen bieten spezialisierte Dashboards tiefe Einblicke. Das Geo-Dashboard visualisiert die Verteilung der Akteure auf einer Karte.
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{figures/dashboard_geo.png}
+        \caption{Geografische Verteilung der Lobby-Akteure (Inland \& Ausland).}
+        \label{fig:dash_geo}
+    \end{figure}
+
+    Besonders wertvoll ist der Drill-Down auf Städte-Ebene. Im Beispiel \textbf{Würzburg} (Abb. \ref{fig:dash_city}) lässt sich gezielt untersuchen, welche Akteure in einer spezifischen Region ansässig sind und wie hoch deren lokales Finanzvolumen ist.
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{figures/dashboard_city.png}
+        \caption{Detailansicht "City": Filterung am Beispiel der Stadt Würzburg.}
+        \label{fig:dash_city}
+    \end{figure}
+
+    Ebenso erlaubt der Organization-Profiler die Durchleuchtung einzelner Akteure. Am Beispiel der \textbf{Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e. V.} (Abb. \ref{fig:dash_org}) werden Mitarbeiterzahlen, Finanzhistorie, Mitgliedschaften und spezifische Gesetzesvorhaben transparent gemacht.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{figures/dashboard_organization.png}
+        \caption{Organization-Profiler: 360°-Sicht am Beispiel der Fraunhofer-Gesellschaft.}
+        \label{fig:dash_org}
+    \end{figure}
+
+    \item \textbf{Forensische Detailansicht \& Netzwerke:} 
+    Abschließend ermöglichen Spezial-Dashboards die Prüfung auf Compliance-Verstöße und Netzwerke. Das Transparenz-Dashboard listet Akteure, die Finanzangaben verweigern oder Jahresberichte schuldig bleiben.
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{figures/dashboard_compliance.png}
+        \caption{Transparenz-Dashboard: Identifikation von Akteuren mit verweigerten Angaben.}
+        \label{fig:dash_transparenz}
+    \end{figure}
+    
+    Das Advanced-Analytics Dashboard (Abb. \ref{fig:dash_advanced}) visualisiert komplexe Zusammenhänge wie legislative Fußabdrücke und Netzwerke.
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{figures/dashboard_advanced.png}
+        \caption{Advanced Analytics: Netzwerkanalysen und legislative Zusammenhänge.}
+        \label{fig:dash_advanced}
+    \end{figure}
 \end{enumerate}
 
 \section{Technische Herausforderungen}
@@ -301,21 +355,22 @@ Das gesamte im Register erfasste Finanzvolumen beläuft sich auf beeindruckende 
     ytick=data,
     nodes near coords,
     nodes near coords align={horizontal},
-    width=0.9\textwidth,
+    width=0.8\textwidth,
     height=8cm,
     xmin=0,
-    xmax=700000,
+    xmax=800,
+    xtick distance=100,
     enlarge y limits=0.2,
     scaled x ticks=false,
-    xticklabel style={/pgf/number format/fixed},
-    nodes near coords style={/pgf/number format/fixed}
+    xticklabel={\pgfmathprintnumber[fixed,precision=0]{\tick}k\,€},
+    nodes near coords={\pgfmathprintnumber[fixed,precision=0]{\pgfplotspointmeta}k\,€}
 ]
 \addplot coordinates {
-    (432089,{Außenpolitik (EU)})
-    (448935,Strafrecht)
-    (517532,Bevölkerungsschutz)
-    (519129,Cybersicherheit)
-    (641667,Digitalisierung)
+    (432,{Außenpolitik (EU)})
+    (449,Strafrecht)
+    (518,Bevölkerungsschutz)
+    (519,Cybersicherheit)
+    (642,Digitalisierung)
 };
 \end{axis}
 \end{tikzpicture}
@@ -336,6 +391,33 @@ Konkret zeigen die Daten, dass diese teuren Themenfelder von den finanzstärkste
     \item \textbf{Verbraucherzentrale Bundesverband e.V.} (12,7 Mio. €) ist federführend im Bereich Cybersicherheit, bespielt aber gleichzeitig \textbf{46 weitere Themen}.
     \item \textbf{Verband der Automobilindustrie e.V.} (9,9 Mio. €) ist in allen drei Top-Kategorien aktiv, streut sein Budget jedoch am breitesten über \textbf{60 verschiedene Interessenfelder}.
 \end{itemize}
+
+\section{Der Gesetzgebungs-Fußabdruck}
+Das Lobbyregister erfasst nicht nur abstrakte Interessenfelder, sondern auch konkrete Gesetzesvorhaben (\textit{Regulatory Projects}), auf die Einfluss genommen werden soll. Dies ermöglicht uns, den „legislativen Fußabdruck“ zu messen: Welche Gesetze mobilisieren die meisten Lobbyisten?
+
+\begin{figure}[H]
+\caption{Identifikation der umkämpftesten Gesetzesvorhaben}
+\begin{lstlisting}[style=sql]
+SELECT 
+    rpi.title as "Gesetzesvorhaben", 
+    COUNT(DISTINCT re.id) as "Lobbyisten-Anzahl"
+FROM register_entry re
+JOIN regulatory_projects rp ON re.id = rp.entry_id
+JOIN regulatory_project_item rpi ON rp.id = rpi.parent_id
+-- Filterung nach Relevanz (z.B. Digitalisierung)
+JOIN activities_interests ai ON re.id = ai.entry_id
+JOIN field_of_interest foi ON ai.id = foi.activities_id
+JOIN code_label cl ON foi.label_id = cl.id
+WHERE cl.de = 'Digitalisierung'
+GROUP BY rpi.title
+ORDER BY 2 DESC
+LIMIT 5;
+\end{lstlisting}
+\end{figure}
+
+Diese Analyse erlaubt es, frühzeitig politische Konfliktlinien zu erkennen, noch bevor sie in den Medien breit diskutiert werden.
+Ein konkreter Lauf dieser Abfrage für den Sektor „Digitalisierung“ zeigte überraschende Ergebnisse: Auf Platz 1 landete nicht etwa ein klassisches IT-Sicherheitsgesetz, sondern die \textbf{„Praxisorientierte Anpassung des Energieeffizienzgesetzes“} (10 betroffene Lobbyisten). Dies verdeutlicht, wie stark Digitalisierung und Energiepolitik mittlerweile verzahnt sind (Stichwort: Rechenzentren).
+Auch Themen wie die \textbf{EU-Plastikabgabe} oder die \textbf{Digitalisierbarkeit steuerlicher Prozesse} (je 9 Lobbyisten) stehen weit oben auf der Agenda.
 
 \section{Effizienz-Analyse: Wer hat den größten Hebel?}
 Ein überraschendes Finding lieferte die Metrik „Ausgaben pro Mitarbeiter“ (Spending per Head).
@@ -383,6 +465,13 @@ Das Ergebnis ist aufschlussreich: Neben den erwartbaren Nachbarn (Belgien/Brüss
 Konkret führen \textbf{Belgien (49 Akteure)} und die \textbf{USA (47)} die Liste an, gefolgt von den Niederlanden (43), Großbritannien (41) und der Schweiz (38).
 
 \begin{figure}[H]
+    \centering
+    \IfFileExists{figures/worldmap.png}{\includegraphics[width=0.9\textwidth]{figures/worldmap.png}}{\fbox{Screenshot 'figures/worldmap.png' fehlt}}
+    \caption{Geomap-Visualisierung der Herkunftsländer internationaler Lobbyisten (außer Deutschland).}
+    \label{fig:worldmap}
+\end{figure}
+
+\begin{figure}[H]
 \centering
 \begin{tikzpicture}
 \begin{axis}[
@@ -392,10 +481,10 @@ Konkret führen \textbf{Belgien (49 Akteure)} und die \textbf{USA (47)} die List
     ytick=data,
     nodes near coords,
     nodes near coords align={horizontal},
-    width=0.9\textwidth,
+    width=0.8\textwidth,
     height=6cm,
     xmin=0,
-    xmax=60
+    xmax=55
 ]
 \addplot coordinates {
     (38,Schweiz)
@@ -408,6 +497,41 @@ Konkret führen \textbf{Belgien (49 Akteure)} und die \textbf{USA (47)} die List
 \end{tikzpicture}
 \caption{Top 5 Herkunftsländer internationaler Lobbyisten (ohne Deutschland).}
 \label{fig:international}
+\end{figure}
+
+\section{Die PLZ-Heatmap}
+Um eine geografische Verteilung innerhalb Deutschlands zu erhalten, ohne auf komplexe GIS-Systeme zurückgreifen zu müssen, haben wir eine Analyse auf Basis der ersten Ziffer der Postleitzahl durchgeführt. Dies liefert eine robuste „Heatmap“ der Lobby-Dichte.
+
+\begin{figure}[H]
+\caption{Verteilung nach Postleitzahl-Regionen}
+\begin{lstlisting}[style=sql]
+SELECT 
+  SUBSTRING(a.zip_code, 1, 1) || 'xxxx' as "PLZ-Region",
+  COUNT(DISTINCT re.id) as "Anzahl Organisationen"
+FROM register_entry re
+JOIN lobbyist_identity li ON re.id = li.entry_id
+JOIN address a ON li.address_id = a.id
+JOIN country_label cl ON a.country_id = cl.id
+WHERE cl.code = 'DE' AND a.zip_code IS NOT NULL
+GROUP BY SUBSTRING(a.zip_code, 1, 1)
+ORDER BY 1 ASC;
+\end{lstlisting}
+\end{figure}
+
+Die Ergebnisse zeigen erwartungsgemäß eine massive Konzentration im Bereich \textbf{„1xxxx“} (Berlin/Brandenburg) mit \textbf{2.072 Organisationen}.
+Interessant sind jedoch die Cluster in der „Provinz“:
+\begin{itemize}
+    \item \textbf{Region 5xxxx (Köln/Bonn):} Mit 721 Organisationen immer noch ein Schwergewicht – ein Erbe der Bonner Republik.
+    \item \textbf{Region 8xxxx (München/Bayern):} 687 Akteure, was die wirtschaftliche Stärke des Südens widerspiegelt.
+    \item \textbf{Region 6xxxx (Frankfurt/Rhein-Main):} 615 Akteure, getrieben durch den Finanzsektor.
+\end{itemize}
+Im Gegensatz dazu ist der Osten (PLZ 0xxxx) mit nur 221 Einträgen (außerhalb Berlins) lobbyistisch kaum repräsentiert.
+
+\begin{figure}[H]
+    \centering
+    \IfFileExists{figures/plz_heatmap.png}{\includegraphics[width=0.8\textwidth]{figures/plz_heatmap.png}}{\fbox{Screenshot 'figures/plz\_heatmap.png' fehlt}}
+    \caption{Verteilung der Lobby-Akteure nach Postleitzahl-Regionen (Grafana).}
+    \label{fig:grafana_plz}
 \end{figure}
 
 \section{München vs. Berlin: Wo sitzt das Geld?}
@@ -446,17 +570,17 @@ Das Ergebnis überraschte uns: Nicht die Politik-Hauptstadt Berlin, sondern die 
     width=0.9\textwidth,
     height=7cm,
     ymin=0,
-    ymax=250000,
+    ymax=250,
     enlarge x limits=0.2,
     scaled y ticks=false,
-    yticklabel style={/pgf/number format/fixed},
-    nodes near coords style={/pgf/number format/fixed}
+    yticklabel={\pgfmathprintnumber[fixed,precision=0]{\tick}k\,€},
+    nodes near coords={\pgfmathprintnumber[fixed,precision=0]{\pgfplotspointmeta}k\,€}
 ]
 \addplot coordinates {
-    (Hamburg,166201)
-    (Berlin,183790)
-    (München,189133)
-    (Frankfurt,199679)
+    (Hamburg,166)
+    (Berlin,184)
+    (München,189)
+    (Frankfurt,200)
 };
 \end{axis}
 \end{tikzpicture}
@@ -545,7 +669,7 @@ Die Analyse bestätigt das klassische Bild der Interessensvertretung:
     \item \textbf{Wirtschaft (GmbH und AG):} Kapitalgesellschaften setzen andere Prioritäten. Ihr Top-Thema ist konsistent „Wissenschaft, Forschung und Technologie“.
 \end{itemize}
 
-Dies deutet darauf hin, dass Unternehmen Lobbying primär als Hebel für Innovationsförderung und Standortpolitik nutzen, während NGOs die normative Debatte um Nachhaltigkeit treiben.
+Dies deutet darauf hin, dass Unternehmen Lobbying primär als Hebel für In\-no\-va\-ti\-ons\-för\-de\-rung und Standortpolitik nutzen, während NGOs die normative Debatte um Nachhaltigkeit treiben.
 
 \begin{table}[H]
 \centering
@@ -562,16 +686,29 @@ Aktiengesellschaft (AG) & Wissenschaft, Forschung und Technologie & 94.242 \\
 \caption{Dominante Themenfelder je nach Rechtsform des Lobby-Akteurs.}
 \end{table}
 
-\chapter{Fazit}
+\chapter{Gesamtfazit und Lessons Learned}
 
-In diesem Portfolio haben wir gezeigt, dass ein Lobbyregister mehr ist als eine Liste von Namen. Durch die Kombination von:
-\begin{itemize}
-    \item \textbf{Relationaler Modellierung} (für die Datenintegrität),
-    \item \textbf{Performantem Indexing} (für die Geschwindigkeit) und
-    \item \textbf{Intelligenter Visualisierung} (für die Erkenntnis)
-\end{itemize}
-konnten wir Licht in das Dunkelfeld der politischen Einflussnahme bringen.
-Wir haben Netzwerke sichtbar gemacht, die dem bloßen Auge verborgen bleiben, und Finanzströme vergleichbar gemacht. Das Projekt demonstriert somit exemplarisch, wie moderne Data-Engineering-Methoden einen direkten Beitrag zur demokratischen Transparenz leisten können.
+Dieses Portfolio markiert den Abschluss eines umfassenden Data-Engineering-Projekts, das uns über das gesamte Semester begleitet hat. Was mit der abstrakten Idee begann, „Lobbyismus sichtbar zu machen“, entwickelte sich zu einer ausgewachsenen Analytics-Plattform. Rückblickend lässt sich dieser Prozess als Evolution in vier Phasen beschreiben, die jede für sich essenzielle Erkenntnisse lieferte.
+
+\section*{Phase 1: Die Komplexität der Realität (Modellierung)}
+Der erste „Realitätsschock“ traf uns bereits beim Entwurf des ER-Modells. Die Annahme, Lobbyismus ließe sich in wenigen Tabellen abbilden, erwies sich als Trugschluss. Die API des Bundestags lieferte tief verschachtelte JSON-Strukturen, die wir in ein strenges Schema der 3. Normalform überführten.
+\textbf{Learning:} Datenmodellierung ist kein akademischer Selbstzweck. Die Entscheidung für ein hochgradig normalisiertes Schema (über 80 Tabellen) garantierte uns zwar maximale Datenintegrität und Vermeidung von Redundanzen, legte aber bereits hier den Grundstein für die späteren Performance-Herausforderungen. Wir lernten, dass jedes `ARRAY` im JSON eine eigene 1:N-Tabelle fordert – ein massiver Aufwand, der sich jedoch für die Datenqualität auszahlte.
+
+\section*{Phase 2: Robustheit durch Engineering (ETL)}
+In der Implementierungsphase verschob sich der Fokus von der Struktur auf den Prozess. Wir bauten eine asynchrone Python-Pipeline, die nicht nur Daten „schaufelt“, sondern resilient gegenüber Fehlern ist.
+\textbf{Learning:} Eine gute Pipeline ist langweilig – sie bricht nicht ab. Der Einsatz von \texttt{asyncio} und Queues lehrte uns, wie man Producer (API) und Consumer (DB) entkoppelt. Besonders wertvoll war die Erfahrung mit Docker: Die Containerisierung der gesamten Umgebung (DB, Ingestor, Adminer, Grafana) machte das Projekt reproduzierbar und „teamfähig“.
+
+\section*{Phase 3: Der Preis der Normalisierung (Optimierung)}
+Dies war der technische Wendepunkt. Unsere normalisierte Datenbank war zwar sauber, aber für Analysen unerträglich langsam. Einfache Fragen wie „Wer kennt wen?“ erforderten Joins über fünf Tabellen.
+\textbf{Learning:} „Korrektheit“ ist nicht gleich „Performance“. Wir mussten lernen, unsere Prinzipien (Redundanzfreiheit) pragmatisch zu opfern. Durch den Einsatz von \textbf{Materialized Views} und spezialisierten \textbf{GIN-Indizes} (für Textsuche) konnten wir Antwortzeiten von Sekunden auf Millisekunden drücken. Die Erkenntnis: Ein Data Engineer muss nicht nur wissen, wie man Daten speichert, sondern auch, wie die Disk-I/O funktioniert.
+
+\section*{Phase 4: Von Daten zu Antworten (Visualisierung)}
+Im finalen Schritt schloss sich der Kreis. Die technischen Vorarbeiten mündeten in Grafana-Dashboards, die nun auch inhaltliche Fragen beantworten. Wir fanden heraus, dass das „Energieeffizienzgesetz“ ein Lobby-Hotspot ist und dass PLZ-Regionen klare Cluster bilden.
+\textbf{Learning:} SQL ist ein mächtiges BI-Tool. Die Fähigkeit, Daten nicht nur zu besitzen, sondern sie visuell explorierbar zu machen, ist der eigentliche Mehrwert des Projekts.
+
+\section*{Schlusswort}
+Zusammenfassend hat das Modul „Advanced Database Techniques“ weit mehr vermittelt als nur SQL-Syntax. Wir haben gelernt, ein komplexes System von der ersten Skizze bis zum produktiven Dashboard zu denken.
+Das Ergebnis ist eine Plattform, die beweist, wie moderne IT-Methoden (Container, Indizes, Analytics) einen Beitrag zur demokratischen Transparenz leisten können. Wir hinterlassen nicht nur Code, sondern ein Werkzeug, das Licht ins Dunkel politischer Einflussnahme bringt.
 
 %%%%%%%%%%%%%%%%%%%
 %% Literatur

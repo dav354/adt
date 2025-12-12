@@ -63,6 +63,36 @@ Komponenten:
 
 **Grafana** provisioniert automatisch eine Datenquelle auf die Postgres-DB sowie das Dashboard.
 
+## Grafana Dashboards
+
+Die Visualisierung der Daten erfolgt über vor-konfigurierte Grafana Dashboards, die verschiedene Aspekte des Lobbyregisters beleuchten.
+
+### 1. High-Level Overview
+
+Zentrale KPIs auf einen Blick: Anzahl aktiver Lobbyisten, kumuliertes Finanzvolumen, personelle Schlagkraft (FTE) und die Verteilung der Themenfelder.
+![Overview Dashboard](docs/portfolio_4/figures/dashboard_overview.png)
+
+### 2. Geographic Insights
+
+Eine interaktive Karte zeigt die globale und nationale Verteilung der Akteure. Detaillierte Filter ermöglichen Analysen bis auf Städte-Ebene (hier am Beispiel **Würzburg**).
+![Geo Dashboard](docs/portfolio_4/figures/dashboard_geo.png)
+![City Dashboard](docs/portfolio_4/figures/dashboard_city.png)
+
+### 3. Organization Profiler
+
+Eine 360°-Detailansicht für einzelne Akteure. Am Beispiel der **Fraunhofer-Gesellschaft** werden Finanzhistorie, Mitarbeiterstruktur, Mitgliedschaften und spezifische Gesetzesvorhaben transparent gemacht.
+![Organization Dashboard](docs/portfolio_4/figures/dashboard_organization.png)
+
+### 4. Transparenz & Compliance
+
+Listet Akteure auf, die Finanzangaben verweigern oder Jahresberichte schuldig bleiben, und identifiziert potenzielle Compliance-Lücken.
+![Transparency Dashboard](docs/portfolio_4/figures/dashboard_compliance.png)
+
+### 5. Advanced Analytics
+
+Visualisiert komplexe Netzwerke ("Wer kennt wen?") und legislative Fußabdrücke (Einflussnahme auf spezifische Gesetze).
+![Advanced Dashboard](docs/portfolio_4/figures/dashboard_advanced.png)
+
 ## Weiterführende Ideen
 
 - Indizes/Materialized Views für häufige Reports
