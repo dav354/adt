@@ -1,17 +1,46 @@
 {
   "annotations": {
-    "list": []
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 12,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "datasource": {
         "type": "postgres",
         "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -32,13 +61,16 @@
             "lastNotNull"
           ],
           "fields": "",
-          "values": false
+          "values": true
         },
+        "sort": "desc",
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.2.2",
       "targets": [
         {
           "format": "table",
@@ -77,6 +109,48 @@
         "type": "postgres",
         "uid": "${datasource}"
       },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Betrag"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyEUR"
+              }
+            ]
+          }
+        ]
+      },
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -85,15 +159,10 @@
       },
       "id": 2,
       "options": {
-        "footer": {
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
+        "cellHeight": "sm",
         "showHeader": true
       },
+      "pluginVersion": "12.2.2",
       "targets": [
         {
           "format": "table",
@@ -128,28 +197,26 @@
       "type": "table"
     }
   ],
+  "preload": false,
   "refresh": "",
-  "schemaVersion": 38,
-  "style": "dark",
-  "tags": ["portfolio-4"],
+  "schemaVersion": 42,
+  "tags": [
+    "portfolio-4"
+  ],
   "templating": {
     "list": [
       {
         "current": {
-          "selected": false,
           "text": "PostgreSQL",
           "value": "PostgreSQL"
         },
-        "hide": 0,
         "includeAll": false,
         "label": "Datasource",
-        "multi": false,
         "name": "datasource",
         "options": [],
         "query": "postgres",
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
         "type": "datasource"
       }
     ]
@@ -162,6 +229,5 @@
   "timezone": "",
   "title": "Lobbyregister - Party Radar",
   "uid": "lobby_party",
-  "version": 1,
-  "weekStart": ""
+  "version": 1
 }

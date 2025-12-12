@@ -1,33 +1,48 @@
 {
-  "id": null,
-  "uid": "lobbyregister-overview",
-  "title": "Lobbyregister Overview",
-  "editable": true,
-  "refresh": "30m",
-  "schemaVersion": 39,
-  "version": 1,
-  "timezone": "",
-  "time": {
-    "from": "now-5y",
-    "to": "now"
-  },
-  "timepicker": {},
   "annotations": {
-    "list": []
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
   },
-  "templating": {
-    "list": []
-  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 11,
   "links": [],
   "panels": [
     {
-      "id": 1,
-      "type": "stat",
-      "title": "Total Register Entries",
-      "description": "Count of register entries ingested from the Bundestag lobby register.",
       "datasource": {
         "type": "postgres",
         "uid": "lobbyregister"
+      },
+      "description": "Count of register entries ingested from the Bundestag lobby register.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
       },
       "gridPos": {
         "h": 5,
@@ -35,30 +50,27 @@
         "x": 0,
         "y": 0
       },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "decimals": 0
-        },
-        "overrides": []
-      },
+      "id": 1,
       "options": {
-        "colorMode": "value",
+        "colorMode": "none",
         "graphMode": "none",
         "justifyMode": "auto",
-        "orientation": "horizontal",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "",
+          "fields": "/.*/",
           "values": false
         },
-        "textMode": "value_and_name"
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": false
       },
+      "pluginVersion": "12.2.2",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "postgres",
             "uid": "lobbyregister"
@@ -68,6 +80,7 @@
           "metricColumn": "none",
           "rawQuery": true,
           "rawSql": "SELECT count(*)::double precision AS value FROM register_entry;",
+          "refId": "A",
           "select": [
             [
               {
@@ -82,16 +95,32 @@
           "timeColumn": "",
           "where": []
         }
-      ]
+      ],
+      "title": "Total Register Entries",
+      "type": "stat"
     },
     {
-      "id": 2,
-      "type": "stat",
-      "title": "Active Lobbying Accounts",
-      "description": "Number of accounts currently marked as active lobbyists.",
       "datasource": {
         "type": "postgres",
         "uid": "lobbyregister"
+      },
+      "description": "Number of accounts currently marked as active lobbyists.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
       },
       "gridPos": {
         "h": 5,
@@ -99,18 +128,13 @@
         "x": 8,
         "y": 0
       },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "decimals": 0
-        },
-        "overrides": []
-      },
+      "id": 2,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -118,11 +142,13 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
       },
+      "pluginVersion": "12.2.2",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "postgres",
             "uid": "lobbyregister"
@@ -132,6 +158,7 @@
           "metricColumn": "none",
           "rawQuery": true,
           "rawSql": "SELECT count(*)::double precision AS value FROM account_details WHERE active_lobbyist;",
+          "refId": "A",
           "select": [
             [
               {
@@ -146,16 +173,32 @@
           "timeColumn": "",
           "where": []
         }
-      ]
+      ],
+      "title": "Active Lobbying Accounts",
+      "type": "stat"
     },
     {
-      "id": 3,
-      "type": "stat",
-      "title": "Codex Violations Flagged",
-      "description": "Accounts that report violations of the lobby register's code of conduct.",
       "datasource": {
         "type": "postgres",
         "uid": "lobbyregister"
+      },
+      "description": "Accounts that report violations of the lobby register's code of conduct.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
       },
       "gridPos": {
         "h": 5,
@@ -163,18 +206,13 @@
         "x": 16,
         "y": 0
       },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "decimals": 0
-        },
-        "overrides": []
-      },
+      "id": 3,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -182,11 +220,13 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
       },
+      "pluginVersion": "12.2.2",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "postgres",
             "uid": "lobbyregister"
@@ -196,6 +236,7 @@
           "metricColumn": "none",
           "rawQuery": true,
           "rawSql": "SELECT count(*)::double precision AS value FROM account_details WHERE account_has_codex_violations;",
+          "refId": "A",
           "select": [
             [
               {
@@ -210,30 +251,41 @@
           "timeColumn": "",
           "where": []
         }
-      ]
+      ],
+      "title": "Codex Violations Flagged",
+      "type": "stat"
     },
     {
-      "id": 4,
-      "type": "piechart",
-      "title": "Lobbyist Identity Type",
-      "description": "Distribution of lobbyist identities (natural persons vs organisations).",
       "datasource": {
         "type": "postgres",
         "uid": "lobbyregister"
       },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 5
-      },
+      "description": "Distribution of lobbyist identities (natural persons vs organisations).",
       "fieldConfig": {
         "defaults": {
-          "unit": "none",
-          "decimals": 0
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "unit": "none"
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 9,
+        "w": 10,
+        "x": 0,
+        "y": 5
+      },
+      "id": 4,
       "options": {
         "displayLabels": [
           "name",
@@ -242,24 +294,29 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
-          "showLegend": true
+          "showLegend": true,
+          "values": [
+            "percent"
+          ]
         },
         "pieType": "pie",
         "reduceOptions": {
           "calcs": [
-            "sum"
+            "lastNotNull"
           ],
           "fields": "",
-          "values": false
+          "values": true
         },
+        "sort": "desc",
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "desc"
         }
       },
+      "pluginVersion": "12.2.2",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "postgres",
             "uid": "lobbyregister"
@@ -268,7 +325,8 @@
           "group": [],
           "metricColumn": "identity_type",
           "rawQuery": true,
-          "rawSql": "SELECT COALESCE(li.identity, 'UNKNOWN') AS identity_type,\n       count(*)::double precision AS lobbyists\nFROM lobbyist_identity li\nGROUP BY identity_type\nORDER BY lobbyists DESC;",
+          "rawSql": "SELECT \n  CASE \n    WHEN li.identity = 'NATURAL' THEN 'Natürliche Personen'\n    WHEN li.legal_form_type_label_id IS NOT NULL THEN COALESCE(cl.de, 'Unbekannte Rechtsform')\n    ELSE 'Sonstige Organisationen'\n  END AS identity_type,\n  count(*)::double precision AS lobbyists\nFROM lobbyist_identity li\nLEFT JOIN code_label cl ON li.legal_form_type_label_id = cl.id\nGROUP BY 1\nORDER BY lobbyists DESC;",
+          "refId": "A",
           "select": [
             [
               {
@@ -283,49 +341,98 @@
           "timeColumn": "",
           "where": []
         }
-      ]
+      ],
+      "title": "Lobbyist Identity Type",
+      "type": "piechart"
     },
     {
-      "id": 5,
-      "type": "timeseries",
-      "title": "New Accounts by Month",
-      "description": "First publication dates for lobbyist accounts grouped by month.",
       "datasource": {
         "type": "postgres",
         "uid": "lobbyregister"
       },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 5
-      },
+      "description": "First publication dates for lobbyist accounts grouped by month.",
       "fieldConfig": {
         "defaults": {
-          "unit": "none",
-          "decimals": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
             "lineInterpolation": "smooth",
-            "spanNulls": true
-          }
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 9,
+        "w": 14,
+        "x": 10,
+        "y": 5
+      },
+      "id": 5,
       "options": {
         "legend": {
+          "calcs": [],
           "displayMode": "table",
           "placement": "right",
-          "showLegend": true
+          "showLegend": false
         },
+        "showPoints": "never",
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "none"
-        },
-        "showPoints": "never"
+        }
       },
+      "pluginVersion": "12.2.2",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "postgres",
             "uid": "lobbyregister"
@@ -335,6 +442,7 @@
           "metricColumn": "none",
           "rawQuery": true,
           "rawSql": "SELECT\n  $__timeGroupAlias(first_publication_date, '1M'),\n  count(*)::double precision AS accounts\nFROM account_details\nGROUP BY 1\nORDER BY 1;",
+          "refId": "A",
           "select": [
             [
               {
@@ -350,55 +458,95 @@
           "timeColumnType": "timestamp",
           "where": []
         }
-      ]
+      ],
+      "title": "New Accounts by Month",
+      "type": "timeseries"
     },
     {
-      "id": 6,
-      "type": "barchart",
-      "title": "Top Fields of Interest",
-      "description": "Most frequently referenced policy fields across registered activities.",
       "datasource": {
         "type": "postgres",
         "uid": "lobbyregister"
       },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 14
-      },
+      "description": "Most frequently referenced policy fields across registered activities.",
       "fieldConfig": {
         "defaults": {
-          "unit": "none",
-          "decimals": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
             "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
             }
-          }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 9,
+        "w": 18,
+        "x": 0,
+        "y": 14
+      },
+      "id": 6,
       "options": {
-        "orientation": "horizontal",
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
         "legend": {
+          "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": false
         },
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "stacking": "none",
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "desc"
         },
-        "xField": "mentions",
-        "yField": "field_label"
+        "xField": "field_label",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0,
+        "yField": "mentions"
       },
+      "pluginVersion": "12.2.2",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "postgres",
             "uid": "lobbyregister"
@@ -407,7 +555,8 @@
           "group": [],
           "metricColumn": "field_label",
           "rawQuery": true,
-          "rawSql": "SELECT\n  COALESCE(cl.de, cl.en, foi.field_of_interest_text, 'Unspecified') AS field_label,\n  count(DISTINCT ai.entry_id)::double precision AS registrations,\n  count(*)::double precision AS mentions\nFROM field_of_interest foi\nJOIN activities_interests ai ON ai.id = foi.activities_id\nLEFT JOIN code_label cl ON cl.id = foi.label_id\nGROUP BY field_label\nORDER BY mentions DESC\nLIMIT 10;",
+          "rawSql": "SELECT\n  COALESCE(cl.de, cl.en, foi.field_of_interest_text, 'Unspecified') AS field_label,\n  count(*)::double precision AS mentions\nFROM field_of_interest foi\nJOIN activities_interests ai ON ai.id = foi.activities_id\nLEFT JOIN code_label cl ON cl.id = foi.label_id\nGROUP BY field_label\nORDER BY mentions DESC\nLIMIT 10;",
+          "refId": "A",
           "select": [
             [
               {
@@ -422,43 +571,62 @@
           "timeColumn": "",
           "where": []
         }
-      ]
+      ],
+      "title": "Top Fields of Interest",
+      "type": "barchart"
     },
     {
-      "id": 7,
-      "type": "table",
-      "title": "Client Landscape",
-      "description": "Quick view of client coverage in the register.",
       "datasource": {
         "type": "postgres",
         "uid": "lobbyregister"
       },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 14
-      },
+      "description": "Quick view of client coverage in the register.",
       "fieldConfig": {
         "defaults": {
-          "unit": "none",
-          "decimals": 1
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
         },
         "overrides": []
       },
-      "options": {
-        "showHeader": true,
-        "footer": {
-          "enablePagination": true,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ]
-        }
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 18,
+        "y": 14
       },
+      "id": 7,
+      "options": {
+        "cellHeight": "sm",
+        "enablePagination": false,
+        "showHeader": true
+      },
+      "pluginVersion": "12.2.2",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "postgres",
             "uid": "lobbyregister"
@@ -468,6 +636,7 @@
           "metricColumn": "none",
           "rawQuery": true,
           "rawSql": "SELECT metric,\n       value\nFROM (\n  SELECT 'Entries with listed clients' AS metric,\n         count(*)::double precision AS value\n  FROM client_identity\n  WHERE clients_present\n  UNION ALL\n  SELECT 'Total client organisations' AS metric,\n         count(*)::double precision AS value\n  FROM client_org\n  UNION ALL\n  SELECT 'Total client persons' AS metric,\n         count(*)::double precision AS value\n  FROM client_person\n  UNION ALL\n  SELECT 'Average clients per entry' AS metric,\n         AVG(COALESCE(clients_count, 0))::double precision AS value\n  FROM client_identity\n) metrics\nORDER BY metric;",
+          "refId": "A",
           "select": [
             [
               {
@@ -482,51 +651,95 @@
           "timeColumn": "",
           "where": []
         }
-      ]
+      ],
+      "title": "Client Landscape",
+      "type": "table"
     },
     {
-      "id": 8,
-      "type": "barchart",
-      "title": "Statements Submitted per Year",
-      "description": "Number of formal statements submitted by registered lobbyists, grouped by calendar year.",
       "datasource": {
         "type": "postgres",
         "uid": "lobbyregister"
       },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 23
-      },
+      "description": "Number of formal statements submitted by registered lobbyists, grouped by calendar year.",
       "fieldConfig": {
         "defaults": {
-          "unit": "none",
-          "decimals": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
-            "axisPlacement": "auto"
-          }
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 0,
+        "y": 23
+      },
+      "id": 8,
       "options": {
-        "orientation": "vertical",
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
         "legend": {
+          "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": false
         },
+        "orientation": "vertical",
+        "showValue": "auto",
+        "stacking": "none",
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "desc"
         },
         "xField": "year",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0,
         "yField": "statements"
       },
+      "pluginVersion": "12.2.2",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "postgres",
             "uid": "lobbyregister"
@@ -536,6 +749,7 @@
           "metricColumn": "year",
           "rawQuery": true,
           "rawSql": "SELECT\n  EXTRACT(YEAR FROM sending_date)::int AS year,\n  count(*)::double precision AS statements\nFROM statement_item\nWHERE sending_date IS NOT NULL\nGROUP BY year\nORDER BY year;",
+          "refId": "A",
           "select": [
             [
               {
@@ -550,44 +764,135 @@
           "timeColumn": "",
           "where": []
         }
-      ]
+      ],
+      "title": "Statements Submitted per Year",
+      "type": "barchart"
     },
     {
-      "id": 9,
-      "type": "table",
-      "title": "Largest Declared Lobbying Expenses",
-      "description": "Top entries by declared annual lobbying spend (upper range).",
       "datasource": {
         "type": "postgres",
         "uid": "lobbyregister"
       },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 23
-      },
+      "description": "Top entries by declared annual lobbying spend (upper range).",
       "fieldConfig": {
         "defaults": {
-          "unit": "none",
-          "decimals": 0,
           "custom": {
-            "align": "auto"
-          }
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "expenses_from_eur"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyEUR"
+              },
+              {
+                "id": "custom.width",
+                "value": 153
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "expenses_to_eur"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyEUR"
+              },
+              {
+                "id": "custom.width",
+                "value": 135
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "midpoint_estimate_eur"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyEUR"
+              },
+              {
+                "id": "custom.width",
+                "value": 176
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "related_year_start"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 204
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "related_year_end"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 205
+              }
+            ]
+          }
+        ]
       },
+      "gridPos": {
+        "h": 9,
+        "w": 16,
+        "x": 8,
+        "y": 23
+      },
+      "id": 9,
       "options": {
-        "showHeader": true,
-        "footer": {
-          "enablePagination": true,
-          "fields": "",
-          "reducer": []
-        }
+        "cellHeight": "sm",
+        "enablePagination": false,
+        "showHeader": true
       },
+      "pluginVersion": "12.2.2",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "postgres",
             "uid": "lobbyregister"
@@ -597,6 +902,7 @@
           "metricColumn": "none",
           "rawQuery": true,
           "rawSql": "SELECT\n  re.register_number,\n  fe.related_year_start,\n  fe.related_year_end,\n  COALESCE(fe.expenses_from_eur, 0) AS expenses_from_eur,\n  COALESCE(fe.expenses_to_eur, fe.expenses_from_eur, 0) AS expenses_to_eur,\n  ((COALESCE(fe.expenses_from_eur, fe.expenses_to_eur, 0) + COALESCE(fe.expenses_to_eur, fe.expenses_from_eur, 0)) / 2.0)::double precision AS midpoint_estimate_eur\nFROM financial_expenses fe\nJOIN register_entry re ON re.id = fe.entry_id\nWHERE fe.expenses_from_eur IS NOT NULL OR fe.expenses_to_eur IS NOT NULL\nORDER BY COALESCE(fe.expenses_to_eur, fe.expenses_from_eur, 0) DESC\nLIMIT 20;",
+          "refId": "A",
           "select": [
             [
               {
@@ -611,7 +917,25 @@
           "timeColumn": "",
           "where": []
         }
-      ]
+      ],
+      "title": "Largest Declared Lobbying Expenses",
+      "type": "table"
     }
-  ]
+  ],
+  "preload": false,
+  "refresh": "30m",
+  "schemaVersion": 42,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-5y",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Lobbyregister Overview",
+  "uid": "lobbyregister-overview",
+  "version": 6
 }
