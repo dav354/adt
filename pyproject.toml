@@ -28,3 +28,22 @@ packages = ["src/lobbyregister_ingestor"]
 
 [tool.hatch.build]
 include = ["src/lobbyregister_ingestor/api-docs-lobbyregister.yaml"]
+
+[tool.ruff]
+target-version = "py313"
+
+[tool.ruff.lint]
+# E/F = Standard Linting
+# I   = Sort Imports
+# UP  = Modernize (Python 3.11+)
+# B   = Find Bugs
+# SIM = Simplify Code
+# ARG = Unused Args
+# RET = Clean Returns
+# RUF = Ruff Specific
+# PERF = Performance
+# PTH = Pathlib
+select = [
+    "E", "F", "I", "UP", "B", "SIM", "ARG", "RET", "RUF", "PERF", "PTH"
+]
+ignore = ["E501"]

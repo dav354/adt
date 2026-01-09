@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from .common import dt, insert_returning, scalar
 
 
-def load_register_entry_details(cur, entry_id: int, data: Dict[str, Any]) -> None:
+def load_register_entry_details(cur, entry_id: int, data: dict[str, Any]) -> None:
     if not data:
         return
     details_id = insert_returning(

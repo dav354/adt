@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from .common import insert_returning, scalar, upsert_code_label
 
 
-def load_activities_interests(cur, entry_id: int, data: Dict[str, Any]) -> None:
+def load_activities_interests(cur, entry_id: int, data: dict[str, Any]) -> None:
     if not data:
         return
     activity_label_id = upsert_code_label(cur, "activity", data.get("activity"))

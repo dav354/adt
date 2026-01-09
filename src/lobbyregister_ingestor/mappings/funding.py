@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
-from .common import (d, insert_returning, scalar, upsert_code_label,
-                     upsert_country)
+from .common import d, insert_returning, scalar, upsert_code_label, upsert_country
 
 
-def load_financial_expenses(cur, entry_id: int, data: Dict[str, Any]) -> None:
+def load_financial_expenses(cur, entry_id: int, data: dict[str, Any]) -> None:
     if not data:
         return
     rng = data.get("financialExpensesEuro") or {}
@@ -35,7 +34,7 @@ def load_financial_expenses(cur, entry_id: int, data: Dict[str, Any]) -> None:
     )
 
 
-def load_main_funding_sources(cur, entry_id: int, data: Dict[str, Any]) -> None:
+def load_main_funding_sources(cur, entry_id: int, data: dict[str, Any]) -> None:
     if not data:
         return
     parent_id = insert_returning(
@@ -56,7 +55,7 @@ def load_main_funding_sources(cur, entry_id: int, data: Dict[str, Any]) -> None:
         )
 
 
-def load_public_allowances(cur, entry_id: int, data: Dict[str, Any]) -> None:
+def load_public_allowances(cur, entry_id: int, data: dict[str, Any]) -> None:
     if not data:
         return
     parent_id = insert_returning(
@@ -103,7 +102,7 @@ def load_public_allowances(cur, entry_id: int, data: Dict[str, Any]) -> None:
         )
 
 
-def load_donators(cur, entry_id: int, data: Dict[str, Any]) -> None:
+def load_donators(cur, entry_id: int, data: dict[str, Any]) -> None:
     if not data:
         return
     parent_id = insert_returning(
@@ -143,7 +142,7 @@ def load_donators(cur, entry_id: int, data: Dict[str, Any]) -> None:
         )
 
 
-def load_membership_fees(cur, entry_id: int, data: Dict[str, Any]) -> None:
+def load_membership_fees(cur, entry_id: int, data: dict[str, Any]) -> None:
     if not data:
         return
     parent_id = insert_returning(

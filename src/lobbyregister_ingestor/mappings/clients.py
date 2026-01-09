@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from .common import (
     insert_address,
@@ -13,7 +13,7 @@ from .common import (
 )
 
 
-def load_client_identity(cur, entry_id: int, data: Dict[str, Any]) -> None:
+def load_client_identity(cur, entry_id: int, data: dict[str, Any]) -> None:
     if not data:
         return
     client_id = insert_returning(
@@ -26,7 +26,7 @@ def load_client_identity(cur, entry_id: int, data: Dict[str, Any]) -> None:
 
 
 def _insert_client_organizations(
-    cur, client_id: int, organizations: list[Dict[str, Any]]
+    cur, client_id: int, organizations: list[dict[str, Any]]
 ) -> None:
     for ordinal, org in enumerate(organizations, start=1):
         address_id = insert_address(cur, org.get("address"))
@@ -75,7 +75,7 @@ def _insert_client_organizations(
             )
 
 
-def _insert_client_persons(cur, client_id: int, persons: list[Dict[str, Any]]) -> None:
+def _insert_client_persons(cur, client_id: int, persons: list[dict[str, Any]]) -> None:
     for ordinal, person in enumerate(persons, start=1):
         cur.execute(
             """

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-import time
 import os
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
+
 import psycopg
 
 # Konfiguration
@@ -32,7 +33,7 @@ BENCHMARK_QUERIES = [
                GROUP BY cl.de
                ORDER BY total_eur DESC
                LIMIT 20;
-               """
+               """,
     },
     {
         "name": "2. Top-Lobbyisten (Kosten-Analyse)",
@@ -48,7 +49,7 @@ BENCHMARK_QUERIES = [
                WHERE fe.expenses_to_eur IS NOT NULL
                ORDER BY fe.expenses_to_eur DESC
                LIMIT 50;
-               """
+               """,
     },
     {
         "name": "3. Drehtür-Effekt (Regierungsfunktionen)",
@@ -62,7 +63,7 @@ BENCHMARK_QUERIES = [
                         JOIN public.recent_government_function rgf ON li.recent_gov_function_id = rgf.id
                WHERE rgf.ended = true
                ORDER BY rgf.end_year_month DESC;
-               """
+               """,
     },
     {
         "name": "4. Netzwerk-Analyse (Auftraggeber)",
@@ -77,7 +78,7 @@ BENCHMARK_QUERIES = [
                         JOIN public.client_org co ON ci.id = co.client_identity_id
                WHERE ci.clients_present = true
                LIMIT 1000;
-               """
+               """,
     },
     {
         "name": "5. Textsuche (Trigram Index Showcase)",
@@ -87,7 +88,7 @@ BENCHMARK_QUERIES = [
                FROM public.lobbyist_identity
                WHERE name_text ILIKE '%Energy%'
                LIMIT 100;
-               """
+               """,
     },
     {
         "name": "6. Drehtür-Analyse (Complex MV)",
@@ -98,23 +99,25 @@ BENCHMARK_QUERIES = [
                WHERE end_year_month > '2020-01'
                ORDER BY end_year_month DESC
                LIMIT 500;
-               """
-    }
+               """,
+    },
 ]
+
 
 def _sum_buffers(plan_node):
     """
     Rekursive Funktion, um Buffer-Stats (Hits/Reads) aus dem JSON-Plan zu summieren.
     """
-    hits = plan_node.get('Shared Hit Blocks', 0)
-    reads = plan_node.get('Shared Read Blocks', 0)
+    hits = plan_node.get("Shared Hit Blocks", 0)
+    reads = plan_node.get("Shared Read Blocks", 0)
 
-    if 'Plans' in plan_node:
-        for child in plan_node['Plans']:
+    if "Plans" in plan_node:
+        for child in plan_node["Plans"]:
             c_hits, c_reads = _sum_buffers(child)
             hits += c_hits
             reads += c_reads
     return hits, reads
+
 
 def run_benchmark(output_file: Path):
     results = []
@@ -128,7 +131,9 @@ def run_benchmark(output_file: Path):
 
                 try:
                     # BUFFERS Option liefert uns I/O Statistiken
-                    explain_sql = f"EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) {scenario['sql']}"
+                    explain_sql = (
+                        f"EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) {scenario['sql']}"
+                    )
 
                     start_wall = time.time()
                     with conn.cursor() as cur:
@@ -137,48 +142,58 @@ def run_benchmark(output_file: Path):
                     end_wall = time.time()
 
                     plan_node = plan_raw[0]
-                    exec_time_ms = plan_node.get('Execution Time', 0.0)
-                    planning_time_ms = plan_node.get('Planning Time', 0.0)
-                    total_cost = plan_node['Plan']['Total Cost']
+                    exec_time_ms = plan_node.get("Execution Time", 0.0)
+                    planning_time_ms = plan_node.get("Planning Time", 0.0)
+                    total_cost = plan_node["Plan"]["Total Cost"]
 
                     # Buffer-Analyse extrahieren
-                    hits, reads = _sum_buffers(plan_node['Plan'])
+                    hits, reads = _sum_buffers(plan_node["Plan"])
 
-                    results.append({
-                        "name": scenario['name'],
-                        "desc": scenario['description'],
-                        "exec_time_ms": exec_time_ms,
-                        "plan_time_ms": planning_time_ms,
-                        "hits": hits,
-                        "reads": reads,
-                        "wall_time_s": end_wall - start_wall,
-                        "total_cost": total_cost,
-                        "error": None
-                    })
+                    results.append(
+                        {
+                            "name": scenario["name"],
+                            "desc": scenario["description"],
+                            "exec_time_ms": exec_time_ms,
+                            "plan_time_ms": planning_time_ms,
+                            "hits": hits,
+                            "reads": reads,
+                            "wall_time_s": end_wall - start_wall,
+                            "total_cost": total_cost,
+                            "error": None,
+                        }
+                    )
                 except psycopg.errors.UndefinedTable:
                     conn.rollback()
-                    print(f"      ⚠️  Überspringe (Tabelle/View fehlt): {scenario['name']}")
-                    results.append({
-                        "name": scenario['name'],
-                        "desc": scenario['description'],
-                        "exec_time_ms": 0,
-                        "hits": 0, "reads": 0,
-                        "plan_time_ms": 0,
-                        "total_cost": 0,
-                        "error": "View/Tabelle fehlt (Optimierung ausstehend)"
-                    })
+                    print(
+                        f"      ⚠️  Überspringe (Tabelle/View fehlt): {scenario['name']}"
+                    )
+                    results.append(
+                        {
+                            "name": scenario["name"],
+                            "desc": scenario["description"],
+                            "exec_time_ms": 0,
+                            "hits": 0,
+                            "reads": 0,
+                            "plan_time_ms": 0,
+                            "total_cost": 0,
+                            "error": "View/Tabelle fehlt (Optimierung ausstehend)",
+                        }
+                    )
                 except Exception as e:
                     conn.rollback()
                     print(f"      ❌ Fehler: {e}")
-                    results.append({
-                        "name": scenario['name'],
-                        "desc": scenario['description'],
-                        "exec_time_ms": 0,
-                        "hits": 0, "reads": 0,
-                        "plan_time_ms": 0,
-                        "total_cost": 0,
-                        "error": str(e)
-                    })
+                    results.append(
+                        {
+                            "name": scenario["name"],
+                            "desc": scenario["description"],
+                            "exec_time_ms": 0,
+                            "hits": 0,
+                            "reads": 0,
+                            "plan_time_ms": 0,
+                            "total_cost": 0,
+                            "error": str(e),
+                        }
+                    )
 
         write_markdown_report(results, output_file)
         print("✅ Benchmark abgeschlossen.")
@@ -186,6 +201,7 @@ def run_benchmark(output_file: Path):
     except Exception as e:
         print(f"🔥 Kritischer Verbindungsfehler: {e}")
         sys.exit(1)
+
 
 def write_markdown_report(results, filepath):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -202,34 +218,36 @@ def write_markdown_report(results, filepath):
 """
 
     for r in results:
-        if r['error']:
+        if r["error"]:
             md_content += f"| {r['name']} | - | - | - | ❌ {r['error']} |\n"
         else:
             exec_str = f"{r['exec_time_ms']:.2f}"
             # Highlight langsame Queries fett
-            if r['exec_time_ms'] > 500:
+            if r["exec_time_ms"] > 500:
                 exec_str = f"**{exec_str}**"
 
             io_str = f"{r['hits']} / {r['reads']}"
-            if r['reads'] > 0:
+            if r["reads"] > 0:
                 # Highlight wenn Disk I/O stattfindet (Cold Cache Indikator)
                 io_str += " 💾"
 
-            md_content += f"| {r['name']} | {exec_str} | {io_str} | {r['total_cost']:.2f} | |\n"
+            md_content += (
+                f"| {r['name']} | {exec_str} | {io_str} | {r['total_cost']:.2f} | |\n"
+            )
 
     md_content += "\n## SQL Details\n\n"
     for i, r in enumerate(results):
-        sql_text = BENCHMARK_QUERIES[i]['sql'].strip()
-        md_content += f"### {r['name']}\nRunning: `{r['desc']}`\n```sql\n{sql_text}\n```\n\n"
+        sql_text = BENCHMARK_QUERIES[i]["sql"].strip()
+        md_content += (
+            f"### {r['name']}\nRunning: `{r['desc']}`\n```sql\n{sql_text}\n```\n\n"
+        )
 
     filepath.parent.mkdir(parents=True, exist_ok=True)
-    with open(filepath, "w", encoding="utf-8") as f:
+    with filepath.open("w", encoding="utf-8") as f:
         f.write(md_content)
 
+
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        target_file = Path(sys.argv[1])
-    else:
-        target_file = DEFAULT_OUTPUT
+    target_file = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_OUTPUT
 
     run_benchmark(target_file)

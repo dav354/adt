@@ -2,14 +2,20 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
-from .common import (d, insert_address, insert_contact,
-                     insert_recent_gov_function, insert_returning, scalar,
-                     upsert_code_label)
+from .common import (
+    d,
+    insert_address,
+    insert_contact,
+    insert_recent_gov_function,
+    insert_returning,
+    scalar,
+    upsert_code_label,
+)
 
 
-def load_lobbyist_identity(cur, entry_id: int, data: Dict[str, Any]) -> None:
+def load_lobbyist_identity(cur, entry_id: int, data: dict[str, Any]) -> None:
     if not data:
         return
 
@@ -79,7 +85,7 @@ def load_lobbyist_identity(cur, entry_id: int, data: Dict[str, Any]) -> None:
 
 
 def _load_capital_city_representation(
-    cur, identity_id: int, payload: Dict[str, Any] | None
+    cur, identity_id: int, payload: dict[str, Any] | None
 ) -> None:
     if not payload:
         return
@@ -97,7 +103,7 @@ def _load_capital_city_representation(
 
 
 def _load_entrusted_persons(
-    cur, identity_id: int, persons: list[Dict[str, Any]]
+    cur, identity_id: int, persons: list[dict[str, Any]]
 ) -> None:
     for ordinal, person in enumerate(persons, start=1):
         recent_fn_id = insert_recent_gov_function(
@@ -130,7 +136,7 @@ def _load_entrusted_persons(
 
 
 def _load_legal_representatives(
-    cur, identity_id: int, representatives: list[Dict[str, Any]]
+    cur, identity_id: int, representatives: list[dict[str, Any]]
 ) -> None:
     for ordinal, representative in enumerate(representatives, start=1):
         recent_fn_id = insert_recent_gov_function(
@@ -166,7 +172,7 @@ def _load_legal_representatives(
 
 
 def _load_named_employees(
-    cur, identity_id: int, employees: list[Dict[str, Any]]
+    cur, identity_id: int, employees: list[dict[str, Any]]
 ) -> None:
     for ordinal, employee in enumerate(employees, start=1):
         cur.execute(
@@ -182,7 +188,7 @@ def _load_named_employees(
         )
 
 
-def _load_members_count(cur, identity_id: int, members: Dict[str, Any]) -> None:
+def _load_members_count(cur, identity_id: int, members: dict[str, Any]) -> None:
     if not members:
         return
     cur.execute(

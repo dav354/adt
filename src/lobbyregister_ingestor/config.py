@@ -4,17 +4,16 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import Optional
 
 
-def _int(value: Optional[str], default: int) -> int:
+def _int(value: str | None, default: int) -> int:
     try:
         return int(value) if value is not None else default
     except ValueError:
         return default
 
 
-def _float(value: Optional[str], default: float) -> float:
+def _float(value: str | None, default: float) -> float:
     try:
         return float(value) if value is not None else default
     except ValueError:
@@ -25,8 +24,8 @@ def _float(value: Optional[str], default: float) -> float:
 class Settings:
     db_dsn: str
     api_base: str
-    api_key: Optional[str]
-    query: Optional[str]
+    api_key: str | None
+    query: str | None
     http_concurrency: int
     ingest_concurrency: int
     db_pool_size: int
@@ -39,7 +38,7 @@ class Settings:
     http_backoff_max: float
 
     @classmethod
-    def from_env(cls) -> "Settings":
+    def from_env(cls) -> Settings:
         pg_dsn = os.getenv("PG_DSN")
         if not pg_dsn:
             # If no full DSN is provided, compose one from the individual POSTGRES_* vars.

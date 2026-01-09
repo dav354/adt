@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, AsyncIterator, Mapping, Optional
+import contextlib
+from collections.abc import AsyncIterator, Mapping
+from typing import Any
 
 import httpx
 
@@ -26,7 +28,7 @@ class LobbyregisterClient:
 
     def __init__(self, settings: Settings):
         self._settings = settings
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
         self._headers = {
             "Accept": "application/json",
             "User-Agent": "lobbyregister-ingestor/1.0",
@@ -35,7 +37,7 @@ class LobbyregisterClient:
             self._headers["X-API-Key"] = settings.api_key
             self._headers["Authorization"] = f"ApiKey {settings.api_key}"
 
-    async def __aenter__(self) -> "LobbyregisterClient":
+    async def __aenter__(self) -> LobbyregisterClient:
         limits = httpx.Limits(
             max_connections=self._settings.http_concurrency,
             max_keepalive_connections=self._settings.http_concurrency,
@@ -61,13 +63,13 @@ class LobbyregisterClient:
         return payload
 
     async def iter_register_entries(
-        self, query: Optional[str] = None
+        self, query: str | None = None
     ) -> AsyncIterator[Mapping[str, Any]]:
         stop_token = object()
         queue: asyncio.Queue = asyncio.Queue(
             maxsize=max(1, self._settings.http_concurrency)
         )
-        fetch_error: Optional[BaseException] = None
+        fetch_error: BaseException | None = None
 
         async def fetch_pages() -> None:
             nonlocal fetch_error
@@ -75,7 +77,7 @@ class LobbyregisterClient:
             if query:
                 base_params["q"] = query
 
-            cursor: Optional[str] = None
+            cursor: str | None = None
             seen_cursors: set[str] = set()
 
             try:
@@ -84,9 +86,7 @@ class LobbyregisterClient:
                     if cursor:
                         params["cursor"] = cursor
 
-                    payload = await self._request_json(
-                        "registerentries", params=params
-                    )
+                    payload = await self._request_json("registerentries", params=params)
                     metadata = {
                         "source": payload.get("source"),
                         "sourceUrl": payload.get("sourceUrl"),
@@ -107,7 +107,7 @@ class LobbyregisterClient:
                         break
                     seen_cursors.add(next_cursor)
                     cursor = next_cursor
-            except BaseException as exc:  # noqa: BLE001
+            except BaseException as exc:
                 fetch_error = exc
             finally:
                 await queue.put((stop_token, None))
@@ -129,10 +129,8 @@ class LobbyregisterClient:
         finally:
             if not fetch_task.done():
                 fetch_task.cancel()
-                try:
+                with contextlib.suppress(asyncio.CancelledError):
                     await fetch_task
-                except asyncio.CancelledError:
-                    pass
             else:
                 await fetch_task
 
@@ -148,7 +146,7 @@ class LobbyregisterClient:
         return payload
 
     async def _request_json(
-        self, path: str, params: Optional[Mapping[str, Any]] = None
+        self, path: str, params: Mapping[str, Any] | None = None
     ) -> Any:
         if self._client is None:
             raise RuntimeError("HTTP client is not ready")
@@ -249,7 +247,11 @@ class LobbyregisterClient:
                 return [entry for entry in entries_obj if isinstance(entry, Mapping)]
             if entries_obj is None and payload.get("resultCount") in (0, "0"):
                 return []
-            if entries_obj is None and not payload.get("results") and not payload.get("registerEntries"):
+            if (
+                entries_obj is None
+                and not payload.get("results")
+                and not payload.get("registerEntries")
+            ):
                 # Some responses (e.g., empty search snapshots) omit the usual lists.
                 return []
             if "registerNumber" in payload:

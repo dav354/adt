@@ -109,8 +109,7 @@ def parse_alter_foreign_keys(sql: str):
         ):
             columns = [col.strip().strip('"') for col in fk_match.group(1).split(",")]
             ref_table = fk_match.group(2)
-            for column in columns:
-                results.append((table, column, ref_table))
+            results.extend((table, column, ref_table) for column in columns)
     return results
 
 

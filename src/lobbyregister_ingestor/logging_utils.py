@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 from rich.console import Console
 from rich.logging import RichHandler
@@ -25,5 +24,5 @@ def setup_logging(level: str = "INFO") -> None:
     )
 
 
-def get_logger(name: Optional[str] = None) -> logging.Logger:
+def get_logger(name: str | None = None) -> logging.Logger:
     return logging.getLogger(name or "lobbyregister")

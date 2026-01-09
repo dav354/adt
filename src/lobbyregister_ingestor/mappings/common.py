@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, Iterable, Optional, Sequence
+from collections.abc import Iterable, Sequence
+from typing import Any
 
 from dateutil import parser as dtparse
 
 
-def dt(value: Optional[str]) -> Optional[str]:
+def dt(value: str | None) -> str | None:
     if not value:
         return None
     try:
@@ -17,7 +18,7 @@ def dt(value: Optional[str]) -> Optional[str]:
         return value
 
 
-def d(value: Optional[str]) -> Optional[str]:
+def d(value: str | None) -> str | None:
     if not value:
         return None
     try:
@@ -26,7 +27,7 @@ def d(value: Optional[str]) -> Optional[str]:
         return value
 
 
-def scalar(obj: Optional[Dict[str, Any]], key: str, default: Any = None) -> Any:
+def scalar(obj: dict[str, Any] | None, key: str, default: Any = None) -> Any:
     if not isinstance(obj, dict):
         return default
     value = obj.get(key, default)
@@ -42,7 +43,7 @@ def insert_returning(cur, sql: str, params: Sequence[Any]) -> int:
     return cur.fetchone()["id"]
 
 
-def upsert_code_label(cur, domain: str, obj: Optional[Dict[str, Any]]) -> Optional[int]:
+def upsert_code_label(cur, domain: str, obj: dict[str, Any] | None) -> int | None:
     if not obj:
         return None
 
@@ -95,7 +96,7 @@ def upsert_code_label(cur, domain: str, obj: Optional[Dict[str, Any]]) -> Option
     return existing["id"]
 
 
-def upsert_country(cur, obj: Optional[Dict[str, Any]]) -> Optional[int]:
+def upsert_country(cur, obj: dict[str, Any] | None) -> int | None:
     if not obj:
         return None
     code, de, en = scalar(obj, "code"), scalar(obj, "de"), scalar(obj, "en")
@@ -145,7 +146,7 @@ def upsert_country(cur, obj: Optional[Dict[str, Any]]) -> Optional[int]:
     return existing["id"]
 
 
-def insert_address(cur, addr: Optional[Dict[str, Any]]) -> Optional[int]:
+def insert_address(cur, addr: dict[str, Any] | None) -> int | None:
     if not addr:
         return None
     country_id = upsert_country(cur, addr.get("country"))
@@ -173,7 +174,7 @@ def insert_address(cur, addr: Optional[Dict[str, Any]]) -> Optional[int]:
     )
 
 
-def insert_contact(cur, contact: Optional[Dict[str, Any]]) -> Optional[int]:
+def insert_contact(cur, contact: dict[str, Any] | None) -> int | None:
     if not contact:
         return None
     phone = scalar(contact, "phoneNumber") or scalar(contact, "phone")
@@ -203,22 +204,16 @@ def _insert_simple_collection(
 ) -> None:
     if isinstance(items, list):
         for ordinal, item in enumerate(items, start=1):
-            if isinstance(item, dict):
-                value = item.get(key)
-            else:
-                value = item
+            value = item.get(key) if isinstance(item, dict) else item
             if value:
                 cur.execute(sql, (parent_id, ordinal, value))
     else:
-        if isinstance(items, dict):
-            value = items.get(key)
-        else:
-            value = items
+        value = items.get(key) if isinstance(items, dict) else items
         if value:
             cur.execute(sql, (parent_id, 1, value))
 
 
-def insert_recent_gov_function(cur, rgf: Optional[Dict[str, Any]]) -> Optional[int]:
+def insert_recent_gov_function(cur, rgf: dict[str, Any] | None) -> int | None:
     if not rgf:
         return None
     type_id = upsert_code_label(cur, "recent_gov_function_type", rgf.get("type"))
@@ -286,7 +281,7 @@ def insert_recent_gov_function(cur, rgf: Optional[Dict[str, Any]]) -> Optional[i
 YEAR_MONTH_RE = re.compile(r"^\d{4}-\d{2}$")
 
 
-def normalize_year_month(value: Any) -> Optional[str]:
+def normalize_year_month(value: Any) -> str | None:
     """Return a YYYY-MM string when possible, otherwise None."""
     if value is None:
         return None

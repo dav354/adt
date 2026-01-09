@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from .common import d, insert_returning, scalar, upsert_code_label
 
 
-def load_regulatory_projects(cur, entry_id: int, data: Dict[str, Any]) -> None:
+def load_regulatory_projects(cur, entry_id: int, data: dict[str, Any]) -> None:
     if not data:
         return
     parent_id = insert_returning(
@@ -23,7 +23,7 @@ def load_regulatory_projects(cur, entry_id: int, data: Dict[str, Any]) -> None:
         _insert_project(cur, parent_id, ordinal, project)
 
 
-def _insert_project(cur, parent_id: int, ordinal: int, project: Dict[str, Any]) -> None:
+def _insert_project(cur, parent_id: int, ordinal: int, project: dict[str, Any]) -> None:
     item_id = insert_returning(
         cur,
         """
@@ -65,7 +65,7 @@ def _insert_project(cur, parent_id: int, ordinal: int, project: Dict[str, Any]) 
 
 
 def _insert_printed_matter(
-    cur, project_item_id: int, ordinal: int, matter: Dict[str, Any]
+    cur, project_item_id: int, ordinal: int, matter: dict[str, Any]
 ) -> None:
     matter_id = insert_returning(
         cur,
@@ -116,7 +116,7 @@ def _insert_printed_matter(
             )
 
 
-def _insert_draft_bill(cur, project_item_id: int, payload: Dict[str, Any]) -> None:
+def _insert_draft_bill(cur, project_item_id: int, payload: dict[str, Any]) -> None:
     draft_id = insert_returning(
         cur,
         "INSERT INTO public.draft_bill(project_item_id, title, publication_date, custom_title, custom_date) VALUES (%s,%s,%s,%s,%s)",
@@ -136,7 +136,7 @@ def _insert_draft_bill(cur, project_item_id: int, payload: Dict[str, Any]) -> No
         )
 
 
-def _insert_leading_ministry(cur, ministry: Dict[str, Any]) -> int:
+def _insert_leading_ministry(cur, ministry: dict[str, Any]) -> int:
     return insert_returning(
         cur,
         "INSERT INTO public.leading_ministry(title, short_title, url, election_period) VALUES (%s,%s,%s,%s)",

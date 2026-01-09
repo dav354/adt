@@ -2,14 +2,20 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
-from .common import (d, insert_address, insert_contact,
-                     insert_recent_gov_function, insert_returning, scalar,
-                     upsert_code_label)
+from .common import (
+    d,
+    insert_address,
+    insert_contact,
+    insert_recent_gov_function,
+    insert_returning,
+    scalar,
+    upsert_code_label,
+)
 
 
-def load_contracts(cur, entry_id: int, data: Dict[str, Any]) -> None:
+def load_contracts(cur, entry_id: int, data: dict[str, Any]) -> None:
     if not data:
         return
     parent_id = insert_returning(
@@ -22,7 +28,7 @@ def load_contracts(cur, entry_id: int, data: Dict[str, Any]) -> None:
 
 
 def _insert_contract(
-    cur, parent_id: int, ordinal: int, contract: Dict[str, Any]
+    cur, parent_id: int, ordinal: int, contract: dict[str, Any]
 ) -> None:
     item_id = insert_returning(
         cur,
@@ -50,7 +56,7 @@ def _insert_contract(
 
 
 def _insert_contract_clients(
-    cur, contract_item_id: int, payload: Dict[str, Any]
+    cur, contract_item_id: int, payload: dict[str, Any]
 ) -> None:
     clients_id = insert_returning(
         cur,
@@ -139,7 +145,7 @@ def _insert_contract_clients(
 
 
 def _insert_contract_contractors(
-    cur, contract_item_id: int, payload: Dict[str, Any]
+    cur, contract_item_id: int, payload: dict[str, Any]
 ) -> None:
     contractors_id = insert_returning(
         cur,
@@ -307,7 +313,7 @@ def _insert_contract_contractors(
 
 
 def _insert_financial_resources(
-    cur, sql: str, parent_id: int, payload: Dict[str, Any]
+    cur, sql: str, parent_id: int, payload: dict[str, Any]
 ) -> None:
     if not payload:
         return

@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
-from .mappings.register_core import (purge_children_for_entry,
-                                     upsert_register_entry)
+from .mappings.register_core import purge_children_for_entry, upsert_register_entry
 from .mappings.registry import SECTION_HANDLERS
 
 
-def ingest_entry(cur, doc: Dict[str, Any]) -> int:
+def ingest_entry(cur, doc: dict[str, Any]) -> int:
     entry_id = upsert_register_entry(cur, doc)
     purge_children_for_entry(cur, entry_id)
 

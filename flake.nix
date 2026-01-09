@@ -16,16 +16,15 @@
         inherit system;
         config = {allowUnfree = true;};
       };
-      python = pkgs.python312;
+      python = pkgs.python313;
     in {
       devShells.default = pkgs.mkShell {
         packages = with pkgs; [
           uv
           python
           docker-compose
-          black
-          isort
           docker-buildx
+          ruff
         ];
 
         shellHook = ''

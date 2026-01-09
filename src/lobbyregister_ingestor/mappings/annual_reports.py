@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from .common import d, scalar
 
 
-def load_annual_reports(cur, entry_id: int, data: Dict[str, Any]) -> None:
+def load_annual_reports(cur, entry_id: int, data: dict[str, Any]) -> None:
     if not data:
         return
     cur.execute(

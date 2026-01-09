@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Dict
-
 from .common import dt, scalar
 
 
-def upsert_register_entry(cur, doc: Dict[str, object]) -> int:
+def upsert_register_entry(cur, doc: dict[str, object]) -> int:
     cur.execute(
         """
         INSERT INTO public.register_entry (schema_uri, source, source_url, source_date, json_doc_url, register_number)

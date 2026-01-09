@@ -7,7 +7,7 @@ import itertools
 import logging
 from contextlib import suppress
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import psycopg
 from dotenv import load_dotenv
@@ -24,8 +24,8 @@ from .writer import ingest_entry
 
 
 def register_number_from(
-        detail: Dict[str, Any], fallback: Optional[str] = None
-) -> Optional[str]:
+    detail: dict[str, Any], fallback: str | None = None
+) -> str | None:
     return detail.get("registerNumber") or fallback or detail.get("register_number")
 
 
@@ -63,22 +63,21 @@ def apply_optimizations(dsn: str) -> None:
         return
 
     logger.info("Applying optimizations from %s...", opt_path.name)
-    with psycopg.connect(dsn, autocommit=True) as conn:
-        with conn.cursor() as cur:
-            cur.execute(opt_path.read_text(encoding="utf-8"))
+    with psycopg.connect(dsn, autocommit=True) as conn, conn.cursor() as cur:
+        cur.execute(opt_path.read_text(encoding="utf-8"))
 
 
-async def run_ingestion(settings: Settings, pool: Optional[ConnectionPool]) -> int:
+async def run_ingestion(settings: Settings, pool: ConnectionPool | None) -> int:
     logger = get_logger(__name__)
     counter_lock = asyncio.Lock()
     queue: asyncio.Queue = asyncio.Queue(maxsize=settings.ingest_queue_size)
     stop_token = object()
 
     processed = 0
-    total_hint: Optional[int] = None
+    total_hint: int | None = None
     sequence_counter = itertools.count(1)
 
-    def write_document(document: Dict[str, Any]) -> None:
+    def write_document(document: dict[str, Any]) -> None:
         if pool is None:
             return
         with pool.connection() as conn:
@@ -117,7 +116,7 @@ async def run_ingestion(settings: Settings, pool: Optional[ConnectionPool]) -> i
                             attempt,
                             MAX_DB_WRITE_RETRIES + 1,
                             exc.__class__.__name__,
-                            )
+                        )
                         continue
 
                     logger.error(
@@ -142,12 +141,12 @@ async def run_ingestion(settings: Settings, pool: Optional[ConnectionPool]) -> i
                     "total_count"
                 )
                 if potential_total and not total_hint:
-                    try:
+                    with suppress(TypeError, ValueError):
                         total_hint = int(potential_total)
-                    except (TypeError, ValueError):
-                        pass
                 processed += 1
-                if settings.progress_every and (processed % settings.progress_every == 0):
+                if settings.progress_every and (
+                    processed % settings.progress_every == 0
+                ):
                     logger.info(
                         "Processed %s/%s",
                         processed,
@@ -168,15 +167,13 @@ async def run_ingestion(settings: Settings, pool: Optional[ConnectionPool]) -> i
             stats = {}
 
         total_hint_candidate = (
-                stats.get("totalResultCount")
-                or stats.get("totalCount")
-                or stats.get("registerEntriesTotalCount")
+            stats.get("totalResultCount")
+            or stats.get("totalCount")
+            or stats.get("registerEntriesTotalCount")
         )
         try:
             total_hint = (
-                int(total_hint_candidate)
-                if total_hint_candidate is not None
-                else None
+                int(total_hint_candidate) if total_hint_candidate is not None else None
             )
         except (TypeError, ValueError):
             total_hint = None
@@ -257,7 +254,9 @@ async def async_main() -> int:
                 try:
                     conn.execute("REFRESH MATERIALIZED VIEW public.mv_financial_tops;")
                 except pg_errors.UndefinedTable:
-                    logger.warning("Materialized view 'public.mv_financial_tops' does not exist, skipping refresh.")
+                    logger.warning(
+                        "Materialized view 'public.mv_financial_tops' does not exist, skipping refresh."
+                    )
                 # Add other views here if you create more
             logger.info("Views refreshed.")
 

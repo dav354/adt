@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from .common import d, insert_returning, scalar, upsert_code_label
 
 
-def load_statements(cur, entry_id: int, data: Dict[str, Any]) -> None:
+def load_statements(cur, entry_id: int, data: dict[str, Any]) -> None:
     if not data:
         return
     parent_id = insert_returning(
@@ -42,7 +42,7 @@ def load_statements(cur, entry_id: int, data: Dict[str, Any]) -> None:
         _insert_recipient_groups(cur, item_id, recipient_groups)
 
 
-def _insert_recipient_groups(cur, item_id: int, groups: list[Dict[str, Any]]) -> None:
+def _insert_recipient_groups(cur, item_id: int, groups: list[dict[str, Any]]) -> None:
     for group_idx, group in enumerate(groups, start=1):
         group_id = insert_returning(
             cur,
