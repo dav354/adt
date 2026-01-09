@@ -92,9 +92,3 @@ Listet Akteure auf, die Finanzangaben verweigern oder Jahresberichte schuldig bl
 
 Visualisiert komplexe Netzwerke ("Wer kennt wen?") und legislative Fußabdrücke (Einflussnahme auf spezifische Gesetze).
 ![Advanced Dashboard](docs/portfolio_4/figures/dashboard_advanced.png)
-
-## Weiterführende Ideen
-
-- Indizes/Materialized Views für häufige Reports
-- Automatisierte Dashboards in `grafana/provisioning/dashboards`
-- Deduplizierung & Historisierung weiterer Entitäten
